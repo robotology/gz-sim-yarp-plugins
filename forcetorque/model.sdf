@@ -6,6 +6,8 @@
       <max_step_size>0.001</max_step_size>
       <real_time_factor>1.0</real_time_factor>
     </physics>
+    <plugin filename="HelloWorld" name="hello_world::HelloWorld">
+    </plugin>
     <plugin
       filename="gz-sim-physics-system"
       name="gz::sim::systems::Physics">
