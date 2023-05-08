@@ -117,19 +117,6 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named HelloWorld
-
-# Build rule for target.
-HelloWorld: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 HelloWorld
-.PHONY : HelloWorld
-
-# fast build rule for target.
-HelloWorld/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/HelloWorld.dir/build.make CMakeFiles/HelloWorld.dir/build
-.PHONY : HelloWorld/fast
-
-#=============================================================================
 # Target rules for targets named MyPlugin
 
 # Build rule for target.
@@ -141,30 +128,6 @@ MyPlugin: cmake_check_build_system
 MyPlugin/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MyPlugin.dir/build.make CMakeFiles/MyPlugin.dir/build
 .PHONY : MyPlugin/fast
-
-HelloWorld.o: HelloWorld.cc.o
-.PHONY : HelloWorld.o
-
-# target to build an object file
-HelloWorld.cc.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/HelloWorld.dir/build.make CMakeFiles/HelloWorld.dir/HelloWorld.cc.o
-.PHONY : HelloWorld.cc.o
-
-HelloWorld.i: HelloWorld.cc.i
-.PHONY : HelloWorld.i
-
-# target to preprocess a source file
-HelloWorld.cc.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/HelloWorld.dir/build.make CMakeFiles/HelloWorld.dir/HelloWorld.cc.i
-.PHONY : HelloWorld.cc.i
-
-HelloWorld.s: HelloWorld.cc.s
-.PHONY : HelloWorld.s
-
-# target to generate assembly for a file
-HelloWorld.cc.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/HelloWorld.dir/build.make CMakeFiles/HelloWorld.dir/HelloWorld.cc.s
-.PHONY : HelloWorld.cc.s
 
 MyPlugin.o: MyPlugin.cc.o
 .PHONY : MyPlugin.o
@@ -198,11 +161,7 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... HelloWorld"
 	@echo "... MyPlugin"
-	@echo "... HelloWorld.o"
-	@echo "... HelloWorld.i"
-	@echo "... HelloWorld.s"
 	@echo "... MyPlugin.o"
 	@echo "... MyPlugin.i"
 	@echo "... MyPlugin.s"

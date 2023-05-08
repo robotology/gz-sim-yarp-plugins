@@ -21,32 +21,27 @@ class MyPlugin
                          EntityComponentManager &_ecm,
                          EventManager &/*_eventMgr*/) override
   {
-    // Read property from SDF
-    // Get the SDF of the model
-
-    auto linkName = _sdf->Get<std::string>("link_1");
-    std::string msg = "Ciao questo è il tuo modell sdf ";
-    msg += _sdf->ToString("");
-    msg += linkName;
-    
-    // Create model object to access convenient functions
     auto model = Model(_entity);
-    msg += model.Name(_ecm);
-    
     // Get link entity
     this->linkEntity = model.LinkByName(_ecm, "link_2");
-    msg += this->linkEntity;
-    msg += _entity;
-    std::cout << msg << std::endl;
   }
  
   // Implement PostUpdate callback, provided by ISystemPostUpdate
   // and called at every iteration, after physics is done
-  virtual void PostUpdate(const UpdateInfo &/*_info*/,
+  virtual void PostUpdate(const UpdateInfo &_info,
                           const EntityComponentManager &_ecm) override
   {
     // Get link pose and print it
     std::cout << worldPose(this->linkEntity, _ecm) << std::endl;
+
+    // This is a simple example of how to get information from UpdateInfo.
+    std::string msg = "Simulation is ";
+    if (!_info.paused)
+      msg += "not ";
+    msg += "paused.";
+    // Messages printed with gzmsg only show when running with verbosity 3 or
+    // higher (i.e. gz sim -v 3)
+    gzmsg << msg << std::endl;
   }
  
   // ID of link entity

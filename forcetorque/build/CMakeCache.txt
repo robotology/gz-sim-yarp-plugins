@@ -157,7 +157,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=Hello_world
+CMAKE_PROJECT_NAME:STATIC=My_Plugin
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
@@ -271,6 +271,15 @@ JSONCPP_LIBRARY_jsoncpp:FILEPATH=/usr/lib/x86_64-linux-gnu/libjsoncpp.so
 
 //Dependencies for the target
 MyPlugin_LIB_DEPENDS:STATIC=general;gz-plugin2::gz-plugin2;general;gz-sim7::gz-sim7;
+
+//Value Computed by CMake
+My_Plugin_BINARY_DIR:STATIC=/mnt/c/Users/lucap/OneDrive - unige.it/Documenti/Università/Magistrale/Software Engineering/SE_Project/study-gazebo-garden-yarp-plugins/forcetorque/build
+
+//Value Computed by CMake
+My_Plugin_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+My_Plugin_SOURCE_DIR:STATIC=/mnt/c/Users/lucap/OneDrive - unige.it/Documenti/Università/Magistrale/Software Engineering/SE_Project/study-gazebo-garden-yarp-plugins/forcetorque
 
 //Arguments to supply to pkg-config
 PKG_CONFIG_ARGN:STRING=
