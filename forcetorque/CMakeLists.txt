@@ -15,3 +15,9 @@ set_property(TARGET HelloWorld PROPERTY CXX_STANDARD 17)
 target_link_libraries(HelloWorld
   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
   PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
+
+add_library(MyPlugin SHARED MyPlugin)
+set_property(TARGET MyPlugin PROPERTY CXX_STANDARD 17)
+target_link_libraries(MyPlugin
+  PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+  PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})

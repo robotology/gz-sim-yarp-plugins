@@ -129,6 +129,19 @@ HelloWorld/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/HelloWorld.dir/build.make CMakeFiles/HelloWorld.dir/build
 .PHONY : HelloWorld/fast
 
+#=============================================================================
+# Target rules for targets named MyPlugin
+
+# Build rule for target.
+MyPlugin: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 MyPlugin
+.PHONY : MyPlugin
+
+# fast build rule for target.
+MyPlugin/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MyPlugin.dir/build.make CMakeFiles/MyPlugin.dir/build
+.PHONY : MyPlugin/fast
+
 HelloWorld.o: HelloWorld.cc.o
 .PHONY : HelloWorld.o
 
@@ -153,6 +166,30 @@ HelloWorld.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/HelloWorld.dir/build.make CMakeFiles/HelloWorld.dir/HelloWorld.cc.s
 .PHONY : HelloWorld.cc.s
 
+MyPlugin.o: MyPlugin.cc.o
+.PHONY : MyPlugin.o
+
+# target to build an object file
+MyPlugin.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MyPlugin.dir/build.make CMakeFiles/MyPlugin.dir/MyPlugin.cc.o
+.PHONY : MyPlugin.cc.o
+
+MyPlugin.i: MyPlugin.cc.i
+.PHONY : MyPlugin.i
+
+# target to preprocess a source file
+MyPlugin.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MyPlugin.dir/build.make CMakeFiles/MyPlugin.dir/MyPlugin.cc.i
+.PHONY : MyPlugin.cc.i
+
+MyPlugin.s: MyPlugin.cc.s
+.PHONY : MyPlugin.s
+
+# target to generate assembly for a file
+MyPlugin.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MyPlugin.dir/build.make CMakeFiles/MyPlugin.dir/MyPlugin.cc.s
+.PHONY : MyPlugin.cc.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -162,9 +199,13 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... HelloWorld"
+	@echo "... MyPlugin"
 	@echo "... HelloWorld.o"
 	@echo "... HelloWorld.i"
 	@echo "... HelloWorld.s"
+	@echo "... MyPlugin.o"
+	@echo "... MyPlugin.i"
+	@echo "... MyPlugin.s"
 .PHONY : help
 
 

@@ -49,5 +49,6 @@ void HelloWorld::PostUpdate(const gz::sim::UpdateInfo &_info,
 
   // Messages printed with gzmsg only show when running with verbosity 3 or
   // higher (i.e. gz sim -v 3)
-  gzmsg << msg << std::endl;
+  
+  //gzmsg << msg << std::endl;
 }

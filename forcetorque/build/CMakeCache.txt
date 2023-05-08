@@ -269,6 +269,9 @@ IGN_SANITIZER:STRING=
 //Path to a library.
 JSONCPP_LIBRARY_jsoncpp:FILEPATH=/usr/lib/x86_64-linux-gnu/libjsoncpp.so
 
+//Dependencies for the target
+MyPlugin_LIB_DEPENDS:STATIC=general;gz-plugin2::gz-plugin2;general;gz-sim7::gz-sim7;
+
 //Arguments to supply to pkg-config
 PKG_CONFIG_ARGN:STRING=
 

@@ -6,6 +6,7 @@
       <max_step_size>0.001</max_step_size>
       <real_time_factor>1.0</real_time_factor>
     </physics>
+    
     <plugin filename="HelloWorld" name="hello_world::HelloWorld">
     </plugin>
     <plugin
@@ -69,6 +70,7 @@
     
 
     <model name="force_torque_example">
+    <plugin filename="MyPlugin" name="MyPlugin"/>
       <link name="link_1">
         <inertial>
           <pose>0 0 0.05 0 0 0</pose>
