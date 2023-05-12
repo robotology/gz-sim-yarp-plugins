@@ -7,7 +7,8 @@
 #include "gz/sim/components/ParentEntity.hh"
 #include "gz/sim/components/ParentLinkName.hh"
 #include "gz/sim/components/Sensor.hh"
-
+#include "gz/sim/components/JointTransmittedWrench.hh"
+#include "gz/sim/components/Pose.hh"
 
 using namespace gz;
 using namespace sim;
@@ -28,10 +29,14 @@ class ForceTorque
                          EventManager &/*_eventMgr*/) override
   {
     auto model = Model(_entity);
+    this->entity = _entity;
+    this->joint = model.JointByName(_ecm, "joint_12");
+    this->jointParentLink = model.LinkByName(_ecm, "link_1");
+    this->jointChildLink = model.LinkByName(_ecm, "link_2");
 
-    auto joint = model.JointByName(_ecm, "joint_12");
+    // Joint::SensorByName
     this->sensor = _ecm.EntityByComponents(
-      components::ParentEntity(joint),
+      components::ParentEntity(this->joint),
       components::Name("force_torque"),
       components::Sensor());
   }
@@ -41,14 +46,34 @@ class ForceTorque
   virtual void PostUpdate(const UpdateInfo &_info,
                           const EntityComponentManager &_ecm) override
   {
-    std::string name = _ecm.ComponentData<components::Name>(this->sensor).value();
-    auto parent = _ecm.Component<components::ParentEntity>(this->sensor)->Data();
-    std::string parentName = _ecm.ComponentData<components::Name>(parent).value();
-    std::cout << "Sensor name: "+ name + ", Parent name: " + parentName << std::endl;
+    // From ForceTorquePrivate::Update
+    auto jointWrench = _ecm.Component<components::JointTransmittedWrench>(this->joint);
+    if (nullptr == jointWrench)
+    {
+      return;
+    }
+    const auto X_WP = worldPose(this->jointParentLink, _ecm);
+    const auto X_WC = worldPose(this->jointChildLink, _ecm);
+    const auto X_CJ = _ecm.Component<components::Pose>(this->joint)->Data();
+    auto X_WJ = X_WC * X_CJ;
+    auto X_JS = _ecm.Component<components::Pose>(entity)->Data();
+    auto X_WS = X_WJ * X_JS;
+    auto X_SP = X_WS.Inverse() * X_WP;
+
+    math::Vector3d force = X_JS.Rot().Inverse() * msgs::Convert(jointWrench->Data().force());
+    math::Vector3d torque = X_JS.Rot().Inverse() * msgs::Convert(jointWrench->Data().torque()) - X_JS.Pos().Cross(force);
+    
+    // Print force and torque values
+    std::cout << _info.simTime.count()/1e9 << std::endl;
+    std::cout << "Force:  " << force << std::endl;
+    std::cout << "Torque: " << torque << std::endl << std::endl;
   }
  
-  // ID sensor entity
   private: Entity sensor;
+  private: Entity jointParentLink;
+  private: Entity jointChildLink;
+  private: Entity joint;
+  private: Entity entity;
 };
  
 // Register plugin
