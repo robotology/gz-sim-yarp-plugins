@@ -31,8 +31,6 @@ class ForceTorque
     auto model = Model(_entity);
     this->entity = _entity;
     this->joint = model.JointByName(_ecm, "joint_12");
-    this->jointParentLink = model.LinkByName(_ecm, "link_1");
-    this->jointChildLink = model.LinkByName(_ecm, "link_2");
 
     // Joint::SensorByName
     this->sensor = _ecm.EntityByComponents(
@@ -52,13 +50,7 @@ class ForceTorque
     {
       return;
     }
-    const auto X_WP = worldPose(this->jointParentLink, _ecm);
-    const auto X_WC = worldPose(this->jointChildLink, _ecm);
-    const auto X_CJ = _ecm.Component<components::Pose>(this->joint)->Data();
-    auto X_WJ = X_WC * X_CJ;
     auto X_JS = _ecm.Component<components::Pose>(entity)->Data();
-    auto X_WS = X_WJ * X_JS;
-    auto X_SP = X_WS.Inverse() * X_WP;
 
     math::Vector3d force = X_JS.Rot().Inverse() * msgs::Convert(jointWrench->Data().force());
     math::Vector3d torque = X_JS.Rot().Inverse() * msgs::Convert(jointWrench->Data().torque()) - X_JS.Pos().Cross(force);
@@ -70,8 +62,6 @@ class ForceTorque
   }
  
   private: Entity sensor;
-  private: Entity jointParentLink;
-  private: Entity jointChildLink;
   private: Entity joint;
   private: Entity entity;
 };
