@@ -2,14 +2,20 @@
 #include <gz/sim/Util.hh>
 #include <gz/sim/System.hh>
 #include <gz/plugin/Register.hh>
- 
+#include <gz/sim/Link.hh>
+#include "gz/sim/components/Name.hh"
+#include "gz/sim/components/ParentEntity.hh"
+#include "gz/sim/components/ParentLinkName.hh"
+#include "gz/sim/components/Sensor.hh"
+
+
 using namespace gz;
 using namespace sim;
 using namespace systems;
  
 // Inherit from System and 2 extra interfaces:
 // ISystemConfigure and ISystemPostUpdate
-class MyPlugin
+class ForceTorque
       : public System,
         public ISystemConfigure,
         public ISystemPostUpdate
@@ -22,8 +28,12 @@ class MyPlugin
                          EventManager &/*_eventMgr*/) override
   {
     auto model = Model(_entity);
-    // Get link entity
-    this->linkEntity = model.LinkByName(_ecm, "link_2");
+
+    auto joint = model.JointByName(_ecm, "joint_12");
+    this->sensor = _ecm.EntityByComponents(
+      components::ParentEntity(joint),
+      components::Name("force_torque"),
+      components::Sensor());
   }
  
   // Implement PostUpdate callback, provided by ISystemPostUpdate
@@ -31,29 +41,22 @@ class MyPlugin
   virtual void PostUpdate(const UpdateInfo &_info,
                           const EntityComponentManager &_ecm) override
   {
-    // Get link pose and print it
-    //std::cout << worldPose(this->linkEntity, _ecm) << std::endl;
-
-    // This is a simple example of how to get information from UpdateInfo.
-    std::string msg = "Simulation is ";
-    if (!_info.paused)
-      msg += "not ";
-    msg += "paused.";
-    // Messages printed with gzmsg only show when running with verbosity 3 or
-    // higher (i.e. gz sim -v 3)
-    gzmsg << msg << std::endl;
+    std::string name = _ecm.ComponentData<components::Name>(this->sensor).value();
+    auto parent = _ecm.Component<components::ParentEntity>(this->sensor)->Data();
+    std::string parentName = _ecm.ComponentData<components::Name>(parent).value();
+    std::cout << "Sensor name: "+ name + ", Parent name: " + parentName << std::endl;
   }
  
-  // ID of link entity
-  private: Entity linkEntity;
+  // ID sensor entity
+  private: Entity sensor;
 };
  
 // Register plugin
-GZ_ADD_PLUGIN(MyPlugin,
+GZ_ADD_PLUGIN(ForceTorque,
                     gz::sim::System,
-                    MyPlugin::ISystemConfigure,
-                    MyPlugin::ISystemPostUpdate)
+                    ForceTorque::ISystemConfigure,
+                    ForceTorque::ISystemPostUpdate)
  
 // Add plugin alias so that we can refer to the plugin without the version
 // namespace
-GZ_ADD_PLUGIN_ALIAS(MyPlugin, "gz::sim::systems::MyPlugin")
+GZ_ADD_PLUGIN_ALIAS(ForceTorque, "gz::sim::systems::ForceTorque")
