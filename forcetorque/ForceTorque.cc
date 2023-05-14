@@ -3,6 +3,7 @@
 #include <gz/sim/System.hh>
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Link.hh>
+#include <gz/sim/Joint.hh>
 #include "gz/sim/components/Name.hh"
 #include "gz/sim/components/ParentEntity.hh"
 #include "gz/sim/components/ParentLinkName.hh"
@@ -31,12 +32,7 @@ class ForceTorque
     auto model = Model(_entity);
     this->entity = _entity;
     this->joint = model.JointByName(_ecm, "joint_12");
-
-    // Joint::SensorByName
-    this->sensor = _ecm.EntityByComponents(
-      components::ParentEntity(this->joint),
-      components::Name("force_torque"),
-      components::Sensor());
+    this->sensor = Joint(this->joint).SensorByName(_ecm, "force_torque");
   }
  
   // Implement PostUpdate callback, provided by ISystemPostUpdate
