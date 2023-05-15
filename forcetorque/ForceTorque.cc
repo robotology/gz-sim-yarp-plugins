@@ -10,6 +10,15 @@
 #include "gz/sim/components/Sensor.hh"
 #include "gz/sim/components/JointTransmittedWrench.hh"
 #include "gz/sim/components/Pose.hh"
+#include <yarp/os/Bottle.h>
+#include <yarp/os/BufferedPort.h>
+#include <yarp/os/LogStream.h>
+#include <yarp/os/Network.h>
+#include <iostream>
+
+using yarp::os::Bottle;
+using yarp::os::BufferedPort;
+using yarp::os::Network;
 
 using namespace gz;
 using namespace sim;
@@ -33,6 +42,9 @@ class ForceTorque
     this->entity = _entity;
     this->joint = model.JointByName(_ecm, "joint_12");
     this->sensor = Joint(this->joint).SensorByName(_ecm, "force_torque");
+
+    this->port.open("/force_torque");
+
   }
  
   // Implement PostUpdate callback, provided by ISystemPostUpdate
@@ -50,16 +62,36 @@ class ForceTorque
 
     math::Vector3d force = X_JS.Rot().Inverse() * msgs::Convert(jointWrench->Data().force());
     math::Vector3d torque = X_JS.Rot().Inverse() * msgs::Convert(jointWrench->Data().torque()) - X_JS.Pos().Cross(force);
+
+    Bottle& output = port.prepare();
+    std::string msg = std::to_string(_info.simTime.count()/1e9) + 
+      "   Force: " + 
+      std::to_string(force.X()) + " " +
+      std::to_string(force.Y()) + " " +
+      std::to_string(force.Z()) + 
+      "   Torque: "+
+      std::to_string(torque.X()) + " " +
+      std::to_string(torque.Y()) + " " +
+      std::to_string(torque.Z());
+    output.clear();
+    output.addString(msg);
+    port.write();
+
     
     // Print force and torque values
+    /*
     std::cout << _info.simTime.count()/1e9 << std::endl;
     std::cout << "Force:  " << force << std::endl;
     std::cout << "Torque: " << torque << std::endl << std::endl;
+    */
   }
  
-  private: Entity sensor;
-  private: Entity joint;
-  private: Entity entity;
+  private: 
+    Entity sensor;
+    Entity joint;
+    Entity entity;
+    BufferedPort<Bottle> port;
+    Network yarp;
 };
  
 // Register plugin
