@@ -39,7 +39,7 @@ class ForceTorque
                          EventManager &/*_eventMgr*/) override
   {
     auto model = Model(_entity);
-    this->entity = _entity;
+    //this->entity = _entity;
     this->joint = model.JointByName(_ecm, "joint_12");
     this->sensor = Joint(this->joint).SensorByName(_ecm, "force_torque");
 
@@ -58,8 +58,7 @@ class ForceTorque
     {
       return;
     }
-    auto X_JS = _ecm.Component<components::Pose>(entity)->Data();
-
+    auto X_JS = _ecm.Component<components::Pose>(this->sensor)->Data();
     math::Vector3d force = X_JS.Rot().Inverse() * msgs::Convert(jointWrench->Data().force());
     math::Vector3d torque = X_JS.Rot().Inverse() * msgs::Convert(jointWrench->Data().torque()) - X_JS.Pos().Cross(force);
 
@@ -89,7 +88,7 @@ class ForceTorque
   private: 
     Entity sensor;
     Entity joint;
-    Entity entity;
+    //Entity entity;
     BufferedPort<Bottle> port;
     Network yarp;
 };
