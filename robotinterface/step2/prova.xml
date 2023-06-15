@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE robot PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
+
+<robot name="prova" portprefix="/prova" build="0"  xmlns:xi="http://www.w3.org/2001/XInclude">
+    <devices>
+        <device name="prova_fakeIMU" type="fakeIMU">
+        </device>
+        <device name="prova_multipleanalogsensorsserver" type="multipleanalogsensorsserver">
+            <param name="name"> /prova </param>
+            <param name="period"> 100 </param>
+            <action phase="startup" level="5" type="attach">
+                <param name="device"> prova_fakeIMU </param>
+            </action>
+            <action phase="shutdown" level="5" type="detach" />
+        </device>
+    </devices>
+</robot>
