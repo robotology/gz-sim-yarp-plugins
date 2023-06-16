@@ -1,6 +1,7 @@
 #include <yarp/robotinterface/XMLReader.h>
 #include <yarp/os/Network.h>
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/PolyDriverList.h>
 #include <iostream>
 
 
@@ -23,7 +24,9 @@ int main() {
         std::cerr << "Failed to open fakeIMU device." << std::endl;
         return 1;
     }
-    
+    yarp::dev::PolyDriverList externalDriverList;
+    externalDriverList.push(&fakeIMU,"fakeIMU");
+
     std::string pathToXmlConfigurationFile = "prova.xml";
     yarp::robotinterface::XMLReader reader;
     yarp::robotinterface::XMLReaderResult result = reader.getRobotFromFile(pathToXmlConfigurationFile);
@@ -33,8 +36,14 @@ int main() {
         return 1;
     }
     
+    bool ok = result.robot.setExternalDevices(externalDriverList);
+    if (!ok) {
+        std::cerr << "GazeboYarpRobotInterface : impossible to set external devices" << std::endl;
+        return 1;
+    }
+
     // Enter the startup phase, that will open all the devices and  call attach if necessary
-    bool ok = result.robot.enterPhase(yarp::robotinterface::ActionPhaseStartup);
+    ok = result.robot.enterPhase(yarp::robotinterface::ActionPhaseStartup);
     
     if (!ok) {
         std::cerr << "Error entering startup phase." << std::endl;
