@@ -1,5 +1,9 @@
 ## robotinterface - step 2
 
+#### Problem
+Once you tested successfully the .xml file with the `yarprobotinterface` (see [step1](https://github.com/robotology/study-gazebo-garden-yarp-plugins/edit/main/robotinterface/step1)), write a simple C++ program that uses the `libYARP_robotinterface` library ( https://www.yarp.it/latest/group__robointerface__all.html ) to load the .xml file and launch it, without passing through the `yarprobotinterface` executable (but you can check the `yarprobotinterface` executable code to get an inspirtation)
+  
+#### Run the solution
 At first, compile launch.cc:
 ~~~
 mkdir build
