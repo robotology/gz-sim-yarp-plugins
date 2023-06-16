@@ -1,5 +1,10 @@
 ## robotinterface - step 3
 
+#### Problem
+Modify the code prepare in [step2](https://github.com/robotology/study-gazebo-garden-yarp-plugins/edit/main/robotinterface/step2) to launch the `fakeIMU` not via the .xml, but via the code, and just launch the `multipleanalogsensorsserver`. This is a use case more similar to the one you will see in the gazebo
+  
+#### Run the solution
+
 At first, compile launch.cc:
 ~~~
 mkdir build
