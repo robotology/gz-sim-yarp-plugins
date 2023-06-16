@@ -1,5 +1,12 @@
 ## robotinterface - step 1
 
+#### Problem
+To get use to the use of yarprobotinterface files, write a .xml file that launches two devices, and attach them.
+   * `fakeIMU` : a device that exposes a fake IMU that measures orientation, angular velocity and linear acceleration
+   * [`multipleanalogsensorsserver`](https://www.yarp.it/latest/classMultipleAnalogSensorsServer.html) : a device that read the measures from the `fakeIMU`, and publish them on the YARP network
+   * You can test this file by launching the `yarprobotinterface` executable
+  
+#### Run the solution
 - 1st terminal:
   ~~~
   yarp server
