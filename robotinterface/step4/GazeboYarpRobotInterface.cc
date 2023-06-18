@@ -55,7 +55,6 @@ class GazeboYarpRobotInterface
             return;
         }
 
-        /*
         yarp::dev::PolyDriverList externalDriverList;
         yarp::dev::PolyDriver fakeIMU;
         yarp::os::Property options;
@@ -72,11 +71,10 @@ class GazeboYarpRobotInterface
             yError() << "GazeboYarpRobotInterface : impossible to set external devices";
             return;
         }
-        */
           
         // Start robotinterface
         
-        bool ok = m_xmlRobotInterfaceResult.robot.enterPhase(yarp::robotinterface::ActionPhaseStartup);
+        ok = m_xmlRobotInterfaceResult.robot.enterPhase(yarp::robotinterface::ActionPhaseStartup);
         if (!ok) {
             yError() << "GazeboYarpRobotInterface : impossible to start robotinterface";
             m_xmlRobotInterfaceResult.robot.enterPhase(yarp::robotinterface::ActionPhaseInterrupt1);

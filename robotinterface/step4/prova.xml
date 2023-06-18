@@ -3,7 +3,6 @@
 
 <robot name="prova" portprefix="/prova" build="0"  xmlns:xi="http://www.w3.org/2001/XInclude">
     <devices>
-        <device name="fakeIMU" type="fakeIMU"></device>
         <device name="prova_multipleanalogsensorsserver" type="multipleanalogsensorsserver">
             <param name="name"> /prova </param>
             <param name="period"> 100 </param>
