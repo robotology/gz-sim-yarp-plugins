@@ -56,7 +56,6 @@ class GazeboYarpRobotInterface
         }
 
         yarp::dev::PolyDriverList externalDriverList;
-        yarp::dev::PolyDriver fakeIMU;
         yarp::os::Property options;
         options.put("device", "fakeIMU");
 
@@ -86,6 +85,7 @@ class GazeboYarpRobotInterface
 
     
     private:
+    yarp::dev::PolyDriver fakeIMU;
     yarp::robotinterface::XMLReader m_xmlRobotInterfaceReader;
     yarp::robotinterface::XMLReaderResult m_xmlRobotInterfaceResult;
     std::string robotinterface_file_name;
