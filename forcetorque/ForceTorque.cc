@@ -39,10 +39,11 @@ class ForceTorque
                          EventManager &/*_eventMgr*/) override
   {
     auto model = Model(_entity);
+    std::cout << scopedName(model.Entity(), _ecm) << std::endl << std::endl;
     //this->entity = _entity;
     this->joint = model.JointByName(_ecm, "joint_12");
     this->sensor = Joint(this->joint).SensorByName(_ecm, "force_torque");
-
+    std::cout << scopedName(this->sensor, _ecm) << std::endl << std::endl;
     this->port.open("/force_torque");
 
   }

@@ -2,18 +2,11 @@
 #include <gz/sim/Util.hh>
 #include <gz/sim/System.hh>
 #include <gz/plugin/Register.hh>
-#include <gz/sim/Link.hh>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Sensor.hh>
-#include "gz/sim/components/Name.hh"
-#include "gz/sim/components/ParentEntity.hh"
-#include "gz/sim/components/ParentLinkName.hh"
-#include "gz/sim/components/Sensor.hh"
 #include "gz/sim/components/ForceTorque.hh"
 #include "gz/sim/components/JointTransmittedWrench.hh"
 #include "gz/sim/components/Pose.hh"
-#include <yarp/os/Bottle.h>
-#include <yarp/os/BufferedPort.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
 #include <iostream>
@@ -22,23 +15,17 @@
 #include <yarp/dev/IMultipleWrapper.h>
 #include "ForceTorqueDriver.cpp"
 
-using yarp::os::Bottle;
-using yarp::os::BufferedPort;
-using yarp::os::Network;
 
 using namespace gz;
 using namespace sim;
 using namespace systems;
- 
-// Inherit from System and 2 extra interfaces:
-// ISystemConfigure and ISystemPostUpdate
+
+
 class ForceTorque
       : public System,
         public ISystemConfigure,
         public ISystemPostUpdate
 {
-  // Implement Configure callback, provided by ISystemConfigure
-  // and called once at startup.
   virtual void Configure(const Entity &_entity,
                          const std::shared_ptr<const sdf::Element> &_sdf,
                          EntityComponentManager &_ecm,
@@ -48,6 +35,7 @@ class ForceTorque
     this->joint = model.JointByName(_ecm, "joint_12");
     this->sensor = Joint(this->joint).SensorByName(_ecm, "force_torque");
     std::string sensorScopedName = scopedName(this->sensor, _ecm);
+    this->forceTorqueData.sensorScopedName = sensorScopedName;
 
     yarp::os::Network::init();
     if (!yarp::os::Network::checkNetwork())
@@ -55,6 +43,7 @@ class ForceTorque
         yError() << "Yarp network does not seem to be available, is the yarpserver running?";
         return;
     }
+
     std::string netWrapper = "analogServer";
     ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::GazeboYarpForceTorqueDriver>
                                       ("gazebo_forcetorque", netWrapper.c_str(), "GazeboYarpForceTorqueDriver"));
@@ -73,16 +62,17 @@ class ForceTorque
     ::yarp::os::Property wrapper_properties = driver_properties;
 
     //Insert the pointer in the singleton handler for retriving it in the yarp driver
-    Handler::getHandler()->setSensor(_ecm, Sensor(this->sensor));
+    Handler::getHandler()->setSensor(&(this->forceTorqueData));
 
     driver_properties.put(YarpForceTorqueScopedName.c_str(), sensorScopedName.c_str());
 
     bool disable_wrapper = driver_properties.check("disableImplicitNetworkWrapper");
-    if (!disable_wrapper) {
+    if (!disable_wrapper) 
+    {
         //Open the wrapper
-        //Force the wrapper to be of type "analogServer" (it make sense? probably no)
         wrapper_properties.put("device","analogServer");
-        if( !m_forcetorqueWrapper.open(wrapper_properties) ) {
+        if( !m_forcetorqueWrapper.open(wrapper_properties) ) 
+        {
             yError()<<"GazeboYarpForceTorque Plugin failed: error in opening yarp driver wrapper";
             return;
         }
@@ -94,29 +84,32 @@ class ForceTorque
     }
     driver_properties.put("device","gazebo_forcetorque");
     driver_properties.put("sensor_name", sensorName);
-    if( !m_forceTorqueDriver.open(driver_properties) ) {
+    if( !m_forceTorqueDriver.open(driver_properties) ) 
+    {
         yError()<<"GazeboYarpForceTorque Plugin failed: error in opening yarp driver";
         return;
     }
 
-    if (!disable_wrapper) {
+    if (!disable_wrapper) 
+    {
       //Attach the driver to the wrapper
       ::yarp::dev::PolyDriverList driver_list;
 
-      if( !m_forcetorqueWrapper.view(m_iWrap) ) {
+      if( !m_forcetorqueWrapper.view(m_iWrap) )
+      {
           yError() << "GazeboYarpForceTorque : error in loading wrapper";
           return;
       }
 
       driver_list.push(&m_forceTorqueDriver,"dummy");
 
-      if( !m_iWrap->attachAll(driver_list) ) {
+      if( !m_iWrap->attachAll(driver_list) ) 
+      {
           yError() << "GazeboYarpForceTorque : error in connecting wrapper and device ";
       }
 
       if(!driver_properties.check("yarpDeviceName"))
       {
-          // instead of using "::" we use "/"
           m_deviceScopedName = sensorScopedName + "/" + driver_list[0]->key;
       }
       else
@@ -124,7 +117,8 @@ class ForceTorque
           m_deviceScopedName = sensorScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
       }
     } 
-    else {
+    else 
+    {
         m_deviceScopedName = sensorScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
     }
     
@@ -137,14 +131,10 @@ class ForceTorque
     yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
   }
  
-  // Implement PostUpdate callback, provided by ISystemPostUpdate
-  // and called at every iteration, after physics is done
+
   virtual void PostUpdate(const UpdateInfo &_info,
                           const EntityComponentManager &_ecm) override
   {
-  
-    // From ForceTorquePrivate::Update
-    /*
     auto jointWrench = _ecm.Component<components::JointTransmittedWrench>(this->joint);
     if (nullptr == jointWrench)
     {
@@ -153,44 +143,29 @@ class ForceTorque
     auto X_JS = _ecm.Component<components::Pose>(this->sensor)->Data();
     math::Vector3d force = X_JS.Rot().Inverse() * msgs::Convert(jointWrench->Data().force());
     math::Vector3d torque = X_JS.Rot().Inverse() * msgs::Convert(jointWrench->Data().torque()) - X_JS.Pos().Cross(force);
-
-    Bottle& output = port.prepare();
-    std::string msg = std::to_string(_info.simTime.count()/1e9) + 
-      "   Force: " + 
-      std::to_string(force.X()) + " " +
-      std::to_string(force.Y()) + " " +
-      std::to_string(force.Z()) + 
-      "   Torque: "+
-      std::to_string(torque.X()) + " " +
-      std::to_string(torque.Y()) + " " +
-      std::to_string(torque.Z());
-    output.clear();
-    output.addString(msg);
-    port.write();
-
-    
-    // Print force and torque values
-    /*
-    std::cout << _info.simTime.count()/1e9 << std::endl;
-    std::cout << "Force:  " << force << std::endl;
-    std::cout << "Torque: " << torque << std::endl << std::endl;
-    */
-
+    std::lock_guard<std::mutex> lock(forceTorqueData.m_mutex);
+    forceTorqueData.m_data[0] = force.X();
+    forceTorqueData.m_data[1] = force.Y();
+    forceTorqueData.m_data[2] = force.Z();
+    forceTorqueData.m_data[3] = torque.X();
+    forceTorqueData.m_data[4] = torque.Y();
+    forceTorqueData.m_data[5] = torque.Z();
+    forceTorqueData.simTime = _info.simTime.count()/1e9;
   }
  
   private: 
     Entity sensor;
     Entity joint;
-    //Entity entity;
-    BufferedPort<Bottle> port;
-    Network yarp;
-    
     yarp::dev::PolyDriver m_forcetorqueWrapper;
     yarp::dev::PolyDriver m_forceTorqueDriver;
     yarp::dev::IMultipleWrapper* m_iWrap;
     std::string m_deviceScopedName;
     bool m_deviceRegistered;
+    ForceTorqueData forceTorqueData;
+
 };
+
+
  
 // Register plugin
 GZ_ADD_PLUGIN(ForceTorque,
