@@ -14,6 +14,7 @@
 #include <yarp/dev/PolyDriverList.h>
 #include <yarp/dev/IMultipleWrapper.h>
 #include "ForceTorqueDriver.cpp"
+#include <sdf/ForceTorque.hh>
 
 
 using namespace gz;
@@ -34,6 +35,13 @@ class ForceTorque
     auto model = Model(_entity);
     this->joint = model.JointByName(_ecm, "joint_12");
     this->sensor = Joint(this->joint).SensorByName(_ecm, "force_torque");
+    std::string childLinkName = Joint(this->joint).ChildLinkName(_ecm).value();
+    std::string parentLinkName = Joint(this->joint).ParentLinkName(_ecm).value();
+    this->childLink = model.LinkByName(_ecm, childLinkName);
+    this->parentLink = model.LinkByName(_ecm, parentLinkName);
+    this->measureFrame = _ecm.Component<components::ForceTorque>(this->sensor)->Data().ForceTorqueSensor()->Frame();
+    this->measureDirection = _ecm.Component<components::ForceTorque>(this->sensor)->Data().ForceTorqueSensor()->MeasureDirection();
+
     std::string sensorScopedName = scopedName(this->sensor, _ecm);
     this->forceTorqueData.sensorScopedName = sensorScopedName;
 
@@ -140,22 +148,80 @@ class ForceTorque
     {
       return;
     }
+    // Notation:
+    // X_WJ: Pose of joint in world
+    // X_WP: Pose of parent link in world
+    // X_WC: Pose of child link in world
+    // X_WS: Pose of sensor in world
+    // X_SP: Pose of parent link in sensors frame
+    // X_SC: Pose of child link in sensors frame
+    const auto X_WP = worldPose(this->parentLink, _ecm);
+    const auto X_WC = worldPose(this->childLink, _ecm);
+    const auto X_CJ = _ecm.Component<components::Pose>(this->joint)->Data();
+    auto X_WJ = X_WC * X_CJ;
     auto X_JS = _ecm.Component<components::Pose>(this->sensor)->Data();
-    math::Vector3d force = X_JS.Rot().Inverse() * msgs::Convert(jointWrench->Data().force());
-    math::Vector3d torque = X_JS.Rot().Inverse() * msgs::Convert(jointWrench->Data().torque()) - X_JS.Pos().Cross(force);
+    auto X_WS = X_WJ * X_JS;
+    auto X_SP = X_WS.Inverse() * X_WP;
+    auto X_SC = X_WS.Inverse() * X_WC;
+
+    math::Vector3d force =
+        X_JS.Rot().Inverse() * msgs::Convert(jointWrench->Data().force());
+
+    math::Vector3d torque =
+        X_JS.Rot().Inverse() *
+            msgs::Convert(jointWrench->Data().torque()) -
+        X_JS.Pos().Cross(force);
+      gz::math::Vector3d measuredForce;
+      gz::math::Vector3d measuredTorque;
+
+    if (measureFrame == sdf::ForceTorqueFrame::PARENT)
+    {
+      measuredForce =
+          X_SP.Rot().Inverse() * force;
+      measuredTorque =
+          X_SP.Rot().Inverse() * torque;
+    }
+    else if (measureFrame == sdf::ForceTorqueFrame::CHILD)
+    {
+      measuredForce =
+          X_SC.Rot().Inverse() * force;
+      measuredTorque =
+          X_SC.Rot() * torque;
+    }
+    else if (measureFrame == sdf::ForceTorqueFrame::SENSOR)
+    {
+      measuredForce = force;
+      measuredTorque = torque;
+    }
+    else
+    {
+      gzerr << "measureFrame must be PARENT_LINK, CHILD_LINK or SENSOR\n";
+    }
+  
+
+    if (measureDirection ==
+        sdf::ForceTorqueMeasureDirection::CHILD_TO_PARENT)
+    {
+      measuredForce *= -1;
+      measuredTorque *= -1;
+    }    
     std::lock_guard<std::mutex> lock(forceTorqueData.m_mutex);
-    forceTorqueData.m_data[0] = force.X();
-    forceTorqueData.m_data[1] = force.Y();
-    forceTorqueData.m_data[2] = force.Z();
-    forceTorqueData.m_data[3] = torque.X();
-    forceTorqueData.m_data[4] = torque.Y();
-    forceTorqueData.m_data[5] = torque.Z();
+    forceTorqueData.m_data[0] = (measuredForce.X() != 0) ? measuredForce.X() : 0;
+    forceTorqueData.m_data[1] = (measuredForce.Y() != 0) ? measuredForce.Y() : 0;
+    forceTorqueData.m_data[2] = (measuredForce.Z() != 0) ? measuredForce.Z() : 0;
+    forceTorqueData.m_data[3] = (measuredTorque.X() != 0) ? measuredTorque.X() : 0;
+    forceTorqueData.m_data[4] = (measuredTorque.Y() != 0) ? measuredTorque.Y() : 0;
+    forceTorqueData.m_data[5] = (measuredTorque.Z() != 0) ? measuredTorque.Z() : 0;
     forceTorqueData.simTime = _info.simTime.count()/1e9;
   }
  
   private: 
     Entity sensor;
     Entity joint;
+    Entity parentLink;
+    Entity childLink;
+    sdf::ForceTorqueMeasureDirection measureDirection;
+    sdf::ForceTorqueFrame measureFrame;
     yarp::dev::PolyDriver m_forcetorqueWrapper;
     yarp::dev::PolyDriver m_forceTorqueDriver;
     yarp::dev::IMultipleWrapper* m_iWrap;
