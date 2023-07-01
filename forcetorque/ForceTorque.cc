@@ -4,6 +4,7 @@
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Link.hh>
 #include <gz/sim/Joint.hh>
+#include <gz/sim/Sensor.hh>
 #include "gz/sim/components/Name.hh"
 #include "gz/sim/components/ParentEntity.hh"
 #include "gz/sim/components/ParentLinkName.hh"
@@ -40,11 +41,11 @@ class ForceTorque
                          EntityComponentManager &_ecm,
                          EventManager &/*_eventMgr*/) override
   {
-    auto model = Model(_entity);
-    this->joint = model.JointByName(_ecm, "joint_12");
-    this->sensor = Joint(this->joint).SensorByName(_ecm, "force_torque");
+    this->sensor = Entity(_entity);
+    this->joint = Sensor(this->sensor).Parent(_ecm).value();
     std::string childLinkName = Joint(this->joint).ChildLinkName(_ecm).value();
     std::string parentLinkName = Joint(this->joint).ParentLinkName(_ecm).value();
+    auto model = Model(Joint(this->joint).ParentModel(_ecm).value());
     this->childLink = model.LinkByName(_ecm, childLinkName);
     this->parentLink = model.LinkByName(_ecm, parentLinkName);
     this->measureFrame = _ecm.Component<components::ForceTorque>(this->sensor)->Data().ForceTorqueSensor()->Frame();

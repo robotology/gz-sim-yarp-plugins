@@ -65,8 +65,6 @@
     </model>
 
     <model name="force_torque_example">
-      <plugin filename="MyPlugin" name="MyPlugin"/>
-      <plugin filename="ForceTorque" name="ForceTorque"/>
       <link name="link_1">
         <inertial>
           <pose>0 0 0.05 0 0 0</pose>
@@ -145,6 +143,7 @@
           <always_on>true</always_on>
           <visualize>true</visualize>
           <update_rate>30</update_rate>
+          <plugin filename="ForceTorque" name="ForceTorque"/>
         </sensor>
       </joint>
     </model>

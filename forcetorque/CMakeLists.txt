@@ -12,12 +12,6 @@ set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 gz_find_package(gz-sim7 REQUIRED)
 set(GZ_SIM_VER ${gz-sim7_VERSION_MAJOR})
 
-add_library(MyPlugin SHARED MyPlugin.cc)
-set_property(TARGET MyPlugin PROPERTY CXX_STANDARD 17)
-target_link_libraries(MyPlugin
-  PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
-  PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
-
 add_library(ForceTorque SHARED ForceTorque.cc)
 set_property(TARGET ForceTorque PROPERTY CXX_STANDARD 17)
 target_link_libraries(ForceTorque
