@@ -21,6 +21,8 @@ class Handler
 
         ForceTorqueData* getSensor(const std::string& sensorScopedName) const;
 
+        void removeSensor(const std::string& sensorName);
+
         bool getDevicesAsPolyDriverList(const std::string& modelScopedName, yarp::dev::PolyDriverList& list, 
                                         std::vector<std::string>& deviceScopedNames/*, const std::string& worldName*/);
 
@@ -28,6 +30,8 @@ class Handler
         
         yarp::dev::PolyDriver* getDevice(const std::string& deviceDatabaseKey) const;
 
+        void removeDevice(const std::string& deviceDatabaseKey);
+        
     private:
         Handler();
         static Handler* s_handle;

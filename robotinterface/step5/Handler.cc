@@ -110,6 +110,19 @@ ForceTorqueData* Handler::getSensor(const std::string& sensorScopedName) const
     return tmp;
 }
 
+void Handler::removeSensor(const std::string &sensorName)
+{
+    SensorsMap::iterator sensor = m_sensorsMap.find(sensorName);
+    if (sensor != m_sensorsMap.end()) 
+    {
+        m_sensorsMap.erase(sensor);
+    } 
+    else 
+    {
+        yError() << "Could not remove sensor " << sensorName << ". Sensor was not found";
+    }
+}
+
 bool Handler::setDevice(std::string deviceDatabaseKey, yarp::dev::PolyDriver* device2add)
 {
     bool ret = false;
@@ -152,6 +165,20 @@ yarp::dev::PolyDriver* Handler::getDevice(const std::string& deviceDatabaseKey) 
     return tmp;
 }
 
+void Handler::removeDevice(const std::string &deviceDatabaseKey)
+{
+    DevicesMap::iterator device = m_devicesMap.find(deviceDatabaseKey);
+    if (device != m_devicesMap.end()) 
+    {   
+        device->second->close();
+        m_devicesMap.erase(device);
+    } 
+    else 
+    {
+        yError() << "Could not remove device " << deviceDatabaseKey << ". Device was not found";
+    }
+    return;
+}
 
 Handler::Handler() : m_sensorsMap(), m_devicesMap()
 {

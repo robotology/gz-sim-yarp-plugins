@@ -18,72 +18,103 @@ class GazeboYarpRobotInterface
       : public System,
         public ISystemConfigure
 {
-    virtual void Configure(const Entity &_entity,
-                            const std::shared_ptr<const sdf::Element> &_sdf,
-                            EntityComponentManager &_ecm,
-                            EventManager &/*_eventMgr*/) override
-    {
-        yarp::os::Network::init();
-        if (!yarp::os::Network::checkNetwork())
+    public: 
+        GazeboYarpRobotInterface(): m_robotInterfaceCorrectlyStarted(false)
         {
-            yError() << "GazeboYarpRobotInterface : yarp network does not seem to be available, is the yarpserver running?";
-            return;
         }
-        auto model = Model(_entity);
-
-        bool loaded_configuration = false;
-        if (_sdf->HasElement("yarpRobotInterfaceConfigurationFile"))
+        
+        virtual ~GazeboYarpRobotInterface()
         {
-            robotinterface_file_name = _sdf->Get<std::string>("yarpRobotInterfaceConfigurationFile");
-            if (robotinterface_file_name == "") 
+            CloseRobotInterface();
+            yarp::os::Network::fini();
+        }
+
+        void CloseRobotInterface()
+        {
+            if(m_robotInterfaceCorrectlyStarted) 
             {
-                yError() << "GazeboYarpRobotInterface error: failure in finding robotinterface configuration for model" << model.Name(_ecm) << "\n"
-                        << "GazeboYarpRobotInterface error: yarpRobotInterfaceConfigurationFile : " << robotinterface_file_name;
-                loaded_configuration = false;
-            } 
-            else 
-            {
-                m_xmlRobotInterfaceResult = m_xmlRobotInterfaceReader.getRobotFromFile(robotinterface_file_name);
-                if (m_xmlRobotInterfaceResult.parsingIsSuccessful) 
+                // Close robotinterface
+                bool ok = m_xmlRobotInterfaceResult.robot.enterPhase(yarp::robotinterface::ActionPhaseInterrupt1);
+                if (!ok) 
                 {
-                    loaded_configuration = true;
+                    yError() << "GazeboYarpRobotInterface: impossible to run phase ActionPhaseInterrupt1 robotinterface";
+                }
+                ok = m_xmlRobotInterfaceResult.robot.enterPhase(yarp::robotinterface::ActionPhaseShutdown);
+                if (!ok) 
+                {
+                    yError() << "GazeboYarpRobotInterface: impossible  to run phase ActionPhaseShutdown in robotinterface";
+                }
+                m_robotInterfaceCorrectlyStarted = false;
+            }
+        }
+
+        virtual void Configure(const Entity &_entity,
+                                const std::shared_ptr<const sdf::Element> &_sdf,
+                                EntityComponentManager &_ecm,
+                                EventManager &/*_eventMgr*/) override
+        {
+            yarp::os::Network::init();
+            if (!yarp::os::Network::checkNetwork())
+            {
+                yError() << "GazeboYarpRobotInterface : yarp network does not seem to be available, is the yarpserver running?";
+                return;
+            }
+            auto model = Model(_entity);
+
+            bool loaded_configuration = false;
+            if (_sdf->HasElement("yarpRobotInterfaceConfigurationFile"))
+            {
+                robotinterface_file_name = _sdf->Get<std::string>("yarpRobotInterfaceConfigurationFile");
+                if (robotinterface_file_name == "") 
+                {
+                    yError() << "GazeboYarpRobotInterface error: failure in finding robotinterface configuration for model" << model.Name(_ecm) << "\n"
+                            << "GazeboYarpRobotInterface error: yarpRobotInterfaceConfigurationFile : " << robotinterface_file_name;
+                    loaded_configuration = false;
                 } 
                 else 
                 {
-                    yError() << "GazeboYarpRobotInterface error: failure in parsing robotinterface configuration for model" << model.Name(_ecm) << "\n"
-                            << "GazeboYarpRobotInterface error: yarpRobotInterfaceConfigurationFile : " << robotinterface_file_name;
-                    loaded_configuration = false;
+                    m_xmlRobotInterfaceResult = m_xmlRobotInterfaceReader.getRobotFromFile(robotinterface_file_name);
+                    if (m_xmlRobotInterfaceResult.parsingIsSuccessful) 
+                    {
+                        loaded_configuration = true;
+                    } 
+                    else 
+                    {
+                        yError() << "GazeboYarpRobotInterface error: failure in parsing robotinterface configuration for model" << model.Name(_ecm) << "\n"
+                                << "GazeboYarpRobotInterface error: yarpRobotInterfaceConfigurationFile : " << robotinterface_file_name;
+                        loaded_configuration = false;
+                    }
                 }
             }
-        }
-        if (!loaded_configuration) 
-        {
-            yError() << "GazeboYarpRobotInterface : xml file specified in yarpRobotInterfaceConfigurationFile not found or not loaded.";
-            return;
-        }
+            if (!loaded_configuration) 
+            {
+                yError() << "GazeboYarpRobotInterface : xml file specified in yarpRobotInterfaceConfigurationFile not found or not loaded.";
+                return;
+            }
 
-        yarp::dev::PolyDriverList externalDriverList;
+            yarp::dev::PolyDriverList externalDriverList;
 
-        Handler::getHandler()->getDevicesAsPolyDriverList(scopedName(model.Entity(), _ecm), externalDriverList, m_deviceScopedNames);
+            Handler::getHandler()->getDevicesAsPolyDriverList(scopedName(model.Entity(), _ecm), externalDriverList, m_deviceScopedNames);
 
-        bool ok = m_xmlRobotInterfaceResult.robot.setExternalDevices(externalDriverList);
-        if (!ok) 
-        {
-            yError() << "GazeboYarpRobotInterface : impossible to set external devices";
-            return;
+            bool ok = m_xmlRobotInterfaceResult.robot.setExternalDevices(externalDriverList);
+            if (!ok) 
+            {
+                yError() << "GazeboYarpRobotInterface : impossible to set external devices";
+                return;
+            }
+            
+            // Start robotinterface
+            ok = m_xmlRobotInterfaceResult.robot.enterPhase(yarp::robotinterface::ActionPhaseStartup);
+            if (!ok) 
+            {
+                yError() << "GazeboYarpRobotInterface : impossible to start robotinterface";
+                m_xmlRobotInterfaceResult.robot.enterPhase(yarp::robotinterface::ActionPhaseInterrupt1);
+                m_xmlRobotInterfaceResult.robot.enterPhase(yarp::robotinterface::ActionPhaseShutdown);
+                return;
+            }
+            m_robotInterfaceCorrectlyStarted = true;
+        
         }
-          
-        // Start robotinterface
-        ok = m_xmlRobotInterfaceResult.robot.enterPhase(yarp::robotinterface::ActionPhaseStartup);
-        if (!ok) 
-        {
-            yError() << "GazeboYarpRobotInterface : impossible to start robotinterface";
-            m_xmlRobotInterfaceResult.robot.enterPhase(yarp::robotinterface::ActionPhaseInterrupt1);
-            m_xmlRobotInterfaceResult.robot.enterPhase(yarp::robotinterface::ActionPhaseShutdown);
-            return;
-        }
-    
-    }
 
     
     private:
@@ -91,6 +122,8 @@ class GazeboYarpRobotInterface
         yarp::robotinterface::XMLReaderResult m_xmlRobotInterfaceResult;
         std::string robotinterface_file_name;
         std::vector<std::string> m_deviceScopedNames;
+        bool m_robotInterfaceCorrectlyStarted;
+
 };
 
 // Register plugin
