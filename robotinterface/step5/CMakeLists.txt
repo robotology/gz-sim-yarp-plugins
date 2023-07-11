@@ -13,27 +13,15 @@ gz_find_package(gz-sim7 REQUIRED)
 set(GZ_SIM_VER ${gz-sim7_VERSION_MAJOR})
 
 
-add_library(ForceTorque SHARED ForceTorque.cc)
-add_library(ForceTorqueDriver SHARED ForceTorqueDriver.cpp)
+add_library(GazeboYarpForceTorque SHARED ForceTorque.cc ForceTorqueDriver.cpp)
 add_library(Handler SHARED Handler.cc Handler.hh)
 add_library(GazeboYarpRobotInterface SHARED GazeboYarpRobotInterface.cc)
 
-set_property(TARGET ForceTorque PROPERTY CXX_STANDARD 17)
-set_property(TARGET ForceTorqueDriver PROPERTY CXX_STANDARD 17)
+set_property(TARGET GazeboYarpForceTorque PROPERTY CXX_STANDARD 17)
 set_property(TARGET Handler PROPERTY CXX_STANDARD 17)
 set_property(TARGET GazeboYarpRobotInterface PROPERTY CXX_STANDARD 17)
 
-target_link_libraries(ForceTorque
-  PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
-  PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
-  PRIVATE
-    ${YARP_LIBRARIES}
-    YARP::YARP_os
-    YARP::YARP_init
-    ForceTorqueDriver
-    Handler)
-
-target_link_libraries(ForceTorqueDriver
+target_link_libraries(GazeboYarpForceTorque
   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
   PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
   PRIVATE
@@ -49,8 +37,6 @@ target_link_libraries(Handler
     ${YARP_LIBRARIES}
     YARP::YARP_os
     YARP::YARP_init)
-
-
 
 target_link_libraries(GazeboYarpRobotInterface
   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}

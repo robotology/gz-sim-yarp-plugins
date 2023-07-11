@@ -65,7 +65,7 @@
     </model>
 
     <model name="force_torque_example">
-      <plugin filename="ForceTorque" name="ForceTorque">
+      <plugin filename="GazeboYarpForceTorque" name="GazeboYarpForceTorque">
         <yarpConfigurationString>(yarpDeviceName forcetorque_plugin_device) (disableImplicitNetworkWrapper)</yarpConfigurationString>
       </plugin>
       <link name="link_1">

@@ -22,17 +22,17 @@ using namespace sim;
 using namespace systems;
 
 
-class ForceTorque
+class GazeboYarpForceTorque
       : public System,
         public ISystemConfigure,
         public ISystemPostUpdate
 {
   public:
-    ForceTorque() : m_iWrap(0), m_deviceRegistered(false)
+    GazeboYarpForceTorque() : m_iWrap(0), m_deviceRegistered(false)
     {
     }
     
-    virtual ~ForceTorque()
+    virtual ~GazeboYarpForceTorque()
     {
       if (m_deviceRegistered) 
       {
@@ -254,11 +254,11 @@ class ForceTorque
 
  
 // Register plugin
-GZ_ADD_PLUGIN(ForceTorque,
+GZ_ADD_PLUGIN(GazeboYarpForceTorque,
                     gz::sim::System,
-                    ForceTorque::ISystemConfigure,
-                    ForceTorque::ISystemPostUpdate)
+                    GazeboYarpForceTorque::ISystemConfigure,
+                    GazeboYarpForceTorque::ISystemPostUpdate)
  
 // Add plugin alias so that we can refer to the plugin without the version
 // namespace
-GZ_ADD_PLUGIN_ALIAS(ForceTorque, "gz::sim::systems::ForceTorque")
+GZ_ADD_PLUGIN_ALIAS(GazeboYarpForceTorque, "gz::sim::systems::GazeboYarpForceTorque")
