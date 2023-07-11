@@ -4,7 +4,7 @@
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <mutex>
-#include "Handler.hh"
+#include "singleton/Handler.hh"
 
 namespace yarp {
     namespace dev {

@@ -1,4 +1,39 @@
-# Run forcetorque example with Gazebo Garden
+# Run forcetorque in Gazebo Garden
+
+## Run model in Gazebo Garden with YARP integration
+At first, compile:
+~~~
+mkdir build
+cd build
+cmake ..
+make
+~~~
+
+- 1st terminal:
+  ~~~
+  yarp server
+  ~~~
+- 2nd terminal:
+  ~~~
+  export GZ_SIM_SYSTEM_PLUGIN_PATH=`pwd`/build
+  export LIBGL_ALWAYS_SOFTWARE=1 
+  gz sim model.sdf
+  ~~~
+- 3rd terminal:
+  ~~~
+  yarp name list
+  yarp read /read /forcetorque/measures:o
+  ~~~
+
+Finally start the simulation in Gazebo. The output is:
+~~~
+() () () () () (((0.0 0.0 0.0 0.0 0.0 0.0) 0.0)) () () () ()
+() () () () () (((0.0 0.0 -98.0 0.0 0.0 0.0) 0.030999999999999999778)) () () () ()
+() () () () () (((0.0 0.0 -98.0 0.0 0.0 0.0) 0.0749999999999999972244)) () () () ()
+() () () () () (((0.0 0.0 -98.0 0.0 0.0 0.0) 0.140999999999999986455)) () () () ()
+...
+~~~
+
 ## Run model in Gazebo Garden without YARP integration
 Run the model:
 ```
@@ -36,7 +71,7 @@ torque {
 ...
 ```
 We have 3 values for force and 3 values for torque (if the value is 0, it is not present).  
-In this case, it is possible to see that the force measure make sense as the weight of the link is 10 Kg, and the acceleration of gravity is 9.8, so the measure norm on the Z axis is correctly approximately 9.8*10 = 98.0.
+In this case, it is possible to see that the force measure make sense as the weight of the link is 10 Kg, and the acceleration of gravity is 9.8, so the measure norm on the Z axis is correctly -9.8*10 = -98.
 
 If you try to interact with the model, for example in Gazebo GUI by dropping a cylinder on top of it, you can see how the values of the FT sensor change:
 ```
