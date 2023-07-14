@@ -50,20 +50,7 @@ class GazeboYarpForceTorque
                           const std::shared_ptr<const sdf::Element> &_sdf,
                           EntityComponentManager &_ecm,
                           EventManager &/*_eventMgr*/) override
-    {    
-      auto model = Model(_entity);
-      this->joint = model.JointByName(_ecm, "joint_12");
-      this->sensor = Joint(this->joint).SensorByName(_ecm, "force_torque");
-      std::string childLinkName = Joint(this->joint).ChildLinkName(_ecm).value();
-      std::string parentLinkName = Joint(this->joint).ParentLinkName(_ecm).value();
-      this->childLink = model.LinkByName(_ecm, childLinkName);
-      this->parentLink = model.LinkByName(_ecm, parentLinkName);
-      this->measureFrame = _ecm.Component<components::ForceTorque>(this->sensor)->Data().ForceTorqueSensor()->Frame();
-      this->measureDirection = _ecm.Component<components::ForceTorque>(this->sensor)->Data().ForceTorqueSensor()->MeasureDirection();
-
-      sensorScopedName = scopedName(this->sensor, _ecm);
-      this->forceTorqueData.sensorScopedName = sensorScopedName;
-
+    { 
       yarp::os::Network::init();
       if (!yarp::os::Network::checkNetwork())
       {
@@ -76,21 +63,35 @@ class GazeboYarpForceTorque
                                         ("gazebo_forcetorque", netWrapper.c_str(), "GazeboYarpForceTorqueDriver"));
                                         
       ::yarp::os::Property driver_properties;
-      auto sdf = _ecm.Component<components::ForceTorque>(this->sensor)->Data().Element().get();
-      std::string sensorName = Sensor(this->sensor).Name(_ecm).value();
+
       bool wipe = false;
       if (_sdf->HasElement("yarpConfigurationString"))
       {
           std::string configuration_string = _sdf->Get<std::string>("yarpConfigurationString");
           driver_properties.fromString(configuration_string, wipe);
-          yInfo() << "GazeboYarpPlugins: configuration of sensor " << sensorName << " loaded from yarpConfigurationString : " << configuration_string << "\n";
+          yInfo() << "GazeboYarpPlugins: configuration of sensor " << driver_properties.find("sensor").asString() 
+                  << " loaded from yarpConfigurationString : " << configuration_string << "\n";
       }
+      
+      std::string sensorName = driver_properties.find("sensor").asString();
+      std::string jointName = driver_properties.find("joint").asString();
+      auto model = Model(_entity);
+      this->joint = model.JointByName(_ecm, jointName);
+      this->sensor = Joint(this->joint).SensorByName(_ecm, sensorName);
+      std::string childLinkName = Joint(this->joint).ChildLinkName(_ecm).value();
+      std::string parentLinkName = Joint(this->joint).ParentLinkName(_ecm).value();
+      this->childLink = model.LinkByName(_ecm, childLinkName);
+      this->parentLink = model.LinkByName(_ecm, parentLinkName);
+      this->measureFrame = _ecm.Component<components::ForceTorque>(this->sensor)->Data().ForceTorqueSensor()->Frame();
+      this->measureDirection = _ecm.Component<components::ForceTorque>(this->sensor)->Data().ForceTorqueSensor()->MeasureDirection();
+
+      sensorScopedName = scopedName(this->sensor, _ecm);
+      this->forceTorqueData.sensorScopedName = sensorScopedName;
       
       ::yarp::os::Property wrapper_properties = driver_properties;
 
       //Insert the pointer in the singleton handler for retriving it in the yarp driver
       Handler::getHandler()->setSensor(&(this->forceTorqueData));
-
       driver_properties.put(YarpForceTorqueScopedName.c_str(), sensorScopedName.c_str());
 
       bool disable_wrapper = driver_properties.check("disableImplicitNetworkWrapper");
