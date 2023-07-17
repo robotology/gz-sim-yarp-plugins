@@ -171,12 +171,9 @@ class GazeboYarpForceTorque
         gz::msgs::Wrench ftMsg;
         {
           std::lock_guard<std::mutex> lock(this->ftMsgMutex);
-          if(!this->ftMsgValid)
-          {
-              return;
-          }
           ftMsg = this->ftMsg;
         }
+
         std::lock_guard<std::mutex> lock(forceTorqueData.m_mutex);
         forceTorqueData.m_data[0] = (ftMsg.force().x() != 0) ? ftMsg.force().x() : 0;
         forceTorqueData.m_data[1] = (ftMsg.force().y() != 0) ? ftMsg.force().y() : 0;
@@ -191,7 +188,6 @@ class GazeboYarpForceTorque
     {
         std::lock_guard<std::mutex> lock(this->ftMsgMutex);
         ftMsg = _msg;
-        ftMsgValid = true;
     }
  
   private: 
@@ -206,7 +202,6 @@ class GazeboYarpForceTorque
     bool ftInitialized;
     gz::transport::Node node;
     gz::msgs::Wrench ftMsg;
-    bool ftMsgValid;
     std::mutex ftMsgMutex;
 
 };
