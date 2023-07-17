@@ -4,9 +4,6 @@
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Sensor.hh>
-#include "gz/sim/components/ForceTorque.hh"
-#include "gz/sim/components/JointTransmittedWrench.hh"
-#include "gz/sim/components/Pose.hh"
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
 #include <iostream>
@@ -15,6 +12,8 @@
 #include <yarp/dev/IMultipleWrapper.h>
 #include "ForceTorqueDriver.cpp"
 #include <sdf/ForceTorque.hh>
+#include <gz/transport/Node.hh>
+#include <gz/sim/components/Sensor.hh>
 
 
 using namespace gz;
@@ -25,6 +24,7 @@ using namespace systems;
 class GazeboYarpForceTorque
       : public System,
         public ISystemConfigure,
+        public ISystemPreUpdate,
         public ISystemPostUpdate
 {
   public:
@@ -76,14 +76,8 @@ class GazeboYarpForceTorque
       std::string sensorName = driver_properties.find("sensor").asString();
       std::string jointName = driver_properties.find("joint").asString();
       auto model = Model(_entity);
-      this->joint = model.JointByName(_ecm, jointName);
-      this->sensor = Joint(this->joint).SensorByName(_ecm, sensorName);
-      std::string childLinkName = Joint(this->joint).ChildLinkName(_ecm).value();
-      std::string parentLinkName = Joint(this->joint).ParentLinkName(_ecm).value();
-      this->childLink = model.LinkByName(_ecm, childLinkName);
-      this->parentLink = model.LinkByName(_ecm, parentLinkName);
-      this->measureFrame = _ecm.Component<components::ForceTorque>(this->sensor)->Data().ForceTorqueSensor()->Frame();
-      this->measureDirection = _ecm.Component<components::ForceTorque>(this->sensor)->Data().ForceTorqueSensor()->MeasureDirection();
+      auto joint = model.JointByName(_ecm, jointName);
+      this->sensor = Joint(joint).SensorByName(_ecm, sensorName);
 
       sensorScopedName = scopedName(this->sensor, _ecm);
       this->forceTorqueData.sensorScopedName = sensorScopedName;
@@ -158,90 +152,50 @@ class GazeboYarpForceTorque
       m_deviceRegistered = true;
       yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
     }
+
+    virtual void PreUpdate(const UpdateInfo &_info,
+                         EntityComponentManager &_ecm) override
+    {
+        if(!this->ftInitialized && _ecm.ComponentData<components::SensorTopic>(sensor).has_value())
+        {
+            this->ftInitialized = true;
+            auto imuTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value();
+            this->node.Subscribe(imuTopicName, &GazeboYarpForceTorque::ftCb, this);
+        }
+    }
   
 
     virtual void PostUpdate(const UpdateInfo &_info,
                             const EntityComponentManager &_ecm) override
     {
-      auto jointWrench = _ecm.Component<components::JointTransmittedWrench>(this->joint);
-      if (nullptr == jointWrench)
-      {
-        return;
-      }
-      // Notation:
-      // X_WJ: Pose of joint in world
-      // X_WP: Pose of parent link in world
-      // X_WC: Pose of child link in world
-      // X_WS: Pose of sensor in world
-      // X_SP: Pose of parent link in sensors frame
-      // X_SC: Pose of child link in sensors frame
-      const auto X_WP = worldPose(this->parentLink, _ecm);
-      const auto X_WC = worldPose(this->childLink, _ecm);
-      const auto X_CJ = _ecm.Component<components::Pose>(this->joint)->Data();
-      auto X_WJ = X_WC * X_CJ;
-      auto X_JS = _ecm.Component<components::Pose>(this->sensor)->Data();
-      auto X_WS = X_WJ * X_JS;
-      auto X_SP = X_WS.Inverse() * X_WP;
-      auto X_SC = X_WS.Inverse() * X_WC;
+        gz::msgs::Wrench ftMsg;
+        {
+          std::lock_guard<std::mutex> lock(this->ftMsgMutex);
+          if(!this->ftMsgValid)
+          {
+              return;
+          }
+          ftMsg = this->ftMsg;
+        }
+        std::lock_guard<std::mutex> lock(forceTorqueData.m_mutex);
+        forceTorqueData.m_data[0] = (ftMsg.force().x() != 0) ? ftMsg.force().x() : 0;
+        forceTorqueData.m_data[1] = (ftMsg.force().y() != 0) ? ftMsg.force().y() : 0;
+        forceTorqueData.m_data[2] = (ftMsg.force().z() != 0) ? ftMsg.force().z() : 0;
+        forceTorqueData.m_data[3] = (ftMsg.torque().x() != 0) ? ftMsg.torque().x() : 0;
+        forceTorqueData.m_data[4] = (ftMsg.torque().y() != 0) ? ftMsg.torque().y() : 0;
+        forceTorqueData.m_data[5] = (ftMsg.torque().z() != 0) ? ftMsg.torque().z() : 0;
+        forceTorqueData.simTime = _info.simTime.count()/1e9;
+    }
 
-      math::Vector3d force =
-          X_JS.Rot().Inverse() * msgs::Convert(jointWrench->Data().force());
-
-      math::Vector3d torque =
-          X_JS.Rot().Inverse() *
-              msgs::Convert(jointWrench->Data().torque()) -
-          X_JS.Pos().Cross(force);
-        gz::math::Vector3d measuredForce;
-        gz::math::Vector3d measuredTorque;
-
-      if (measureFrame == sdf::ForceTorqueFrame::PARENT)
-      {
-        measuredForce =
-            X_SP.Rot().Inverse() * force;
-        measuredTorque =
-            X_SP.Rot().Inverse() * torque;
-      }
-      else if (measureFrame == sdf::ForceTorqueFrame::CHILD)
-      {
-        measuredForce =
-            X_SC.Rot().Inverse() * force;
-        measuredTorque =
-            X_SC.Rot() * torque;
-      }
-      else if (measureFrame == sdf::ForceTorqueFrame::SENSOR)
-      {
-        measuredForce = force;
-        measuredTorque = torque;
-      }
-      else
-      {
-        gzerr << "measureFrame must be PARENT_LINK, CHILD_LINK or SENSOR\n";
-      }
-    
-
-      if (measureDirection ==
-          sdf::ForceTorqueMeasureDirection::CHILD_TO_PARENT)
-      {
-        measuredForce *= -1;
-        measuredTorque *= -1;
-      }    
-      std::lock_guard<std::mutex> lock(forceTorqueData.m_mutex);
-      forceTorqueData.m_data[0] = (measuredForce.X() != 0) ? measuredForce.X() : 0;
-      forceTorqueData.m_data[1] = (measuredForce.Y() != 0) ? measuredForce.Y() : 0;
-      forceTorqueData.m_data[2] = (measuredForce.Z() != 0) ? measuredForce.Z() : 0;
-      forceTorqueData.m_data[3] = (measuredTorque.X() != 0) ? measuredTorque.X() : 0;
-      forceTorqueData.m_data[4] = (measuredTorque.Y() != 0) ? measuredTorque.Y() : 0;
-      forceTorqueData.m_data[5] = (measuredTorque.Z() != 0) ? measuredTorque.Z() : 0;
-      forceTorqueData.simTime = _info.simTime.count()/1e9;
+    void ftCb(const gz::msgs::Wrench &_msg)
+    {
+        std::lock_guard<std::mutex> lock(this->ftMsgMutex);
+        ftMsg = _msg;
+        ftMsgValid = true;
     }
  
   private: 
     Entity sensor;
-    Entity joint;
-    Entity parentLink;
-    Entity childLink;
-    sdf::ForceTorqueMeasureDirection measureDirection;
-    sdf::ForceTorqueFrame measureFrame;
     yarp::dev::PolyDriver m_forcetorqueWrapper;
     yarp::dev::PolyDriver m_forceTorqueDriver;
     yarp::dev::IMultipleWrapper* m_iWrap;
@@ -249,6 +203,11 @@ class GazeboYarpForceTorque
     std::string sensorScopedName;
     bool m_deviceRegistered;
     ForceTorqueData forceTorqueData;
+    bool ftInitialized;
+    gz::transport::Node node;
+    gz::msgs::Wrench ftMsg;
+    bool ftMsgValid;
+    std::mutex ftMsgMutex;
 
 };
 
@@ -258,6 +217,7 @@ class GazeboYarpForceTorque
 GZ_ADD_PLUGIN(GazeboYarpForceTorque,
                     gz::sim::System,
                     GazeboYarpForceTorque::ISystemConfigure,
+                    GazeboYarpForceTorque::ISystemPreUpdate,
                     GazeboYarpForceTorque::ISystemPostUpdate)
  
 // Add plugin alias so that we can refer to the plugin without the version
