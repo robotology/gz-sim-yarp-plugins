@@ -17,7 +17,7 @@ add_subdirectory(singleton)
 add_subdirectory(robotinterface)
 
 add_library(GazeboYarpForceTorque SHARED ForceTorque.cc ForceTorqueDriver.cpp)
-set_property(TARGET GazeboYarpForceTorque PROPERTY CXX_STANDARD 17)
+target_compile_features(GazeboYarpForceTorque PRIVATE cxx_std_17)
 
 target_link_libraries(GazeboYarpForceTorque
   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}

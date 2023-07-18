@@ -9,7 +9,6 @@
 #include <iostream>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
-#include <yarp/dev/IMultipleWrapper.h>
 #include "ForceTorqueDriver.cpp"
 #include <sdf/ForceTorque.hh>
 #include <gz/transport/Node.hh>
@@ -28,7 +27,7 @@ class GazeboYarpForceTorque
         public ISystemPostUpdate
 {
   public:
-    GazeboYarpForceTorque() : m_iWrap(0), m_deviceRegistered(false)
+    GazeboYarpForceTorque() : m_deviceRegistered(false)
     {
     }
     
@@ -39,8 +38,7 @@ class GazeboYarpForceTorque
           Handler::getHandler()->removeDevice(m_deviceScopedName);
           m_deviceRegistered = false;
       }
-      if(m_iWrap) { m_iWrap->detachAll(); m_iWrap = 0; }
-      if( m_forcetorqueWrapper.isValid() ) m_forcetorqueWrapper.close();
+      
       if( m_forceTorqueDriver.isValid() ) m_forceTorqueDriver.close();
       Handler::getHandler()->removeSensor(sensorScopedName);
       yarp::os::Network::fini();
@@ -51,106 +49,79 @@ class GazeboYarpForceTorque
                           EntityComponentManager &_ecm,
                           EventManager &/*_eventMgr*/) override
     { 
-      yarp::os::Network::init();
-      if (!yarp::os::Network::checkNetwork())
-      {
-          yError() << "Yarp network does not seem to be available, is the yarpserver running?";
-          return;
-      }
-
-      std::string netWrapper = "analogServer";
-      ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::GazeboYarpForceTorqueDriver>
-                                        ("gazebo_forcetorque", netWrapper.c_str(), "GazeboYarpForceTorqueDriver"));
-                                        
-      ::yarp::os::Property driver_properties;
-
-      bool wipe = false;
-      if (_sdf->HasElement("yarpConfigurationString"))
-      {
-          std::string configuration_string = _sdf->Get<std::string>("yarpConfigurationString");
-          driver_properties.fromString(configuration_string, wipe);
-          yInfo() << "GazeboYarpPlugins: configuration of sensor " << driver_properties.find("sensor").asString() 
-                  << " loaded from yarpConfigurationString : " << configuration_string << "\n";
-      }
-      
-      std::string sensorName = driver_properties.find("sensor").asString();
-      std::string jointName = driver_properties.find("joint").asString();
-      auto model = Model(_entity);
-      auto joint = model.JointByName(_ecm, jointName);
-      this->sensor = Joint(joint).SensorByName(_ecm, sensorName);
-
-      sensorScopedName = scopedName(this->sensor, _ecm);
-      this->forceTorqueData.sensorScopedName = sensorScopedName;
-      
-      ::yarp::os::Property wrapper_properties = driver_properties;
-
-      //Insert the pointer in the singleton handler for retriving it in the yarp driver
-      Handler::getHandler()->setSensor(&(this->forceTorqueData));
-      driver_properties.put(YarpForceTorqueScopedName.c_str(), sensorScopedName.c_str());
-
-      bool disable_wrapper = driver_properties.check("disableImplicitNetworkWrapper");
-      if (!disable_wrapper) 
-      {
-          //Open the wrapper
-          wrapper_properties.put("device","analogServer");
-          if( !m_forcetorqueWrapper.open(wrapper_properties) ) 
-          {
-              yError()<<"GazeboYarpForceTorque Plugin failed: error in opening yarp driver wrapper";
-              return;
-          }
-      }
-      if (disable_wrapper && !driver_properties.check("yarpDeviceName"))
-      {
-          yError() << "GazeboYarpForceTorque : missing yarpDeviceName parameter for device" << sensorScopedName;
-          return;
-      }
-      driver_properties.put("device","gazebo_forcetorque");
-      driver_properties.put("sensor_name", sensorName);
-      if( !m_forceTorqueDriver.open(driver_properties) ) 
-      {
-          yError()<<"GazeboYarpForceTorque Plugin failed: error in opening yarp driver";
-          return;
-      }
-
-      if (!disable_wrapper) 
-      {
-        //Attach the driver to the wrapper
-        ::yarp::dev::PolyDriverList driver_list;
-
-        if( !m_forcetorqueWrapper.view(m_iWrap) )
+        yarp::os::Network::init();
+        if (!yarp::os::Network::checkNetwork())
         {
-            yError() << "GazeboYarpForceTorque : error in loading wrapper";
+            yError() << "Yarp network does not seem to be available, is the yarpserver running?";
             return;
         }
 
-        driver_list.push(&m_forceTorqueDriver,"dummy");
+        std::string netWrapper = "analogServer";
+        ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::GazeboYarpForceTorqueDriver>
+                                            ("gazebo_forcetorque", netWrapper.c_str(), "GazeboYarpForceTorqueDriver"));
+                                            
+        ::yarp::os::Property driver_properties;
 
-        if( !m_iWrap->attachAll(driver_list) ) 
+        bool wipe = false;
+        if (_sdf->HasElement("yarpConfigurationString"))
         {
-            yError() << "GazeboYarpForceTorque : error in connecting wrapper and device ";
+            std::string configuration_string = _sdf->Get<std::string>("yarpConfigurationString");
+            driver_properties.fromString(configuration_string, wipe);
+            if (!driver_properties.check("sensorName"))
+            {
+                yError() << "GazeboYarpForceTorque : missing sensorName parameter";
+                return;
+            }
+            if (!driver_properties.check("jointName"))
+            {
+                yError() << "GazeboYarpForceTorque : missing jointName parameter";
+                return;
+            }
+            yInfo() << "GazeboYarpPlugins: configuration of sensor " << driver_properties.find("sensorName").asString() 
+                    << " loaded from yarpConfigurationString : " << configuration_string << "\n";
+        }
+        else 
+        {
+            yError() << "GazeboYarpForceTorque : missing yarpConfigurationString element";
+            return; 
+        }
+        
+        std::string sensorName = driver_properties.find("sensorName").asString();
+        std::string jointName = driver_properties.find("jointName").asString();
+        auto model = Model(_entity);
+        auto joint = model.JointByName(_ecm, jointName);
+        this->sensor = Joint(joint).SensorByName(_ecm, sensorName);
+
+        sensorScopedName = scopedName(this->sensor, _ecm);
+        this->forceTorqueData.sensorScopedName = sensorScopedName;
+        
+        driver_properties.put(YarpForceTorqueScopedName.c_str(), sensorScopedName.c_str());
+        if (!driver_properties.check("yarpDeviceName"))
+        {
+            yError() << "GazeboYarpForceTorque : missing yarpDeviceName parameter for device" << sensorScopedName;
+            return;
         }
 
-        if(!driver_properties.check("yarpDeviceName"))
+        //Insert the pointer in the singleton handler for retriving it in the yarp driver
+        Handler::getHandler()->setSensor(&(this->forceTorqueData));
+
+        driver_properties.put("device","gazebo_forcetorque");
+        driver_properties.put("sensor_name", sensorName);
+        if( !m_forceTorqueDriver.open(driver_properties) ) 
         {
-            m_deviceScopedName = sensorScopedName + "/" + driver_list[0]->key;
+            yError()<<"GazeboYarpForceTorque Plugin failed: error in opening yarp driver";
+            return;
         }
-        else
+
+        m_deviceScopedName = sensorScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
+
+        if(!Handler::getHandler()->setDevice(m_deviceScopedName, &m_forceTorqueDriver))
         {
-            m_deviceScopedName = sensorScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
+            yError()<<"GazeboYarpForceTorque: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
+            return;
         }
-      } 
-      else 
-      {
-          m_deviceScopedName = sensorScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
-      }
-      
-      if(!Handler::getHandler()->setDevice(m_deviceScopedName, &m_forceTorqueDriver))
-      {
-          yError()<<"GazeboYarpForceTorque: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
-          return;
-      }
-      m_deviceRegistered = true;
-      yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
+        m_deviceRegistered = true;
+        yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
     }
 
     virtual void PreUpdate(const UpdateInfo &_info,
@@ -192,9 +163,7 @@ class GazeboYarpForceTorque
  
   private: 
     Entity sensor;
-    yarp::dev::PolyDriver m_forcetorqueWrapper;
     yarp::dev::PolyDriver m_forceTorqueDriver;
-    yarp::dev::IMultipleWrapper* m_iWrap;
     std::string m_deviceScopedName;
     std::string sensorScopedName;
     bool m_deviceRegistered;

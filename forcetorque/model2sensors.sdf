@@ -66,10 +66,10 @@
 
     <model name="force_torque_example">
       <plugin filename="GazeboYarpForceTorque" name="GazeboYarpForceTorque">
-        <yarpConfigurationString>(yarpDeviceName forcetorque_plugin_device1) (joint joint_12) (sensor force_torque_sensor1) (disableImplicitNetworkWrapper)</yarpConfigurationString>
+        <yarpConfigurationString>(yarpDeviceName forcetorque_plugin_device1) (jointName joint_12) (sensorName force_torque_sensor1)</yarpConfigurationString>
       </plugin>
       <plugin filename="GazeboYarpForceTorque" name="GazeboYarpForceTorque">
-        <yarpConfigurationString>(yarpDeviceName forcetorque_plugin_device2) (joint joint_23) (sensor force_torque_sensor2) (disableImplicitNetworkWrapper)</yarpConfigurationString>
+        <yarpConfigurationString>(yarpDeviceName forcetorque_plugin_device2) (jointName joint_23) (sensorName force_torque_sensor2)</yarpConfigurationString>
       </plugin>
       <link name="link_1">
         <inertial>
