@@ -92,7 +92,7 @@ class GazeboYarpIMU
         }
 
         //Insert the pointer in the singleton handler for retriving it in the yarp driver
-        Handler::getHandler()->setSensor(&(this->imuData));
+        HandlerIMU::getHandler()->setSensor(&(this->imuData));
 
         driver_properties.put("device","gazebo_imu");
         driver_properties.put("sensor_name", sensorName);

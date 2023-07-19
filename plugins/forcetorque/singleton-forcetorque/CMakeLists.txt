@@ -1,8 +1,8 @@
 
-add_library(Handler SHARED Handler.cc Handler.hh)
-set_property(TARGET Handler PROPERTY CXX_STANDARD 17)
+add_library(HandlerForceTorque SHARED Handler.cc Handler.hh)
+target_compile_features(HandlerForceTorque PRIVATE cxx_std_17)
 
-target_link_libraries(Handler
+target_link_libraries(HandlerForceTorque
   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
   PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
   PRIVATE

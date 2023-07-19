@@ -4,7 +4,9 @@
 #include <yarp/dev/IGenericSensor.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <mutex>
-#include "singleton/Handler.hh"
+#include "singleton-imu/Handler.hh"
+#include "../../libraries/singleton-devices/Handler.hh"
+
 
 namespace yarp {
     namespace dev {
@@ -53,7 +55,7 @@ class yarp::dev::GazeboYarpIMUDriver:
             }
 
             m_frameName = m_sensorName;
-            m_sensorData = Handler::getHandler()->getSensor(sensorScopedName);
+            m_sensorData = HandlerIMU::getHandler()->getSensor(sensorScopedName);
             
             if (!m_sensorData)
             {

@@ -4,7 +4,9 @@
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <mutex>
-#include "singleton/Handler.hh"
+#include "singleton-forcetorque/Handler.hh"
+#include "../../libraries/singleton-devices/Handler.hh"
+
 
 namespace yarp {
     namespace dev {
@@ -42,7 +44,7 @@ class yarp::dev::GazeboYarpForceTorqueDriver:
             }
 
             m_frameName = m_sensorName;
-            m_sensorData = Handler::getHandler()->getSensor(sensorScopedName);
+            m_sensorData = HandlerForceTorque::getHandler()->getSensor(sensorScopedName);
             
             if (!m_sensorData)
             {
