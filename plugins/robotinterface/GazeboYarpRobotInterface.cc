@@ -7,7 +7,7 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 #include <yarp/os/LogStream.h>
-#include "../singleton/Handler.hh"
+#include "../../libraries/singleton-devices/Handler.hh"
 
 
 using namespace gz;

@@ -1,7 +1,7 @@
 # study-gazebo-garden-yarp-plugins
 
 ## Install/Uninstall Gazebo Garden
-#### Binary Installation in Ubuntu
+#### Binary Installation in Ubuntu (or WSL)
 First install some necessary tools:  
 ```
 sudo apt-get update
@@ -18,12 +18,24 @@ sudo apt-get install gz-garden
 ```
 sudo apt remove gz-garden && sudo apt autoremove
 ```
-## Install/Uninstall Gazebo Classic
-Installation in Ubuntu with dependencies provided by conda-forge:
+
+## Install YARP
+#### Binary Installation in Ubuntu (or WSL)
 ```
-mamba install -c conda-forge gazebo
+sudo sh -c 'echo "deb http://www.icub.eu/ubuntu `lsb_release -cs` contrib/science" > /etc/apt/sources.list.d/icub.list'
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 57A5ACB6110576A6
+sudo apt update
+sudo apt install yarp
 ```
-To uninstall:
+#### Uninstalling binary install
 ```
-mamba remove gazebo
+sudo apt remove yarp && sudo apt autoremove
 ```
+
+## Compilation
+~~~
+mkdir build
+cd build
+cmake ..
+make
+~~~

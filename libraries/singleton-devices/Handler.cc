@@ -15,30 +15,6 @@ Handler* Handler::getHandler()
     return s_handle;
 }
 
-bool Handler::setSensor(ForceTorqueData* _sensorDataPtr)
-{
-    bool ret = false;
-    std::string sensorScopedName = _sensorDataPtr->sensorScopedName;
-    SensorsMap::iterator sensor = m_sensorsMap.find(sensorScopedName);
-
-    if (sensor != m_sensorsMap.end()) 
-        ret = true;
-    else 
-    {
-        //sensor does not exists. Add to map
-        if (!m_sensorsMap.insert(std::pair<std::string, ForceTorqueData*>(sensorScopedName, _sensorDataPtr)).second) 
-        {
-            yError() << "Error in Handler while inserting a new sensor pointer!";
-            yError() << " The name of the sensor is already present but the pointer does not match with the one already registered!";
-            yError() << " This should not happen, as the scoped name should be unique in Gazebo. Fatal error.";
-            ret = false;
-        } 
-        else 
-            ret = true;
-    }
-    return ret;
-}
-
 
 bool Handler::getDevicesAsPolyDriverList(const std::string& modelScopedName, yarp::dev::PolyDriverList& list, 
                                          std::vector<std::string>& deviceScopedNames/*, const std::string& worldName*/)
@@ -90,37 +66,6 @@ bool Handler::getDevicesAsPolyDriverList(const std::string& modelScopedName, yar
         }
     }
     return true;
-}
-
-
-ForceTorqueData* Handler::getSensor(const std::string& sensorScopedName) const
-{
-    ForceTorqueData* tmp;
-
-    SensorsMap::const_iterator sensor = m_sensorsMap.find(sensorScopedName);
-    if (sensor != m_sensorsMap.end()) 
-    {
-        tmp = sensor->second;
-    } 
-    else 
-    {
-        yError() << "Sensor was not found: " << sensorScopedName;
-        tmp = NULL;
-    }
-    return tmp;
-}
-
-void Handler::removeSensor(const std::string &sensorName)
-{
-    SensorsMap::iterator sensor = m_sensorsMap.find(sensorName);
-    if (sensor != m_sensorsMap.end()) 
-    {
-        m_sensorsMap.erase(sensor);
-    } 
-    else 
-    {
-        yError() << "Could not remove sensor " << sensorName << ". Sensor was not found";
-    }
 }
 
 bool Handler::setDevice(std::string deviceDatabaseKey, yarp::dev::PolyDriver* device2add)
@@ -180,9 +125,8 @@ void Handler::removeDevice(const std::string &deviceDatabaseKey)
     return;
 }
 
-Handler::Handler() : m_sensorsMap(), m_devicesMap()
+Handler::Handler() : m_devicesMap()
 {
-    m_sensorsMap.clear();
     m_devicesMap.clear();
 }
 

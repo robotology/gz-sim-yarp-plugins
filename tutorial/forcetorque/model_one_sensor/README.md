@@ -1,13 +1,6 @@
 # Run forcetorque in Gazebo Garden
 
 ## Run model in Gazebo Garden with YARP integration
-At first, compile:
-~~~
-mkdir build
-cd build
-cmake ..
-make
-~~~
 
 - 1st terminal:
   ~~~
@@ -15,8 +8,10 @@ make
   ~~~
 - 2nd terminal:
   ~~~
-  export GZ_SIM_SYSTEM_PLUGIN_PATH=`pwd`/build
   export LIBGL_ALWAYS_SOFTWARE=1 
+  cd ../../../build
+  export GZ_SIM_SYSTEM_PLUGIN_PATH=`pwd`
+  cd ../tutorial/forcetorque/model_one_sensor
   gz sim model.sdf
   ~~~
 - 3rd terminal:

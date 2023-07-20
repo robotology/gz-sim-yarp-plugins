@@ -40,7 +40,7 @@ class GazeboYarpForceTorque
       }
       
       if( m_forceTorqueDriver.isValid() ) m_forceTorqueDriver.close();
-      Handler::getHandler()->removeSensor(sensorScopedName);
+      HandlerForceTorque::getHandler()->removeSensor(sensorScopedName);
       yarp::os::Network::fini();
     }
     
@@ -103,7 +103,7 @@ class GazeboYarpForceTorque
         }
 
         //Insert the pointer in the singleton handler for retriving it in the yarp driver
-        Handler::getHandler()->setSensor(&(this->forceTorqueData));
+        HandlerForceTorque::getHandler()->setSensor(&(this->forceTorqueData));
 
         driver_properties.put("device","gazebo_forcetorque");
         driver_properties.put("sensor_name", sensorName);

@@ -1,6 +1,6 @@
 
 add_library(GazeboYarpRobotInterface SHARED GazeboYarpRobotInterface.cc)
-set_property(TARGET GazeboYarpRobotInterface PROPERTY CXX_STANDARD 17)
+target_compile_features(GazeboYarpRobotInterface PRIVATE cxx_std_17)
 
 target_link_libraries(GazeboYarpRobotInterface
   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
