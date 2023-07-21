@@ -1,4 +1,4 @@
-# Run IMU in Gazebo Garden
+# Run IMU Plugin in Gazebo Garden
 
 ## Run model in Gazebo Garden with YARP integration
 
@@ -39,11 +39,11 @@ List all available Gazebo topics:
 ```
 gz topic -l
 ```
-Print the topic that correspond to the FT sensor:
+Print the topic that correspond to the IMU sensor:
 ```
-gz topic -e -t <ft_topic_name>
+gz topic -e -t <imu_topic_name>
 ```
-where you should substitute `<ft_topic_name>` with the topic of the IMU name.    
+where you should substitute `<imu_topic_name>` with the topic of the IMU name.    
 Youl should see an output like this:
 ```
 header {

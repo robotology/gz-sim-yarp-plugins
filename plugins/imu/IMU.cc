@@ -9,7 +9,7 @@
 #include <iostream>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
-#include<gz/transport/Node.hh>
+#include <gz/transport/Node.hh>
 #include <gz/sim/components/Imu.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/sim/components/ParentEntity.hh>
@@ -30,6 +30,23 @@ class GazeboYarpIMU
         
 {
   public:
+  
+    GazeboYarpIMU() : m_deviceRegistered(false)
+    {
+    }
+    
+    virtual ~GazeboYarpIMU()
+    {
+      if (m_deviceRegistered) 
+      {
+          Handler::getHandler()->removeDevice(m_deviceScopedName);
+          m_deviceRegistered = false;
+      }
+      
+      if( m_imuDriver.isValid() ) m_imuDriver.close();
+      HandlerIMU::getHandler()->removeSensor(sensorScopedName);
+      yarp::os::Network::fini();
+    }
     
     virtual void Configure(const Entity &_entity,
                           const std::shared_ptr<const sdf::Element> &_sdf,
