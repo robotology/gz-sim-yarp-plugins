@@ -54,6 +54,7 @@ class yarp::dev::GazeboYarpLaserDriver:
                 yError() << "error parsing parameters";
                 return false;
             }
+            m_device_status = yarp::dev::IRangefinder2D::Device_status::DEVICE_OK_IN_USE;
 
             return true;
         }
