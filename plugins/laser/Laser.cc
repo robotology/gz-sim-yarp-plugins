@@ -147,6 +147,7 @@ class GazeboYarpLaser
             laserMsg = this->laserMsg;
         }
 
+        std::lock_guard<std::mutex> lock(laserData.m_mutex);
         laserData.m_data.resize(laserMsg.ranges().size());
 
         for (size_t i=0; i< laserMsg.ranges().size(); i++)
