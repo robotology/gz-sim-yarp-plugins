@@ -66,7 +66,7 @@
 
     <model name="camera_model">
       <plugin name="GazeboYarpCamera" filename="plugins/camera/libGazeboYarpCamera.so">
-        <yarpConfigurationString>(yarpDeviceName camera_plugin_device) (parentLinkName link_1) (sensorName camera_sensor)</yarpConfigurationString>
+        <yarpConfigurationString>(yarpDeviceName camera_plugin_device) (parentLinkName link_1) (sensorName camera_sensor) (display_timestamp) (vertical_flip)</yarpConfigurationString>
       </plugin>
       <static>true</static>
       <pose>0 0 0.1 0 0 0</pose>
@@ -99,5 +99,43 @@
         <yarpRobotInterfaceConfigurationFile>camera_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
     </model>
+
+     <model name="sphere">
+      <pose>5 1.5 0.5 0 0 0</pose>
+      <link name="sphere_link">
+        <inertial>
+          <inertia>
+            <ixx>0.1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.1</iyy>
+            <iyz>0</iyz>
+            <izz>0.1</izz>
+          </inertia>
+          <mass>1.0</mass>
+        </inertial>
+        <collision name="sphere_collision">
+          <geometry>
+            <sphere>
+              <radius>0.5</radius>
+            </sphere>
+          </geometry>
+        </collision>
+
+        <visual name="sphere_visual">
+          <geometry>
+            <sphere>
+              <radius>0.5</radius>
+            </sphere>
+          </geometry>
+          <material>
+            <ambient>0 0 1 1</ambient>
+            <diffuse>0 0 1 1</diffuse>
+            <specular>0 0 1 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+    
   </world>
 </sdf>
