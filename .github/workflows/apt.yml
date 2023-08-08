@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: '[${{ matrix.os }}@${{ matrix.build_type }}@yarp:${{ matrix.yarp_version }}@gazebo:${{ matrix.gazebo_distro }}]'
+    name: '[${{ matrix.os }}@${{ matrix.build_type }}@yarp:${{ matrix.yarp_tag }}@gazebo:${{ matrix.gazebo_distro }}]'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -89,8 +89,9 @@ jobs:
         cd build
         ctest  --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} . 
 
-    - name: Install
-      run: |
-        cd build
-        cmake --build . --config ${{ matrix.build_type }} --target install
+    # This is commented until we fix https://github.com/robotology/gz-yarp-plugins/issues/28
+    # - name: Install
+    #  run: |
+    #    cd build
+    #    cmake --build . --config ${{ matrix.build_type }} --target install
 
