@@ -1,0 +1,96 @@
+name: C++ CI Workflow
+
+on:
+  push:
+  pull_request:
+  schedule:
+  # * is a special character in YAML so you have to quote this string
+  # Execute a "nightly" build at 2 AM UTC 
+  - cron:  '0 2 * * *'
+
+jobs:
+  build:
+    name: '[${{ matrix.os }}@${{ matrix.build_type }}@yarp:${{ matrix.yarp_version }}@gazebo:${{ matrix.gazebo_distro }}]'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Release, Debug]
+        os: [ubuntu-22.04]
+        ycm_tag: [v0.15.3]
+        yarp_tag: [v3.8.1]
+        gazebo_distro: [garden]
+
+    steps:
+    - uses: actions/checkout@v2
+        
+    # Print environment variables to simplify development and debugging
+    - name: Environment Variables
+      run: env
+        
+    # ============
+    # DEPENDENCIES
+    # ============
+    - name: apt Dependencies
+      run: |
+        sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-latest.list'
+        wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+        sudo apt-get update
+        # YARP dependencies
+        sudo apt-get install git build-essential cmake ninja-build libace-dev libeigen3-dev libopencv-dev 
+        sudo apt-get install gz-${{ matrix.gazebo_distro }}
+
+    - name: Cache Source-based Dependencies
+      id: cache-source-deps
+      uses: actions/cache@v3
+      with:
+        path: ${{ github.workspace }}/install/deps
+        key: source-deps-${{ runner.os }}-os-${{ matrix.os }}-build-type-${{ matrix.build_type }}-ycm-${{ matrix.ycm_tag }}-yarp-${{ matrix.yarp_tag }}
+
+    - name: Source-based Dependencies
+      run: |
+        # YCM
+        git clone https://github.com/robotology/ycm
+        cd ycm
+        git checkout ${{ matrix.ycm_tag }}
+        mkdir -p build
+        cd build
+        cmake -GNinja -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install/deps ..
+        cmake --build . --config ${{ matrix.build_type }} --target install 
+        # YARP
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/yarp
+        cd yarp
+        git checkout ${{ matrix.yarp_tag }}
+        mkdir -p build
+        cd build
+        cmake -GNinja -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install/deps -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install/deps ..
+        cmake --build . --config ${{ matrix.build_type }} --target install 
+ 
+    # ===================
+    # CMAKE-BASED PROJECT
+    # ===================
+
+    - name: Configure
+      shell: bash
+      run: |
+        mkdir -p build
+        cd build    
+        cmake -GNinja -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install/deps -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install -DBUILD_TESTING:BOOL=ON ..
+
+    - name: Build
+      run: |
+        cd build
+        cmake --build . --config ${{ matrix.build_type }} 
+
+    - name: Test
+      run: |
+        cd build
+        ctest  --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} . 
+
+    - name: Install
+      run: |
+        cd build
+        cmake --build . --config ${{ matrix.build_type }} --target install
+
