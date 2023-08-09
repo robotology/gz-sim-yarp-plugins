@@ -1,0 +1,10 @@
+name: gzyarppluginsdev
+channels:
+  - conda-forge
+dependencies:
+  - cmake
+  - compilers
+  - make
+  - ninja
+  - pkg-config
+  - libgz-sim7
