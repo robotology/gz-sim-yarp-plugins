@@ -15,4 +15,5 @@ set(GZ_SIM_VER ${gz-sim7_VERSION_MAJOR})
 
 add_subdirectory(libraries)
 add_subdirectory(plugins)
+add_subdirectory(tests)
 
