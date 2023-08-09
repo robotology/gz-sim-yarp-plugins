@@ -8,3 +8,4 @@ dependencies:
   - ninja
   - pkg-config
   - libgz-sim7
+  - yarp
