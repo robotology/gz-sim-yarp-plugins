@@ -1,4 +1,6 @@
+#include <array>
 #include <mutex>
+#include <string>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 #include <gz/common/Event.hh>
