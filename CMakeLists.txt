@@ -12,6 +12,10 @@ set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 gz_find_package(gz-sim7 REQUIRED)
 set(GZ_SIM_VER ${gz-sim7_VERSION_MAJOR})
 
+
+# Support shared libraries on Windows
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 add_subdirectory(libraries)
 add_subdirectory(plugins)
 option(BUILD_TESTING "Create tests using CMake" ON)

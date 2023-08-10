@@ -1,0 +1,79 @@
+name: C++ CI Workflow
+
+on:
+  workflow_dispatch:
+  pull_request:
+  schedule:
+  # * is a special character in YAML so you have to quote this string
+  # Execute a "nightly" build at 2 AM UTC
+  - cron:  '0 2 * * *'
+
+jobs:
+  build-with-conda-dependencies:
+    name: '[conda:${{ matrix.os }}]'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Release]
+        os: [ubuntu-22.04, macos-latest, windows-2019]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Print used environment (no conda)
+      shell: bash -l {0}
+      run: |
+        env
+
+    - uses: mamba-org/setup-micromamba@v1
+      with:
+        environment-file: ci_env.yml
+
+    # Additional dependencies useful only on Linux
+    - name: Additional Dependencies (Linux])
+      if: contains(matrix.os, 'ubuntu')
+      shell: bash -l {0}
+      run: |
+        # Additional dependencies only useful on Linux
+        # See https://github.com/robotology/robotology-superbuild/issues/477
+        micromamba install expat-cos6-x86_64 freeglut libselinux-cos6-x86_64 libxau-cos6-x86_64 libxcb-cos6-x86_64 libxdamage-cos6-x86_64 libxext-cos6-x86_64 libxfixes-cos6-x86_64 libxxf86vm-cos6-x86_64 mesa-libgl-cos6-x86_64 mesa-libgl-devel-cos6-x86_64
+
+    - name: Configure VS Toolchain (Windows)
+      if: contains(matrix.os, 'windows')
+      uses: ilammy/msvc-dev-cmd@v1.12.1
+
+    - name: Setup compilation env variables (Windows)
+      if: contains(matrix.os, 'windows')
+      shell: bash -l {0}
+      run: |
+        bash_vc_install=${VCToolsInstallDir//\\//}
+        compiler_path=${bash_vc_install}bin/Hostx64/x64/cl.exe
+        echo "CC=${compiler_path}" >> $GITHUB_ENV
+        echo "CXX=${compiler_path}" >> $GITHUB_ENV
+
+    - name: Configure
+      shell: bash -l {0}
+      run: |
+        mkdir -p build
+        cd build    
+        cmake -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install -DBUILD_TESTING:BOOL=ON ..
+
+    - name: Build
+      shell: bash -l {0}
+      run: |
+        cd build
+        cmake --build . --config ${{ matrix.build_type }} 
+
+    - name: Test
+      shell: bash -l {0}
+      run: |
+        cd build
+        ctest  --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} . 
+
+    # This is commented until we fix https://github.com/robotology/gz-yarp-plugins/issues/28
+    # - name: Install
+    #  run: |
+    #    cd build
+    #    cmake --build . --config ${{ matrix.build_type }} --target install
