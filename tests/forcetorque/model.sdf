@@ -65,7 +65,7 @@
     </model>
 
     <model name="force_torque_example">
-      <plugin name="GazeboYarpForceTorque" filename="plugins/forcetorque/libGazeboYarpForceTorque.so">
+      <plugin name="GazeboYarpForceTorque" filename="GazeboYarpForceTorque">
         <yarpConfigurationString>(yarpDeviceName forcetorque_plugin_device) (jointName joint_12) (sensorName force_torque_sensor)</yarpConfigurationString>
       </plugin>
       <link name="link_1">
@@ -148,7 +148,7 @@
           <update_rate>30</update_rate>
         </sensor>
       </joint>
-      <plugin name="GazeboYarpRobotInterface" filename="plugins/robotinterface/libGazeboYarpRobotInterface.so">
+      <plugin name="GazeboYarpRobotInterface" filename="GazeboYarpRobotInterface">
         <yarpRobotInterfaceConfigurationFile>../../../tests/forcetorque/forcetorque_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
     </model>
