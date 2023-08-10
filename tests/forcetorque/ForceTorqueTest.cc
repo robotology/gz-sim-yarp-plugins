@@ -5,7 +5,7 @@
 #include <yarp/os/Network.h>
 #include <gz/sim/TestFixture.hh>
 
-TEST(gz_yarp_tests, ft_test)
+TEST(ForceTorqueTest, PluginTest)
 {
   yarp::os::NetworkBase::setLocalMode(true);
   

@@ -1,9 +1,3 @@
-project(GTestSetup)
-
-# Find Gazebo
-find_package(gz-sim7 REQUIRED)
-set(GZ_SIM_VER ${gz-sim7_VERSION_MAJOR})
-
 # Fetch and configure GTest
 include(FetchContent)
 FetchContent_Declare(
@@ -13,8 +7,6 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-enable_testing()
-
 add_executable(ForceTorqueTest ForceTorqueTest.cc)
 target_link_libraries(ForceTorqueTest
   gtest_main
@@ -22,5 +14,7 @@ target_link_libraries(ForceTorqueTest
   gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
   ${YARP_LIBRARIES}
 )
+add_test(NAME ForceTorqueTest
+         COMMAND ForceTorqueTest)
 include(GoogleTest)
 gtest_discover_tests(ForceTorqueTest)
