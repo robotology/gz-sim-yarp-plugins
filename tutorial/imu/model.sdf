@@ -64,7 +64,7 @@
       </link>
     </model>
     <model name="sensor_box">
-      <plugin name="GazeboYarpIMU" filename="plugins/imu/libGazeboYarpIMU.so">
+      <plugin name="GazeboYarpIMU" filename="GazeboYarpIMU">
         <yarpConfigurationString>(yarpDeviceName imu_plugin_device) (parentLinkName link_1) (sensorName imu_sensor)</yarpConfigurationString>
       </plugin>
       <pose>4 0 3.0 0 0.0 3.14</pose>
@@ -99,7 +99,7 @@
           <enable_metrics>true</enable_metrics>
         </sensor>
       </link>
-      <plugin name="GazeboYarpRobotInterface" filename="plugins/robotinterface/libGazeboYarpRobotInterface.so">
+      <plugin name="GazeboYarpRobotInterface" filename="GazeboYarpRobotInterface">
         <yarpRobotInterfaceConfigurationFile>IMU_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
     </model>

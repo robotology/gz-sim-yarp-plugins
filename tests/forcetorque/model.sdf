@@ -66,10 +66,7 @@
 
     <model name="force_torque_example">
       <plugin name="GazeboYarpForceTorque" filename="GazeboYarpForceTorque">
-        <yarpConfigurationString>(yarpDeviceName forcetorque_plugin_device1) (jointName joint_12) (sensorName force_torque_sensor1)</yarpConfigurationString>
-      </plugin>
-      <plugin name="GazeboYarpForceTorque" filename="GazeboYarpForceTorque">
-        <yarpConfigurationString>(yarpDeviceName forcetorque_plugin_device2) (jointName joint_23) (sensorName force_torque_sensor2)</yarpConfigurationString>
+        <yarpConfigurationString>(yarpDeviceName forcetorque_plugin_device) (jointName joint_12) (sensorName force_torque_sensor)</yarpConfigurationString>
       </plugin>
       <link name="link_1">
         <inertial>
@@ -135,39 +132,6 @@
           </geometry>
         </collision>
       </link>
-      <link name="link_3">
-        <inertial>
-          <pose>0 0 0.25 0 0 0</pose>
-          <inertia>
-            <ixx>0.020000</ixx>
-            <ixy>0.000000</ixy>
-            <ixz>0.000000</ixz>
-            <iyy>0.020000</iyy>
-            <iyz>0.000000</iyz>
-            <izz>0.020000</izz>
-          </inertia>
-          <mass>10.000000</mass>
-        </inertial>
-        <visual name="visual_cylinder">
-          <pose>0 0 0.25 0 0 0</pose>
-          <geometry>
-            <cylinder>
-              <radius>0.100000</radius>
-              <length>0.100000</length>
-            </cylinder>
-          </geometry>
-        </visual>
-        <collision name="collision_cylinder">
-          <pose>0 0 0.25 0 0 0</pose>
-          <max_contacts>250</max_contacts>
-          <geometry>
-            <cylinder>
-              <radius>0.100000</radius>
-              <length>0.100000</length>
-            </cylinder>
-          </geometry>
-        </collision>
-      </link>
       
       <joint name="joint_01" type="fixed">
         <parent>world</parent>
@@ -178,24 +142,14 @@
         <parent>link_1</parent>
         <child>link_2</child>
         <pose>0 0 0 0 0 0</pose>
-        <sensor name="force_torque_sensor1" type="force_torque">
-          <always_on>true</always_on>
-          <visualize>true</visualize>
-          <update_rate>30</update_rate>
-        </sensor>
-      </joint>
-      <joint name="joint_23" type="revolute">
-        <parent>link_2</parent>
-        <child>link_3</child>
-        <pose>0 0 0 0 0 0</pose>
-        <sensor name="force_torque_sensor2" type="force_torque">
+        <sensor name="force_torque_sensor" type="force_torque">
           <always_on>true</always_on>
           <visualize>true</visualize>
           <update_rate>30</update_rate>
         </sensor>
       </joint>
       <plugin name="GazeboYarpRobotInterface" filename="GazeboYarpRobotInterface">
-        <yarpRobotInterfaceConfigurationFile>forcetorque2sensors_nws.xml</yarpRobotInterfaceConfigurationFile>
+        <yarpRobotInterfaceConfigurationFile>../../../tests/forcetorque/forcetorque_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
     </model>
   </world>
