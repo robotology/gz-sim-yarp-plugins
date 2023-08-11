@@ -45,7 +45,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ${{ github.workspace }}/install/deps
-        key: source-deps-${{ runner.os }}-os-${{ matrix.os }}-build-type-${{ matrix.build_type }}-ycm-${{ matrix.ycm_tag }}-yarp-${{ matrix.yarp_tag }}
+        key: source-deps-${{ runner.os }}-os-${{ matrix.os }}-build-type-${{ matrix.build_type }}-ycm-${{ matrix.ycm_tag }}-yarp-${{ matrix.yarp_tag }}-rev1
 
     - name: Source-based Dependencies
       if: steps.cache-source-deps.outputs.cache-hit != 'true'
@@ -66,7 +66,9 @@ jobs:
         mkdir -p build
         cd build
         cmake -GNinja -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install/deps -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install/deps ..
-        cmake --build . --config ${{ matrix.build_type }} --target install 
+        cmake --build . --config ${{ matrix.build_type }} --target install
+        # Configure environment
+        echo "YARP_DATA_DIRS=${GITHUB_WORKSPACE}/install/deps/share/yarp" >> $GITHUB_ENV
  
     # ===================
     # CMAKE-BASED PROJECT
