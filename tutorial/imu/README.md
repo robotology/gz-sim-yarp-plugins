@@ -9,8 +9,8 @@
 - 2nd terminal:
   ~~~
   export LIBGL_ALWAYS_SOFTWARE=1 
-  cd ../../build
-  export GZ_SIM_SYSTEM_PLUGIN_PATH=`pwd`
+  cd build
+  export GZ_SIM_SYSTEM_PLUGIN_PATH=`pwd`:`pwd`/lib
   cd ../tutorial/imu
   gz sim model.sdf
   ~~~
