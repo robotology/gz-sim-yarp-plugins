@@ -14,13 +14,13 @@ TEST(ForceTorqueTest, PluginTest)
   // Instantiate test fixture
   gz::sim::TestFixture fixture("../../../tests/forcetorque/model.sdf");
 
-  int iterations = 5000;
+  int iterations = 1000;
   fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
 
   yarp::os::Property option;
   option.put("device","multipleanalogsensorsclient");
   option.put("remote","/forcetorque");
-  option.put("timeout",5.0);
+  option.put("timeout",1.0);
   option.put("local", "/ForceTorqueTest");
   yarp::dev::PolyDriver driver;
 
@@ -36,7 +36,15 @@ TEST(ForceTorqueTest, PluginTest)
   double timestamp;
   
   isixaxis->getSixAxisForceTorqueSensorName(0, sensorName);
-  isixaxis->getSixAxisForceTorqueSensorMeasure(0, measure, timestamp);
+  //isixaxis->getSixAxisForceTorqueSensorMeasure(0, measure, timestamp);
+  size_t maxNrOfReadingAttempts = 20;
+  bool readSuccessful = false;
+  for (size_t i=0; (i < maxNrOfReadingAttempts) && !readSuccessful ; i++)
+  {
+      readSuccessful = isixaxis->getSixAxisForceTorqueSensorMeasure(0, measure, timestamp);
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+	ASSERT_TRUE(readSuccessful);
   //std::cerr << "The measure of FT sensor " << sensorName << " is " << measure.toString() << " at time " << timestamp << std::endl;
 
   EXPECT_NEAR(measure(0), 0.0, 1e-2);

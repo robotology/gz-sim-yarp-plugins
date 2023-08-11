@@ -17,8 +17,6 @@ target_link_libraries(ForceTorqueTest
 add_test(NAME ForceTorqueTest
          COMMAND ForceTorqueTest)
 
-set_property(TEST ForceTorqueTest PROPERTY ENVIRONMENT YARP_DATA_DIRS=${YARP_DATA_INSTALL_DIR_FULL})
-
 set(_env_vars)
 list(APPEND _env_vars "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:GazeboYarpForceTorque>")
 
