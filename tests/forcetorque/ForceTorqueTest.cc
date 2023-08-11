@@ -14,13 +14,13 @@ TEST(ForceTorqueTest, PluginTest)
   // Instantiate test fixture
   gz::sim::TestFixture fixture("../../../tests/forcetorque/model.sdf");
 
-  int iterations = 1000;
+  int iterations = 5000;
   fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
 
   yarp::os::Property option;
   option.put("device","multipleanalogsensorsclient");
   option.put("remote","/forcetorque");
-  option.put("timeout",1.0);
+  option.put("timeout",5.0);
   option.put("local", "/ForceTorqueTest");
   yarp::dev::PolyDriver driver;
 
