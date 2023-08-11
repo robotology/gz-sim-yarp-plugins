@@ -48,6 +48,7 @@ jobs:
         key: source-deps-${{ runner.os }}-os-${{ matrix.os }}-build-type-${{ matrix.build_type }}-ycm-${{ matrix.ycm_tag }}-yarp-${{ matrix.yarp_tag }}
 
     - name: Source-based Dependencies
+      if: steps.cache-source-deps.outputs.cache-hit != 'true'
       run: |
         # YCM
         git clone https://github.com/robotology/ycm
