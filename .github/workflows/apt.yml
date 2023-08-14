@@ -110,6 +110,12 @@ jobs:
           build/*
           install/*
         # fail-under-line: 80
+    
+    - name: Upload coverage reports to Codecov
+      if: contains(matrix.build_type, 'Debug')
+      uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     # This is commented until we fix https://github.com/robotology/gz-yarp-plugins/issues/28
     # - name: Install
