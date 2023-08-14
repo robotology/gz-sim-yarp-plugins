@@ -83,17 +83,33 @@ jobs:
         mkdir -p build
         cd build    
         cmake -GNinja -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install/deps -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-              -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install -DBUILD_TESTING:BOOL=ON ..
+              -DCMAKE_CXX_FLAGS_DEBUG="--coverage -g -O0" -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install -DBUILD_TESTING:BOOL=ON ..
 
     - name: Build
       run: |
         cd build
         cmake --build . --config ${{ matrix.build_type }} 
 
-    - name: Test
+    - name: Test (Release)
+      if: contains(matrix.build_type, 'Release')
       run: |
         cd build
-        ctest  --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} . 
+        ctest --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
+
+    - name: Test (Debug)
+      if: contains(matrix.build_type, 'Debug')
+      run: |
+        cd build
+        ctest -T Test -T Coverage --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} . 
+      
+    - name: Generate a code coverage report
+      if: contains(matrix.build_type, 'Debug')
+      uses: threeal/gcovr-action@main
+      with:
+        excludes: |
+          build/*
+          install/*
+        # fail-under-line: 80
 
     # This is commented until we fix https://github.com/robotology/gz-yarp-plugins/issues/28
     # - name: Install
