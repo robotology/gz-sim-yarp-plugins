@@ -18,7 +18,6 @@ const unsigned YarpForceTorqueChannelsNumber = 6; //The ForceTorque sensor has 6
 const std::string YarpForceTorqueScopedName = "sensorScopedName";
 
 class yarp::dev::GazeboYarpForceTorqueDriver: 
-    public yarp::dev::IAnalogSensor,
     public yarp::dev::DeviceDriver,
     public yarp::dev::ISixAxisForceTorqueSensors
 {
@@ -49,7 +48,7 @@ class yarp::dev::GazeboYarpForceTorqueDriver:
             if (!m_sensorData)
             {
                 yError() << "Error, ForceTorque sensor was not found";
-                return AS_ERROR;
+                return false;
             }
 
             return true;
@@ -58,52 +57,6 @@ class yarp::dev::GazeboYarpForceTorqueDriver:
         virtual bool close()
         {
             return true;
-        }
-
-        //ANALOG SENSOR
-        virtual int read(yarp::sig::Vector& out)
-        {
-            if (out.size() != YarpForceTorqueChannelsNumber) 
-            {
-                out.resize(YarpForceTorqueChannelsNumber);
-            }
-
-            std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
-            yarp::sig::Vector m_forceTorqueData;
-            m_forceTorqueData.resize(YarpForceTorqueChannelsNumber, 0.0);
-            m_forceTorqueData[0] = m_sensorData->m_data[0];
-            m_forceTorqueData[1] = m_sensorData->m_data[1];
-            m_forceTorqueData[2] = m_sensorData->m_data[2];
-            m_forceTorqueData[3] = m_sensorData->m_data[3];
-            m_forceTorqueData[4] = m_sensorData->m_data[4];
-            m_forceTorqueData[5] = m_sensorData->m_data[5];
-
-            return AS_OK;
-        }
-
-        virtual int getState(int /*channel*/)
-        {
-            return AS_OK;
-        }
-        virtual int getChannels()
-        {
-            return YarpForceTorqueChannelsNumber;
-        }
-        virtual int calibrateChannel(int /*channel*/, double /*v*/)
-        {
-            return AS_OK;
-        }
-        virtual int calibrateSensor()
-        {
-            return AS_OK;
-        }
-        virtual int calibrateSensor(const yarp::sig::Vector& /*value*/)
-        {
-            return AS_OK;
-        }
-        virtual int calibrateChannel(int /*channel*/)
-        {
-            return AS_OK;
         }
 
         // SIX AXIS FORCE TORQUE SENSORS
