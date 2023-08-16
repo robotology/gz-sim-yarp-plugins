@@ -61,8 +61,8 @@ class yarp::dev::GazeboYarpCameraDriver:
 
             {
                 std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
-                m_sensorData->m_imageBuffer = new unsigned char[m_sensorData->m_bufferSize];
-                memset(m_sensorData->m_imageBuffer, 0x00, m_sensorData->m_bufferSize);
+                m_sensorData->m_imageBuffer = new unsigned char[getRawBufferSize()];
+                memset(m_sensorData->m_imageBuffer, 0x00, getRawBufferSize());
             }
             
             if (config.check("vertical_flip"))
@@ -89,7 +89,7 @@ class yarp::dev::GazeboYarpCameraDriver:
         virtual bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& _image)
         {
             std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
-            _image.resize(m_sensorData->m_width, m_sensorData->m_height);
+            _image.resize(width(), height());
             
             unsigned char *pBuffer = _image.getRawImage();
 
@@ -97,14 +97,14 @@ class yarp::dev::GazeboYarpCameraDriver:
             {
                 int r=0;
                 int c=0;
-                for (int c=0; c<m_sensorData->m_width; c++) 
+                for (int c=0; c<width(); c++) 
                 {
-                    for (int r=0; r<m_sensorData->m_height; r++)
+                    for (int r=0; r<height(); r++)
                     {
-                        unsigned char *pixel = _image.getPixelAddress(c, m_sensorData->m_height-r-1);
-                        pixel[0] = *(m_sensorData->m_imageBuffer+r*m_sensorData->m_width*3+c*3+0);
-                        pixel[1] = *(m_sensorData->m_imageBuffer+r*m_sensorData->m_width*3+c*3+1);
-                        pixel[2] = *(m_sensorData->m_imageBuffer+r*m_sensorData->m_width*3+c*3+2);
+                        unsigned char *pixel = _image.getPixelAddress(c, height()-r-1);
+                        pixel[0] = *(m_sensorData->m_imageBuffer+r*width()*3+c*3+0);
+                        pixel[1] = *(m_sensorData->m_imageBuffer+r*width()*3+c*3+1);
+                        pixel[2] = *(m_sensorData->m_imageBuffer+r*width()*3+c*3+2);
                     }
                 }
             }
@@ -112,14 +112,14 @@ class yarp::dev::GazeboYarpCameraDriver:
             {
                 int r=0;
                 int c=0;
-                for (int c=0; c<m_sensorData->m_width; c++)
+                for (int c=0; c<width(); c++)
                 {
-                    for (int r=0; r<m_sensorData->m_height; r++)
+                    for (int r=0; r<height(); r++)
                     {
-                        unsigned char *pixel = _image.getPixelAddress(m_sensorData->m_width-c-1, r);
-                        pixel[0] = *(m_sensorData->m_imageBuffer+r*m_sensorData->m_width*3+c*3+0);
-                        pixel[1] = *(m_sensorData->m_imageBuffer+r*m_sensorData->m_width*3+c*3+1);
-                        pixel[2] = *(m_sensorData->m_imageBuffer+r*m_sensorData->m_width*3+c*3+2);
+                        unsigned char *pixel = _image.getPixelAddress(width()-c-1, r);
+                        pixel[0] = *(m_sensorData->m_imageBuffer+r*width()*3+c*3+0);
+                        pixel[1] = *(m_sensorData->m_imageBuffer+r*width()*3+c*3+1);
+                        pixel[2] = *(m_sensorData->m_imageBuffer+r*width()*3+c*3+2);
                     }
                 }
             }
@@ -127,20 +127,20 @@ class yarp::dev::GazeboYarpCameraDriver:
             {
                 int r=0;
                 int c=0;
-                for (int c=0; c<m_sensorData->m_width; c++)
+                for (int c=0; c<width(); c++)
                 {
-                    for (int r=0; r<m_sensorData->m_height; r++)
+                    for (int r=0; r<height(); r++)
                     {
-                        unsigned char *pixel = _image.getPixelAddress(m_sensorData->m_width-c-1, m_sensorData->m_height-r-1);
-                        pixel[0] = *(m_sensorData->m_imageBuffer+r*m_sensorData->m_width*3+c*3+0);
-                        pixel[1] = *(m_sensorData->m_imageBuffer+r*m_sensorData->m_width*3+c*3+1);
-                        pixel[2] = *(m_sensorData->m_imageBuffer+r*m_sensorData->m_width*3+c*3+2);
+                        unsigned char *pixel = _image.getPixelAddress(width()-c-1, height()-r-1);
+                        pixel[0] = *(m_sensorData->m_imageBuffer+r*width()*3+c*3+0);
+                        pixel[1] = *(m_sensorData->m_imageBuffer+r*width()*3+c*3+1);
+                        pixel[2] = *(m_sensorData->m_imageBuffer+r*width()*3+c*3+2);
                     }
                 }
             }
             else
             {
-                memcpy(pBuffer, m_sensorData->m_imageBuffer, m_sensorData->m_bufferSize);
+                memcpy(pBuffer, m_sensorData->m_imageBuffer, getRawBufferSize());
             }
 
             if (m_display_time_box)
@@ -155,14 +155,14 @@ class yarp::dev::GazeboYarpCameraDriver:
                     {
                         if (counter % 2 ==0)
                         {
-                            unsigned char *pixel = _image.getPixelAddress(m_sensorData->m_width-c-1, m_sensorData->m_height-r-1);
+                            unsigned char *pixel = _image.getPixelAddress(width()-c-1, height()-r-1);
                             pixel[0] = 255;
                             pixel[1] = 0;
                             pixel[2] = 0;
                         }
                         else
                         {
-                            unsigned char *pixel = _image.getPixelAddress(m_sensorData->m_width-c-1, m_sensorData->m_height-r-1);
+                            unsigned char *pixel = _image.getPixelAddress(width()-c-1, height()-r-1);
                             pixel[0] = 0;
                             pixel[1] = 255;
                             pixel[2] = 0;
@@ -177,7 +177,7 @@ class yarp::dev::GazeboYarpCameraDriver:
                 sprintf(txtbuf, "%.3f", m_sensorData->simTime);
                 int len = strlen(txtbuf);
                 if (len<20)
-                    print(pBuffer, m_sensorData->m_width, m_sensorData->m_height, 0, 0, txtbuf, len);
+                    print(pBuffer, width(), height(), 0, 0, txtbuf, len);
             }
             
             return true;
