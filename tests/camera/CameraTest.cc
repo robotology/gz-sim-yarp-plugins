@@ -48,7 +48,7 @@ TEST(CameraTest, PluginTest)
   int dark_grey[] = {162, 162, 162};
 
   // background - grey
-  unsigned char *pixel = image.getPixelAddress(0,0);
+  unsigned char *pixel = image.getPixelAddress(0,40);
   EXPECT_EQ(int(pixel[0]), grey[0]);
   EXPECT_EQ(int(pixel[1]), grey[1]);
   EXPECT_EQ(int(pixel[2]), grey[2]);
@@ -116,7 +116,7 @@ TEST(CameraTest, HorizontalFlip)
   int dark_grey[] = {162, 162, 162};
 
   // background - grey
-  unsigned char *pixel = image.getPixelAddress(0,0);
+  unsigned char *pixel = image.getPixelAddress(0,40);
   EXPECT_EQ(int(pixel[0]), grey[0]);
   EXPECT_EQ(int(pixel[1]), grey[1]);
   EXPECT_EQ(int(pixel[2]), grey[2]);
