@@ -61,7 +61,7 @@ class GazeboYarpLaser
         }
 
         ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::GazeboYarpLaserDriver>
-                                            ("gazebo_laser", "", "GazeboYarpIMUDriver"));
+                                            ("gazebo_laser", "", "GazeboYarpLaserDriver"));
         ::yarp::os::Property driver_properties;
 
         bool wipe = false;

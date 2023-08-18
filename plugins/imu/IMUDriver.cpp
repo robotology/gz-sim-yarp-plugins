@@ -1,7 +1,6 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/dev/DeviceDriver.h>
-#include <yarp/dev/IGenericSensor.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <mutex>
 #include "singleton-imu/Handler.hh"
@@ -27,7 +26,6 @@ const std::string YarpIMUScopedName = "sensorScopedName";
  * 
  */
 class yarp::dev::GazeboYarpIMUDriver: 
-    public yarp::dev::IGenericSensor,
     public yarp::dev::DeviceDriver,
     public yarp::dev::IThreeAxisGyroscopes,
     public yarp::dev::IThreeAxisLinearAccelerometers,
@@ -67,38 +65,6 @@ class yarp::dev::GazeboYarpIMUDriver:
         }
 
         virtual bool close()
-        {
-            return true;
-        }
-
-        //GENERIC SENSOR
-        virtual bool read(yarp::sig::Vector& out)
-        {
-            if (out.size() != YarpIMUChannelsNumber) 
-            {
-                out.resize(YarpIMUChannelsNumber);
-            }
-
-            std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
-            out.resize(YarpIMUChannelsNumber, 0.0);
-            for (int i = 0; i < 9; i++)
-            {
-                out[i] = m_sensorData->m_data[i];
-            }
-
-            return true;
-        }
-
-        virtual bool getChannels(int *nc)
-        {
-            if (!nc) 
-            {
-                return false;
-            }
-            *nc = YarpIMUChannelsNumber;
-            return true;
-        }
-        virtual bool calibrate(int /*ch*/, double /*v*/)
         {
             return true;
         }
