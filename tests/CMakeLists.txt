@@ -9,4 +9,4 @@ FetchContent_MakeAvailable(googletest)
 
 add_subdirectory(forcetorque)
 add_subdirectory(imu)
-
+add_subdirectory(laser)

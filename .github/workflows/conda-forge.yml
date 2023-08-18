@@ -38,6 +38,8 @@ jobs:
         # Additional dependencies only useful on Linux
         # See https://github.com/robotology/robotology-superbuild/issues/477
         micromamba install expat-cos6-x86_64 freeglut libselinux-cos6-x86_64 libxau-cos6-x86_64 libxcb-cos6-x86_64 libxdamage-cos6-x86_64 libxext-cos6-x86_64 libxfixes-cos6-x86_64 libxxf86vm-cos6-x86_64 mesa-libgl-cos6-x86_64 mesa-libgl-devel-cos6-x86_64
+        # See https://github.com/robotology/gz-yarp-plugins/pull/38#issuecomment-1681909589 for more info
+        sudo apt install libgl1 libgl1-mesa-dri libselinux1 libxdamage1 libxxf86vm1 libxext6 libopengl0 libegl1
 
     - name: Configure VS Toolchain (Windows)
       if: contains(matrix.os, 'windows')
@@ -66,12 +68,19 @@ jobs:
         cd build
         cmake --build . --config ${{ matrix.build_type }} 
 
-    - name: Test
-      if: contains(matrix.os, 'macos') || contains(matrix.os, 'ubuntu')
+    - name: Test_ubuntu
+      if: contains(matrix.os, 'ubuntu')
       shell: bash -l {0}
       run: |
         cd build
-        ctest  --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} . 
+        ctest -E "^LaserTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} . 
+  
+    - name: Test_macos
+      if: contains(matrix.os, 'macos')
+      shell: bash -l {0}
+      run: |
+        cd build
+        ctest -E "^LaserTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
 
     # This is commented until we fix https://github.com/robotology/gz-yarp-plugins/issues/28
     # - name: Install
