@@ -10,20 +10,20 @@
 
 namespace yarp {
     namespace dev {
-        class GazeboYarpForceTorqueDriver;
+        class GzYarpForceTorqueDriver;
     }
 }
 
 const unsigned YarpForceTorqueChannelsNumber = 6; //The ForceTorque sensor has 6 fixed channels
 const std::string YarpForceTorqueScopedName = "sensorScopedName";
 
-class yarp::dev::GazeboYarpForceTorqueDriver: 
+class yarp::dev::GzYarpForceTorqueDriver: 
     public yarp::dev::DeviceDriver,
     public yarp::dev::ISixAxisForceTorqueSensors
 {
     public:
-        GazeboYarpForceTorqueDriver(){}
-        virtual ~GazeboYarpForceTorqueDriver(){}
+        GzYarpForceTorqueDriver(){}
+        virtual ~GzYarpForceTorqueDriver(){}
 
         //DEVICE DRIVER
         virtual bool open(yarp::os::Searchable& config)

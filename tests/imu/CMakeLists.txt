@@ -9,7 +9,7 @@ add_test(NAME ImuTest
          COMMAND ImuTest)
 
 set(_env_vars)
-list(APPEND _env_vars "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:GazeboYarpIMU>")
+list(APPEND _env_vars "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:GzYarpIMU>")
 
 set_tests_properties(ImuTest PROPERTIES
   ENVIRONMENT "${_env_vars}")

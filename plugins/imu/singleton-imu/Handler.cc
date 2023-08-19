@@ -9,7 +9,7 @@ HandlerIMU* HandlerIMU::getHandler()
     {
         s_handle = new HandlerIMU();
         if (!s_handle)
-            yError() << "Error while calling GazeboYarpPluginHandler constructor";
+            yError() << "Error while calling gz-yarp-PluginHandler constructor";
     }
     
     return s_handle;

@@ -20,18 +20,18 @@ using namespace sim;
 using namespace systems;
 
 
-class GazeboYarpForceTorque
+class GzYarpForceTorque
       : public System,
         public ISystemConfigure,
         public ISystemPreUpdate,
         public ISystemPostUpdate
 {
   public:
-    GazeboYarpForceTorque() : m_deviceRegistered(false)
+    GzYarpForceTorque() : m_deviceRegistered(false)
     {
     }
     
-    virtual ~GazeboYarpForceTorque()
+    virtual ~GzYarpForceTorque()
     {
       if (m_deviceRegistered) 
       {
@@ -57,8 +57,8 @@ class GazeboYarpForceTorque
         }
 
         std::string netWrapper = "analogServer";
-        ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::GazeboYarpForceTorqueDriver>
-                                            ("gazebo_forcetorque", netWrapper.c_str(), "GazeboYarpForceTorqueDriver"));
+        ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::GzYarpForceTorqueDriver>
+                                            ("gazebo_forcetorque", netWrapper.c_str(), "GzYarpForceTorqueDriver"));
                                             
         ::yarp::os::Property driver_properties;
 
@@ -69,20 +69,20 @@ class GazeboYarpForceTorque
             driver_properties.fromString(configuration_string, wipe);
             if (!driver_properties.check("sensorName"))
             {
-                yError() << "GazeboYarpForceTorque : missing sensorName parameter";
+                yError() << "gz-yarp-ForceTorque : missing sensorName parameter";
                 return;
             }
             if (!driver_properties.check("jointName"))
             {
-                yError() << "GazeboYarpForceTorque : missing jointName parameter";
+                yError() << "gz-yarp-ForceTorque : missing jointName parameter";
                 return;
             }
-            yInfo() << "GazeboYarpPlugins: configuration of sensor " << driver_properties.find("sensorName").asString() 
+            yInfo() << "gz-yarp-Plugins: configuration of sensor " << driver_properties.find("sensorName").asString() 
                     << " loaded from yarpConfigurationString : " << configuration_string << "\n";
         }
         else 
         {
-            yError() << "GazeboYarpForceTorque : missing yarpConfigurationString element";
+            yError() << "gz-yarp-ForceTorque : missing yarpConfigurationString element";
             return; 
         }
         
@@ -98,7 +98,7 @@ class GazeboYarpForceTorque
         driver_properties.put(YarpForceTorqueScopedName.c_str(), sensorScopedName.c_str());
         if (!driver_properties.check("yarpDeviceName"))
         {
-            yError() << "GazeboYarpForceTorque : missing yarpDeviceName parameter for device" << sensorScopedName;
+            yError() << "gz-yarp-ForceTorque : missing yarpDeviceName parameter for device" << sensorScopedName;
             return;
         }
 
@@ -109,7 +109,7 @@ class GazeboYarpForceTorque
         driver_properties.put("sensor_name", sensorName);
         if( !m_forceTorqueDriver.open(driver_properties) ) 
         {
-            yError()<<"GazeboYarpForceTorque Plugin failed: error in opening yarp driver";
+            yError()<<"gz-yarp-ForceTorque Plugin failed: error in opening yarp driver";
             return;
         }
 
@@ -117,7 +117,7 @@ class GazeboYarpForceTorque
 
         if(!Handler::getHandler()->setDevice(m_deviceScopedName, &m_forceTorqueDriver))
         {
-            yError()<<"GazeboYarpForceTorque: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
+            yError()<<"gz-yarp-ForceTorque: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
             return;
         }
         m_deviceRegistered = true;
@@ -131,7 +131,7 @@ class GazeboYarpForceTorque
         {
             this->ftInitialized = true;
             auto imuTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value();
-            this->node.Subscribe(imuTopicName, &GazeboYarpForceTorque::ftCb, this);
+            this->node.Subscribe(imuTopicName, &GzYarpForceTorque::ftCb, this);
         }
     }
   
@@ -178,12 +178,12 @@ class GazeboYarpForceTorque
 
  
 // Register plugin
-GZ_ADD_PLUGIN(GazeboYarpForceTorque,
+GZ_ADD_PLUGIN(GzYarpForceTorque,
                     gz::sim::System,
-                    GazeboYarpForceTorque::ISystemConfigure,
-                    GazeboYarpForceTorque::ISystemPreUpdate,
-                    GazeboYarpForceTorque::ISystemPostUpdate)
+                    GzYarpForceTorque::ISystemConfigure,
+                    GzYarpForceTorque::ISystemPreUpdate,
+                    GzYarpForceTorque::ISystemPostUpdate)
  
 // Add plugin alias so that we can refer to the plugin without the version
 // namespace
-GZ_ADD_PLUGIN_ALIAS(GazeboYarpForceTorque, "gz::sim::systems::GazeboYarpForceTorque")
+GZ_ADD_PLUGIN_ALIAS(GzYarpForceTorque, "gz::sim::systems::GzYarpForceTorque")

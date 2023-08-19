@@ -21,7 +21,7 @@ using namespace sim;
 using namespace systems;
 
 
-class GazeboYarpCamera
+class GzYarpCamera
       : public System,
         public ISystemConfigure,
         public ISystemPreUpdate,
@@ -30,11 +30,11 @@ class GazeboYarpCamera
 {
   public:
     
-    GazeboYarpCamera() : m_deviceRegistered(false)
+    GzYarpCamera() : m_deviceRegistered(false)
     {
     }
     
-    virtual ~GazeboYarpCamera()
+    virtual ~GzYarpCamera()
     {
         if (m_deviceRegistered) 
         {
@@ -62,8 +62,8 @@ class GazeboYarpCamera
             return;
         }
 
-        ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::GazeboYarpCameraDriver>
-                                            ("gazebo_camera", "grabber", "GazeboYarpCameraDriver"));
+        ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::GzYarpCameraDriver>
+                                            ("gazebo_camera", "grabber", "GzYarpCameraDriver"));
         ::yarp::os::Property driver_properties;
 
         bool wipe = false;
@@ -73,20 +73,20 @@ class GazeboYarpCamera
             driver_properties.fromString(configuration_string, wipe);
             if (!driver_properties.check("sensorName"))
             {
-                yError() << "GazeboYarpCamera : missing sensorName parameter";
+                yError() << "gz-yarp-Camera : missing sensorName parameter";
                 return;
             }
             if (!driver_properties.check("parentLinkName"))
             {
-                yError() << "GazeboYarpCamera : missing parentLinkName parameter";
+                yError() << "gz-yarp-Camera : missing parentLinkName parameter";
                 return;
             }
-            yInfo() << "GazeboYarpCamera: configuration of sensor " << driver_properties.find("sensorName").asString() 
+            yInfo() << "gz-yarp-Camera: configuration of sensor " << driver_properties.find("sensorName").asString() 
                     << " loaded from yarpConfigurationString : " << configuration_string << "\n";
         }
         else 
         {
-            yError() << "GazeboYarpCamera : missing yarpConfigurationString element";
+            yError() << "gz-yarp-Camera : missing yarpConfigurationString element";
             return; 
         }
 
@@ -112,7 +112,7 @@ class GazeboYarpCamera
         driver_properties.put(YarpCameraScopedName.c_str(), sensorScopedName.c_str());
         if (!driver_properties.check("yarpDeviceName"))
         {
-            yError() << "GazeboYarpCamera : missing yarpDeviceName parameter for device" << sensorScopedName;
+            yError() << "gz-yarp-Camera : missing yarpDeviceName parameter for device" << sensorScopedName;
             return;
         }
 
@@ -125,7 +125,7 @@ class GazeboYarpCamera
         //Open the driver
         if(!m_cameraDriver.open(driver_properties)) 
         {
-            yError()<<"GazeboYarpCamera Plugin failed: error in opening yarp driver";
+            yError()<<"gz-yarp-Camera Plugin failed: error in opening yarp driver";
             return;
         }
         
@@ -140,12 +140,12 @@ class GazeboYarpCamera
 
         if(!Handler::getHandler()->setDevice(m_deviceScopedName, &m_cameraDriver))
         {
-            yError()<<"GazeboYarpCamera: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
+            yError()<<"gz-yarp-Camera: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
             return;
         }
         this->m_deviceRegistered = true;
         this->cameraInitialized = false;
-        yInfo() << "GazeboYarpCamera: Registered YARP device with instance name:" << m_deviceScopedName;
+        yInfo() << "gz-yarp-Camera: Registered YARP device with instance name:" << m_deviceScopedName;
 
     }
 
@@ -156,7 +156,7 @@ class GazeboYarpCamera
         {
             this->cameraInitialized = true;
             auto CameraTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value();
-            this->node.Subscribe(CameraTopicName, &GazeboYarpCamera::CameraCb, this);
+            this->node.Subscribe(CameraTopicName, &GzYarpCamera::CameraCb, this);
         }
     }
 
@@ -200,12 +200,12 @@ class GazeboYarpCamera
 
  
 // Register plugin
-GZ_ADD_PLUGIN(GazeboYarpCamera,
+GZ_ADD_PLUGIN(GzYarpCamera,
                     gz::sim::System,
-                    GazeboYarpCamera::ISystemConfigure,
-                    GazeboYarpCamera::ISystemPreUpdate,
-                    GazeboYarpCamera::ISystemPostUpdate)
+                    GzYarpCamera::ISystemConfigure,
+                    GzYarpCamera::ISystemPreUpdate,
+                    GzYarpCamera::ISystemPostUpdate)
  
 // Add plugin alias so that we can refer to the plugin without the version
 // namespace
-GZ_ADD_PLUGIN_ALIAS(GazeboYarpCamera, "gz::sim::systems::GazeboYarpCamera")
+GZ_ADD_PLUGIN_ALIAS(GzYarpCamera, "gz::sim::systems::GzYarpCamera")

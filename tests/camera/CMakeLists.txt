@@ -8,7 +8,7 @@ target_link_libraries(CameraTest
 add_test(NAME CameraTest COMMAND CameraTest)
 
 set(_env_vars)
-list(APPEND _env_vars "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:GazeboYarpCamera>")
+list(APPEND _env_vars "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:GzYarpCamera>")
 list(APPEND _env_vars "LIBGL_ALWAYS_SOFTWARE=1")
 
 set_tests_properties(CameraTest PROPERTIES

@@ -9,7 +9,7 @@ add_test(NAME LaserTest
          COMMAND LaserTest)
 
 set(_env_vars)
-list(APPEND _env_vars "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:GazeboYarpLaser>")
+list(APPEND _env_vars "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:GzYarpLaser>")
 list(APPEND _env_vars "LIBGL_ALWAYS_SOFTWARE=1")
 
 set_tests_properties(LaserTest PROPERTIES

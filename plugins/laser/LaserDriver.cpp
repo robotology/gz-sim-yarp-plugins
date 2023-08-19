@@ -12,19 +12,19 @@
 
 namespace yarp {
     namespace dev {
-        class GazeboYarpLaserDriver;
+        class GzYarpLaserDriver;
     }
 }
 
 const std::string YarpLaserScopedName = "sensorScopedName";
 
-class yarp::dev::GazeboYarpLaserDriver: 
+class yarp::dev::GzYarpLaserDriver: 
     public yarp::dev::Lidar2DDeviceBase,
     public yarp::dev::DeviceDriver
 {
     public:
-        GazeboYarpLaserDriver(){}
-        virtual ~GazeboYarpLaserDriver(){}
+        GzYarpLaserDriver(){}
+        virtual ~GzYarpLaserDriver(){}
 
         //DEVICE DRIVER
         virtual bool open(yarp::os::Searchable& config) 
