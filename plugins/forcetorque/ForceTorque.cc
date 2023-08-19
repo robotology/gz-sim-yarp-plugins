@@ -130,8 +130,8 @@ class GzYarpForceTorque
         if(!this->ftInitialized && _ecm.ComponentData<components::SensorTopic>(sensor).has_value())
         {
             this->ftInitialized = true;
-            auto imuTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value();
-            this->node.Subscribe(imuTopicName, &GzYarpForceTorque::ftCb, this);
+            auto ftTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value();
+            this->node.Subscribe(ftTopicName, &GzYarpForceTorque::ftCb, this);
         }
     }
   

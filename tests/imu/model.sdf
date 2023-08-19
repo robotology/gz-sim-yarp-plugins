@@ -99,7 +99,7 @@
           <enable_metrics>true</enable_metrics>
         </sensor>
       </link>
-      <plugin name="GazeboYarpRobotInterface" filename="GazeboYarpRobotInterface">
+      <plugin name="GzYarpRobotInterface" filename="GazeboYarpRobotInterface">
         <yarpRobotInterfaceConfigurationFile>../../../tests/imu/IMU_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
     </model>
