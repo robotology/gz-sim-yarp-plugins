@@ -73,14 +73,14 @@ jobs:
       shell: bash -l {0}
       run: |
         cd build
-        ctest -E "^LaserTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} . 
+        ctest -E "^LaserTest|^CameraTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} . 
   
     - name: Test_macos
       if: contains(matrix.os, 'macos')
       shell: bash -l {0}
       run: |
         cd build
-        ctest -E "^LaserTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
+        ctest -E "^LaserTest|^CameraTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
 
     # This is commented until we fix https://github.com/robotology/gz-yarp-plugins/issues/28
     # - name: Install
