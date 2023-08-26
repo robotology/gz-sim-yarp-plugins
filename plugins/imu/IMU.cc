@@ -21,8 +21,10 @@ using namespace gz;
 using namespace sim;
 using namespace systems;
 
+namespace gzyarp 
+{
 
-class GzYarpIMU
+class IMU
       : public System,
         public ISystemConfigure,
         public ISystemPreUpdate,
@@ -31,11 +33,11 @@ class GzYarpIMU
 {
   public:
   
-    GzYarpIMU() : m_deviceRegistered(false)
+    IMU() : m_deviceRegistered(false)
     {
     }
     
-    virtual ~GzYarpIMU()
+    virtual ~IMU()
     {
       if (m_deviceRegistered) 
       {
@@ -61,8 +63,8 @@ class GzYarpIMU
         }
 
         std::string netWrapper = "inertial";
-        ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::GzYarpIMUDriver>
-                                            ("gazebo_imu", netWrapper.c_str(), "GzYarpIMUDriver"));
+        ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::gzyarp::IMUDriver>
+                                            ("gazebo_imu", netWrapper.c_str(), "IMUDriver"));
                                             
         ::yarp::os::Property driver_properties;
 
@@ -73,20 +75,20 @@ class GzYarpIMU
             driver_properties.fromString(configuration_string, wipe);
             if (!driver_properties.check("sensorName"))
             {
-                yError() << "gz-yarp-IMU : missing sensorName parameter";
+                yError() << "gz-sim-yarp-imu-system : missing sensorName parameter";
                 return;
             }
             if (!driver_properties.check("parentLinkName"))
             {
-                yError() << "gz-yarp-IMU : missing parentLinkName parameter";
+                yError() << "gz-sim-yarp-imu-system : missing parentLinkName parameter";
                 return;
             }
-            yInfo() << "gz-yarp-Plugins: configuration of sensor " << driver_properties.find("sensorName").asString() 
+            yInfo() << "gz-sim-yarp-imu-system: configuration of sensor " << driver_properties.find("sensorName").asString() 
                     << " loaded from yarpConfigurationString : " << configuration_string << "\n";
         }
         else 
         {
-            yError() << "gz-yarp-IMU : missing yarpConfigurationString element";
+            yError() << "gz-sim-yarp-imu-system : missing yarpConfigurationString element";
             return; 
         }
         std::string sensorName = driver_properties.find("sensorName").asString();
@@ -104,7 +106,7 @@ class GzYarpIMU
         driver_properties.put(YarpIMUScopedName.c_str(), sensorScopedName.c_str());
         if (!driver_properties.check("yarpDeviceName"))
         {
-            yError() << "gz-yarp-IMU : missing yarpDeviceName parameter for device" << sensorScopedName;
+            yError() << "gz-sim-yarp-imu-system : missing yarpDeviceName parameter for device" << sensorScopedName;
             return;
         }
 
@@ -115,7 +117,7 @@ class GzYarpIMU
         driver_properties.put("sensor_name", sensorName);
         if( !m_imuDriver.open(driver_properties) ) 
         {
-            yError()<<"gz-yarp-IMU Plugin failed: error in opening yarp driver";
+            yError()<<"gz-sim-yarp-imu-system Plugin failed: error in opening yarp driver";
             return;
         }
 
@@ -123,7 +125,7 @@ class GzYarpIMU
 
         if(!Handler::getHandler()->setDevice(m_deviceScopedName, &m_imuDriver))
         {
-            yError()<<"gz-yarp-IMU: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
+            yError()<<"gz-sim-yarp-imu-system: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
             return;
         }
         m_deviceRegistered = true;
@@ -137,7 +139,7 @@ class GzYarpIMU
         {
             this->imuInitialized = true;
             auto imuTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value();
-            this->node.Subscribe(imuTopicName, &GzYarpIMU::imuCb, this);
+            this->node.Subscribe(imuTopicName, &IMU::imuCb, this);
         }
     }
 
@@ -181,15 +183,11 @@ class GzYarpIMU
     std::mutex imuMsgMutex;
 };
 
+}
 
- 
 // Register plugin
-GZ_ADD_PLUGIN(GzYarpIMU,
-                    gz::sim::System,
-                    GzYarpIMU::ISystemConfigure,
-                    GzYarpIMU::ISystemPreUpdate,
-                    GzYarpIMU::ISystemPostUpdate)
- 
-// Add plugin alias so that we can refer to the plugin without the version
-// namespace
-GZ_ADD_PLUGIN_ALIAS(GzYarpIMU, "gz::sim::systems::GzYarpIMU")
+GZ_ADD_PLUGIN(gzyarp::IMU,
+              gz::sim::System,
+              gzyarp::IMU::ISystemConfigure,
+              gzyarp::IMU::ISystemPreUpdate,
+              gzyarp::IMU::ISystemPostUpdate)

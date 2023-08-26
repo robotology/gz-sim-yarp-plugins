@@ -19,19 +19,21 @@ using namespace gz;
 using namespace sim;
 using namespace systems;
 
+namespace gzyarp 
+{
 
-class GzYarpForceTorque
+class ForceTorque
       : public System,
         public ISystemConfigure,
         public ISystemPreUpdate,
         public ISystemPostUpdate
 {
   public:
-    GzYarpForceTorque() : m_deviceRegistered(false)
+    ForceTorque() : m_deviceRegistered(false)
     {
     }
     
-    virtual ~GzYarpForceTorque()
+    virtual ~ForceTorque()
     {
       if (m_deviceRegistered) 
       {
@@ -57,8 +59,8 @@ class GzYarpForceTorque
         }
 
         std::string netWrapper = "analogServer";
-        ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::GzYarpForceTorqueDriver>
-                                            ("gazebo_forcetorque", netWrapper.c_str(), "GzYarpForceTorqueDriver"));
+        ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::gzyarp::ForceTorqueDriver>
+                                            ("gazebo_forcetorque", netWrapper.c_str(), "ForceTorqueDriver"));
                                             
         ::yarp::os::Property driver_properties;
 
@@ -69,20 +71,20 @@ class GzYarpForceTorque
             driver_properties.fromString(configuration_string, wipe);
             if (!driver_properties.check("sensorName"))
             {
-                yError() << "gz-yarp-ForceTorque : missing sensorName parameter";
+                yError() << "gz-sim-yarp-forcetorque-system : missing sensorName parameter";
                 return;
             }
             if (!driver_properties.check("jointName"))
             {
-                yError() << "gz-yarp-ForceTorque : missing jointName parameter";
+                yError() << "gz-sim-yarp-forcetorque-system : missing jointName parameter";
                 return;
             }
-            yInfo() << "gz-yarp-Plugins: configuration of sensor " << driver_properties.find("sensorName").asString() 
+            yInfo() << "gz-sim-yarp-forcetorque-system: configuration of sensor " << driver_properties.find("sensorName").asString() 
                     << " loaded from yarpConfigurationString : " << configuration_string << "\n";
         }
         else 
         {
-            yError() << "gz-yarp-ForceTorque : missing yarpConfigurationString element";
+            yError() << "gz-sim-yarp-forcetorque-system : missing yarpConfigurationString element";
             return; 
         }
         
@@ -98,7 +100,7 @@ class GzYarpForceTorque
         driver_properties.put(YarpForceTorqueScopedName.c_str(), sensorScopedName.c_str());
         if (!driver_properties.check("yarpDeviceName"))
         {
-            yError() << "gz-yarp-ForceTorque : missing yarpDeviceName parameter for device" << sensorScopedName;
+            yError() << "gz-sim-yarp-forcetorque-system : missing yarpDeviceName parameter for device" << sensorScopedName;
             return;
         }
 
@@ -109,7 +111,7 @@ class GzYarpForceTorque
         driver_properties.put("sensor_name", sensorName);
         if( !m_forceTorqueDriver.open(driver_properties) ) 
         {
-            yError()<<"gz-yarp-ForceTorque Plugin failed: error in opening yarp driver";
+            yError()<<"gz-sim-yarp-forcetorque-system Plugin failed: error in opening yarp driver";
             return;
         }
 
@@ -117,7 +119,7 @@ class GzYarpForceTorque
 
         if(!Handler::getHandler()->setDevice(m_deviceScopedName, &m_forceTorqueDriver))
         {
-            yError()<<"gz-yarp-ForceTorque: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
+            yError()<<"gz-sim-yarp-forcetorque-system: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
             return;
         }
         m_deviceRegistered = true;
@@ -131,7 +133,7 @@ class GzYarpForceTorque
         {
             this->ftInitialized = true;
             auto ftTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value();
-            this->node.Subscribe(ftTopicName, &GzYarpForceTorque::ftCb, this);
+            this->node.Subscribe(ftTopicName, &ForceTorque::ftCb, this);
         }
     }
   
@@ -175,15 +177,14 @@ class GzYarpForceTorque
 
 };
 
+}
 
  
 // Register plugin
-GZ_ADD_PLUGIN(GzYarpForceTorque,
-                    gz::sim::System,
-                    GzYarpForceTorque::ISystemConfigure,
-                    GzYarpForceTorque::ISystemPreUpdate,
-                    GzYarpForceTorque::ISystemPostUpdate)
+GZ_ADD_PLUGIN(gzyarp::ForceTorque,
+              gz::sim::System,
+              gzyarp::ForceTorque::ISystemConfigure,
+              gzyarp::ForceTorque::ISystemPreUpdate,
+              gzyarp::ForceTorque::ISystemPostUpdate)
+
  
-// Add plugin alias so that we can refer to the plugin without the version
-// namespace
-GZ_ADD_PLUGIN_ALIAS(GzYarpForceTorque, "gz::sim::systems::GzYarpForceTorque")

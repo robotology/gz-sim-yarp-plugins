@@ -9,19 +9,21 @@
 
 namespace yarp {
     namespace dev {
-        class GzYarpCameraDriver;
+        namespace gzyarp {
+            class CameraDriver;
+        }
     }
 }
 
 const std::string YarpCameraScopedName = "sensorScopedName";
 
-class yarp::dev::GzYarpCameraDriver: 
+class yarp::dev::gzyarp::CameraDriver: 
     public yarp::dev::DeviceDriver,
     public yarp::dev::IFrameGrabberImage
 {
     public:
 
-        GzYarpCameraDriver()
+        CameraDriver()
         {
             m_vertical_flip     = false;
             m_horizontal_flip   = false;
@@ -42,7 +44,7 @@ class yarp::dev::GzYarpCameraDriver:
             sprintf(num[11].data,"          ** **");
         }
 
-        virtual ~GzYarpCameraDriver()
+        virtual ~CameraDriver()
         {
         }
 

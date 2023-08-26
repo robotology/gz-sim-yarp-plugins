@@ -64,8 +64,8 @@
       </link>
     </model>
 
-    <model name="force_torque_example">
-      <plugin name="GzYarpForceTorque" filename="GzYarpForceTorque">
+    <model name="force_torque_model">
+      <plugin name="gzyarp::ForceTorque" filename="gz-sim-yarp-forcetorque-system">
         <yarpConfigurationString>(yarpDeviceName forcetorque_plugin_device) (jointName joint_12) (sensorName force_torque_sensor)</yarpConfigurationString>
       </plugin>
       <link name="link_1">
@@ -148,7 +148,7 @@
           <update_rate>30</update_rate>
         </sensor>
       </joint>
-      <plugin name="GzYarpRobotInterface" filename="GzYarpRobotInterface">
+      <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
         <yarpRobotInterfaceConfigurationFile>forcetorque_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
     </model>

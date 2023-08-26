@@ -2,10 +2,10 @@ project(laser)
 
 add_subdirectory(singleton-laser)
 
-add_library(GzYarpLaser SHARED Laser.cc LaserDriver.cpp)
-target_compile_features(GzYarpLaser PRIVATE cxx_std_17)
+add_library(gz-sim-yarp-laser-system SHARED Laser.cc LaserDriver.cpp)
+target_compile_features(gz-sim-yarp-laser-system PRIVATE cxx_std_17)
 
-target_link_libraries(GzYarpLaser
+target_link_libraries(gz-sim-yarp-laser-system
   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
   PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
   PRIVATE

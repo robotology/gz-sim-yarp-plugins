@@ -9,7 +9,7 @@ add_test(NAME ForceTorqueTest
          COMMAND ForceTorqueTest)
 
 set(_env_vars)
-list(APPEND _env_vars "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:GzYarpForceTorque>")
+list(APPEND _env_vars "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-forcetorque-system>")
 
 set_tests_properties(ForceTorqueTest PROPERTIES
   ENVIRONMENT "${_env_vars}")
