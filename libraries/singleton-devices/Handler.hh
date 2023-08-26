@@ -3,7 +3,9 @@
 #include <yarp/dev/PolyDriverList.h>
 #include <gz/common/Event.hh>
 
-
+namespace gzyarp 
+{
+  
 class Handler
 {   
     public:
@@ -26,5 +28,7 @@ class Handler
         DevicesMap m_devicesMap;    // map of known yarp devices
 
 };
+
+}
 
 

@@ -21,8 +21,10 @@ using namespace gz;
 using namespace sim;
 using namespace systems;
 
+namespace gzyarp 
+{
 
-class GazeboYarpIMU
+class IMU
       : public System,
         public ISystemConfigure,
         public ISystemPreUpdate,
@@ -31,11 +33,11 @@ class GazeboYarpIMU
 {
   public:
   
-    GazeboYarpIMU() : m_deviceRegistered(false)
+    IMU() : m_deviceRegistered(false)
     {
     }
     
-    virtual ~GazeboYarpIMU()
+    virtual ~IMU()
     {
       if (m_deviceRegistered) 
       {
@@ -61,8 +63,8 @@ class GazeboYarpIMU
         }
 
         std::string netWrapper = "inertial";
-        ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::GazeboYarpIMUDriver>
-                                            ("gazebo_imu", netWrapper.c_str(), "GazeboYarpIMUDriver"));
+        ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::gzyarp::IMUDriver>
+                                            ("gazebo_imu", netWrapper.c_str(), "IMUDriver"));
                                             
         ::yarp::os::Property driver_properties;
 
@@ -73,20 +75,20 @@ class GazeboYarpIMU
             driver_properties.fromString(configuration_string, wipe);
             if (!driver_properties.check("sensorName"))
             {
-                yError() << "GazeboYarpIMU : missing sensorName parameter";
+                yError() << "gz-sim-yarp-imu-system : missing sensorName parameter";
                 return;
             }
             if (!driver_properties.check("parentLinkName"))
             {
-                yError() << "GazeboYarpIMU : missing parentLinkName parameter";
+                yError() << "gz-sim-yarp-imu-system : missing parentLinkName parameter";
                 return;
             }
-            yInfo() << "GazeboYarpPlugins: configuration of sensor " << driver_properties.find("sensorName").asString() 
+            yInfo() << "gz-sim-yarp-imu-system: configuration of sensor " << driver_properties.find("sensorName").asString() 
                     << " loaded from yarpConfigurationString : " << configuration_string << "\n";
         }
         else 
         {
-            yError() << "GazeboYarpIMU : missing yarpConfigurationString element";
+            yError() << "gz-sim-yarp-imu-system : missing yarpConfigurationString element";
             return; 
         }
         std::string sensorName = driver_properties.find("sensorName").asString();
@@ -104,7 +106,7 @@ class GazeboYarpIMU
         driver_properties.put(YarpIMUScopedName.c_str(), sensorScopedName.c_str());
         if (!driver_properties.check("yarpDeviceName"))
         {
-            yError() << "GazeboYarpIMU : missing yarpDeviceName parameter for device" << sensorScopedName;
+            yError() << "gz-sim-yarp-imu-system : missing yarpDeviceName parameter for device" << sensorScopedName;
             return;
         }
 
@@ -115,7 +117,7 @@ class GazeboYarpIMU
         driver_properties.put("sensor_name", sensorName);
         if( !m_imuDriver.open(driver_properties) ) 
         {
-            yError()<<"GazeboYarpIMU Plugin failed: error in opening yarp driver";
+            yError()<<"gz-sim-yarp-imu-system Plugin failed: error in opening yarp driver";
             return;
         }
 
@@ -123,7 +125,7 @@ class GazeboYarpIMU
 
         if(!Handler::getHandler()->setDevice(m_deviceScopedName, &m_imuDriver))
         {
-            yError()<<"GazeboYarpIMU: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
+            yError()<<"gz-sim-yarp-imu-system: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
             return;
         }
         m_deviceRegistered = true;
@@ -137,7 +139,7 @@ class GazeboYarpIMU
         {
             this->imuInitialized = true;
             auto imuTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value();
-            this->node.Subscribe(imuTopicName, &GazeboYarpIMU::imuCb, this);
+            this->node.Subscribe(imuTopicName, &IMU::imuCb, this);
         }
     }
 
@@ -181,15 +183,11 @@ class GazeboYarpIMU
     std::mutex imuMsgMutex;
 };
 
+}
 
- 
 // Register plugin
-GZ_ADD_PLUGIN(GazeboYarpIMU,
-                    gz::sim::System,
-                    GazeboYarpIMU::ISystemConfigure,
-                    GazeboYarpIMU::ISystemPreUpdate,
-                    GazeboYarpIMU::ISystemPostUpdate)
- 
-// Add plugin alias so that we can refer to the plugin without the version
-// namespace
-GZ_ADD_PLUGIN_ALIAS(GazeboYarpIMU, "gz::sim::systems::GazeboYarpIMU")
+GZ_ADD_PLUGIN(gzyarp::IMU,
+              gz::sim::System,
+              gzyarp::IMU::ISystemConfigure,
+              gzyarp::IMU::ISystemPreUpdate,
+              gzyarp::IMU::ISystemPostUpdate)

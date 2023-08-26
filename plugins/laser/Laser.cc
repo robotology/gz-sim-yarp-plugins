@@ -21,8 +21,10 @@ using namespace gz;
 using namespace sim;
 using namespace systems;
 
+namespace gzyarp 
+{
 
-class GazeboYarpLaser
+class Laser
       : public System,
         public ISystemConfigure,
         public ISystemPreUpdate,
@@ -31,11 +33,11 @@ class GazeboYarpLaser
 {
   public:
     
-    GazeboYarpLaser() : m_deviceRegistered(false)
+    Laser() : m_deviceRegistered(false)
     {
     }
     
-    virtual ~GazeboYarpLaser()
+    virtual ~Laser()
     {
       if (m_deviceRegistered) 
       {
@@ -60,8 +62,8 @@ class GazeboYarpLaser
             return;
         }
 
-        ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::GazeboYarpLaserDriver>
-                                            ("gazebo_laser", "", "GazeboYarpLaserDriver"));
+        ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::gzyarp::LaserDriver>
+                                            ("gazebo_laser", "", "LaserDriver"));
         ::yarp::os::Property driver_properties;
 
         bool wipe = false;
@@ -71,20 +73,20 @@ class GazeboYarpLaser
             driver_properties.fromConfigFile(ini_file_path.c_str(),wipe);
             if (!driver_properties.check("sensorName"))
             {
-                yError() << "GazeboYarpLaser : missing sensorName parameter";
+                yError() << "gz-sim-yarp-laser-system : missing sensorName parameter";
                 return;
             }
             if (!driver_properties.check("parentLinkName"))
             {
-                yError() << "GazeboYarpLaser : missing parentLinkName parameter";
+                yError() << "gz-sim-yarp-laser-system : missing parentLinkName parameter";
                 return;
             }
-            yInfo() << "GazeboYarpLaser: configuration of sensor " << driver_properties.find("sensorName").asString() 
+            yInfo() << "gz-sim-yarp-laser-system: configuration of sensor " << driver_properties.find("sensorName").asString() 
                     << " loaded from yarpConfigurationFile : " << ini_file_path << "\n";
         }
         else 
         {
-            yError() << "GazeboYarpLaser : missing yarpConfigurationFile element";
+            yError() << "gz-sim-yarp-laser-system : missing yarpConfigurationFile element";
             return; 
         }
         std::string sensorName = driver_properties.find("sensorName").asString();
@@ -102,7 +104,7 @@ class GazeboYarpLaser
         driver_properties.put(YarpLaserScopedName.c_str(), sensorScopedName.c_str());
         if (!driver_properties.check("yarpDeviceName"))
         {
-            yError() << "GazeboYarpLaser : missing yarpDeviceName parameter for device" << sensorScopedName;
+            yError() << "gz-sim-yarp-laser-system : missing yarpDeviceName parameter for device" << sensorScopedName;
             return;
         }
 
@@ -113,7 +115,7 @@ class GazeboYarpLaser
         driver_properties.put("sensor_name", sensorName);
         if( !m_laserDriver.open(driver_properties) ) 
         {
-            yError()<<"GazeboYarpLaser Plugin failed: error in opening yarp driver";
+            yError()<<"gz-sim-yarp-laser-system Plugin failed: error in opening yarp driver";
             return;
         }
 
@@ -121,7 +123,7 @@ class GazeboYarpLaser
 
         if(!Handler::getHandler()->setDevice(m_deviceScopedName, &m_laserDriver))
         {
-            yError()<<"GazeboYarpLaser: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
+            yError()<<"gz-sim-yarp-laser-system: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
             return;
         }
         m_deviceRegistered = true;
@@ -134,7 +136,7 @@ class GazeboYarpLaser
         {
             this->laserInitialized = true;
             auto laserTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value();
-            this->node.Subscribe(laserTopicName, &GazeboYarpLaser::laserCb, this);
+            this->node.Subscribe(laserTopicName, &Laser::laserCb, this);
         }
     }
 
@@ -178,15 +180,12 @@ class GazeboYarpLaser
     std::mutex laserMsgMutex;
 };
 
+}
 
- 
 // Register plugin
-GZ_ADD_PLUGIN(GazeboYarpLaser,
-                    gz::sim::System,
-                    GazeboYarpLaser::ISystemConfigure,
-                    GazeboYarpLaser::ISystemPreUpdate,
-                    GazeboYarpLaser::ISystemPostUpdate)
+GZ_ADD_PLUGIN(gzyarp::Laser,
+              gz::sim::System,
+              gzyarp::Laser::ISystemConfigure,
+              gzyarp::Laser::ISystemPreUpdate,
+              gzyarp::Laser::ISystemPostUpdate)
  
-// Add plugin alias so that we can refer to the plugin without the version
-// namespace
-GZ_ADD_PLUGIN_ALIAS(GazeboYarpLaser, "gz::sim::systems::GazeboYarpLaser")

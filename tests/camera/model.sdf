@@ -65,7 +65,7 @@
     </model>
 
     <model name="camera_model">
-      <plugin name="GazeboYarpCamera" filename="GazeboYarpCamera">
+      <plugin name="gzyarp::Camera" filename="gz-sim-yarp-camera-system">
         <yarpConfigurationString>(yarpDeviceName camera_plugin_device) (parentLinkName link_1) (sensorName camera_sensor) (display_timestamp) (display_time_box)</yarpConfigurationString>
       </plugin>
       <static>true</static>
@@ -95,7 +95,7 @@
           <visualize>true</visualize>
         </sensor>
       </link>
-      <plugin name="GazeboYarpRobotInterface" filename="GazeboYarpRobotInterface">
+      <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
         <yarpRobotInterfaceConfigurationFile>../../../tests/camera/camera_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
     </model>

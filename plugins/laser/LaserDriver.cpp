@@ -12,19 +12,21 @@
 
 namespace yarp {
     namespace dev {
-        class GazeboYarpLaserDriver;
+        namespace gzyarp {
+            class LaserDriver;
+        }
     }
 }
 
 const std::string YarpLaserScopedName = "sensorScopedName";
 
-class yarp::dev::GazeboYarpLaserDriver: 
+class yarp::dev::gzyarp::LaserDriver: 
     public yarp::dev::Lidar2DDeviceBase,
     public yarp::dev::DeviceDriver
 {
     public:
-        GazeboYarpLaserDriver(){}
-        virtual ~GazeboYarpLaserDriver(){}
+        LaserDriver(){}
+        virtual ~LaserDriver(){}
 
         //DEVICE DRIVER
         virtual bool open(yarp::os::Searchable& config) 
@@ -42,7 +44,7 @@ class yarp::dev::GazeboYarpLaserDriver:
                 m_sensorName = config.find("sensor_name").asString().substr(pos + separator.size() - 1); 
             }
             m_frameName = m_sensorName;
-            m_sensorData = HandlerLaser::getHandler()->getSensor(sensorScopedName);
+            m_sensorData = ::gzyarp::HandlerLaser::getHandler()->getSensor(sensorScopedName);
 
             if (!m_sensorData)
             {

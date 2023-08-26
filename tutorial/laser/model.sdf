@@ -65,7 +65,7 @@
     </model>
 
     <model name="laser_model">
-      <plugin name="GazeboYarpLaser" filename="GazeboYarpLaser">
+      <plugin name="gzyarp::Laser" filename="gz-sim-yarp-laser-system">
         <yarpConfigurationFile>laser.ini</yarpConfigurationFile>
       </plugin>
       <static>true</static>
@@ -106,7 +106,7 @@
           <visualize>true</visualize>
         </sensor>
       </link>
-      <plugin name="GazeboYarpRobotInterface" filename="GazeboYarpRobotInterface">
+      <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
         <yarpRobotInterfaceConfigurationFile>laser_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
     </model>

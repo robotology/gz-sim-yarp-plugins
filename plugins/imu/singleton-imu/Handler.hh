@@ -13,6 +13,8 @@ struct IMUData
   double simTime;
 };
 
+namespace gzyarp 
+{
 
 class HandlerIMU
 {   
@@ -33,5 +35,7 @@ class HandlerIMU
         SensorsMap m_sensorsMap;    // map of known sensors
 
 };
+
+}
 
 

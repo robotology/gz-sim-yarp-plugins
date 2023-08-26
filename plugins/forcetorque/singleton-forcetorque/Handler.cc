@@ -2,6 +2,9 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
+namespace gzyarp 
+{
+
 HandlerForceTorque* HandlerForceTorque::getHandler()
 {
     std::lock_guard<std::mutex> lock(mutex());
@@ -9,7 +12,7 @@ HandlerForceTorque* HandlerForceTorque::getHandler()
     {
         s_handle = new HandlerForceTorque();
         if (!s_handle)
-            yError() << "Error while calling GazeboYarpPluginHandler constructor";
+            yError() << "Error while calling gzyarp::HandlerForceTorque constructor";
     }
     
     return s_handle;
@@ -28,7 +31,7 @@ bool HandlerForceTorque::setSensor(ForceTorqueData* _sensorDataPtr)
         //sensor does not exists. Add to map
         if (!m_sensorsMap.insert(std::pair<std::string, ForceTorqueData*>(sensorScopedName, _sensorDataPtr)).second) 
         {
-            yError() << "Error in Handler while inserting a new sensor pointer!";
+            yError() << "Error in gzyarp::HandlerForceTorque while inserting a new sensor pointer!";
             yError() << " The name of the sensor is already present but the pointer does not match with the one already registered!";
             yError() << " This should not happen, as the scoped name should be unique in Gazebo. Fatal error.";
             ret = false;
@@ -84,6 +87,8 @@ std::mutex& HandlerForceTorque::mutex()
 {
     static std::mutex s_mutex;
     return s_mutex;
+}
+
 }
 
 

@@ -9,7 +9,9 @@
 
 namespace yarp {
     namespace dev {
-        class GazeboYarpIMUDriver;
+        namespace gzyarp {
+            class IMUDriver;
+        }
     }
 }
 
@@ -25,15 +27,15 @@ const std::string YarpIMUScopedName = "sensorScopedName";
  * 6  7  8  = Calibrated 3-axis (X, Y, Z) gyroscope data
  * 
  */
-class yarp::dev::GazeboYarpIMUDriver: 
+class yarp::dev::gzyarp::IMUDriver: 
     public yarp::dev::DeviceDriver,
     public yarp::dev::IThreeAxisGyroscopes,
     public yarp::dev::IThreeAxisLinearAccelerometers,
     public yarp::dev::IOrientationSensors
 {
     public:
-        GazeboYarpIMUDriver(){}
-        virtual ~GazeboYarpIMUDriver(){}
+        IMUDriver(){}
+        virtual ~IMUDriver(){}
 
         //DEVICE DRIVER
         virtual bool open(yarp::os::Searchable& config) 
@@ -53,7 +55,7 @@ class yarp::dev::GazeboYarpIMUDriver:
             }
 
             m_frameName = m_sensorName;
-            m_sensorData = HandlerIMU::getHandler()->getSensor(sensorScopedName);
+            m_sensorData = ::gzyarp::HandlerIMU::getHandler()->getSensor(sensorScopedName);
             
             if (!m_sensorData)
             {
@@ -156,7 +158,7 @@ class yarp::dev::GazeboYarpIMUDriver:
         {
             if (sens_index != 0)
             {
-                yError() << "GazeboYarpIMUDriver: sens_index must be equal to 0, since there is  only one sensor in consideration";
+                yError() << "IMUDriver: sens_index must be equal to 0, since there is  only one sensor in consideration";
                 return yarp::dev::MAS_status::MAS_ERROR;
             }
 
@@ -167,7 +169,7 @@ class yarp::dev::GazeboYarpIMUDriver:
         {
             if (sens_index != 0)
             {
-                yError() << "GazeboYarpIMUDriver: sens_index must be equal to 0, since there is  only one sensor in consideration";
+                yError() << "IMUDriver: sens_index must be equal to 0, since there is  only one sensor in consideration";
                 return false;
             }
 
@@ -179,7 +181,7 @@ class yarp::dev::GazeboYarpIMUDriver:
         {
             if (sens_index != 0)
             {
-                yError() << "GazeboYarpIMUDriver: sens_index must be equal to 0, since there is  only one sensor in consideration";
+                yError() << "IMUDriver: sens_index must be equal to 0, since there is  only one sensor in consideration";
                 return false;
             }
 
@@ -191,7 +193,7 @@ class yarp::dev::GazeboYarpIMUDriver:
 
             if (sens_index != 0)
             {
-                yError() << "GazeboYarpIMUDriver: sens_index must be equal to 0, since there is  only one sensor in consideration";
+                yError() << "IMUDriver: sens_index must be equal to 0, since there is  only one sensor in consideration";
                 return false;
             }
 
