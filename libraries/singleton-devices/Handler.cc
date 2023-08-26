@@ -2,6 +2,9 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
+namespace gzyarp 
+{
+
 Handler* Handler::getHandler()
 {
     std::lock_guard<std::mutex> lock(mutex());
@@ -9,7 +12,7 @@ Handler* Handler::getHandler()
     {
         s_handle = new Handler();
         if (!s_handle)
-            yError() << "Error while calling gz-yarp-PluginHandler constructor";
+            yError() << "Error while calling gzyarp::Handler constructor";
     }
     
     return s_handle;
@@ -53,7 +56,7 @@ bool Handler::getDevicesAsPolyDriverList(const std::string& modelScopedName, yar
             else 
             {
                 // If a name collision is found, print a clear error and return
-                yError() << "gz-yarp-Plugins robotinterface getDevicesAsPolyDriverList error: ";
+                yError() << "gzyarp::Handler robotinterface getDevicesAsPolyDriverList error: ";
                 yError() << "two YARP devices with yarpDeviceName " << yarpDeviceName 
                          << " found in model " << modelScopedName;
                 yError() << "First instance: " << got->second;
@@ -78,7 +81,7 @@ bool Handler::setDevice(std::string deviceDatabaseKey, yarp::dev::PolyDriver* de
             ret = true;
         else
         {
-            yError() << " Error in gz-yarp-Plugins::Handler while inserting a new yarp device pointer!";
+            yError() << " Error in gzyarp::Handler while inserting a new yarp device pointer!";
             yError() << " The name of the device is already present but the pointer does not match with the one already registered!";
             yError() << " This should not happen, check the names are correct in your config file. Fatal error.";
         }
@@ -88,7 +91,7 @@ bool Handler::setDevice(std::string deviceDatabaseKey, yarp::dev::PolyDriver* de
         //device does not exists. Add to map
         if (!m_devicesMap.insert(std::pair<std::string, yarp::dev::PolyDriver*>(deviceDatabaseKey, device2add)).second) 
         {
-            yError() << " Error in gz-yarp-Plugins::Handler while inserting a new device pointer!";
+            yError() << " Error in gzyarp::Handler while inserting a new device pointer!";
             ret = false;
         } 
         else 
@@ -139,6 +142,6 @@ std::mutex& Handler::mutex()
     return s_mutex;
 }
 
-
+}
 
 

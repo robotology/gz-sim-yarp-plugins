@@ -15,6 +15,8 @@ struct CameraData
   double simTime;
 };
 
+namespace gzyarp 
+{
 
 class HandlerCamera
 {   
@@ -35,5 +37,7 @@ class HandlerCamera
         SensorsMap m_sensorsMap;
 
 };
+
+}
 
 

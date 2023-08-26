@@ -13,6 +13,8 @@ struct LaserData
   double simTime;
 };
 
+namespace gzyarp 
+{
 
 class HandlerLaser
 {   
@@ -34,4 +36,5 @@ class HandlerLaser
 
 };
 
+}
 

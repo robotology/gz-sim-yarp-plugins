@@ -53,7 +53,7 @@ class yarp::dev::gzyarp::CameraDriver:
         virtual bool open(yarp::os::Searchable& config) 
         {
             std::string sensorScopedName(config.find(YarpCameraScopedName.c_str()).asString().c_str());
-            m_sensorData = HandlerCamera::getHandler()->getSensor(sensorScopedName);
+            m_sensorData = ::gzyarp::HandlerCamera::getHandler()->getSensor(sensorScopedName);
     
             if (!m_sensorData)
             {

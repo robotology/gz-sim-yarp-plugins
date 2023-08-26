@@ -2,6 +2,9 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
+namespace gzyarp 
+{
+
 HandlerCamera* HandlerCamera::getHandler()
 {
     std::lock_guard<std::mutex> lock(mutex());
@@ -9,7 +12,7 @@ HandlerCamera* HandlerCamera::getHandler()
     {
         s_handle = new HandlerCamera();
         if (!s_handle)
-            yError() << "Error while calling gz-yarp-PluginHandler constructor";
+            yError() << "Error while calling gzyarp::HandlerCamera constructor";
     }
     
     return s_handle;
@@ -28,7 +31,7 @@ bool HandlerCamera::setSensor(CameraData* _sensorDataPtr)
         //sensor does not exists. Add to map
         if (!m_sensorsMap.insert(std::pair<std::string, CameraData*>(sensorScopedName, _sensorDataPtr)).second) 
         {
-            yError() << "Error in Handler while inserting a new sensor pointer!";
+            yError() << "Error in gzyarp::HandlerCamera while inserting a new sensor pointer!";
             yError() << " The name of the sensor is already present but the pointer does not match with the one already registered!";
             yError() << " This should not happen, as the scoped name should be unique in Gazebo. Fatal error.";
             ret = false;
@@ -83,6 +86,7 @@ std::mutex& HandlerCamera::mutex()
     return s_mutex;
 }
 
+}
 
 
 

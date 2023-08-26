@@ -45,7 +45,7 @@ class yarp::dev::gzyarp::ForceTorqueDriver:
             }
 
             m_frameName = m_sensorName;
-            m_sensorData = HandlerForceTorque::getHandler()->getSensor(sensorScopedName);
+            m_sensorData = ::gzyarp::HandlerForceTorque::getHandler()->getSensor(sensorScopedName);
             
             if (!m_sensorData)
             {

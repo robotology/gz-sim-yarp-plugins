@@ -13,6 +13,8 @@ struct ForceTorqueData
   double simTime;
 };
 
+namespace gzyarp 
+{
 
 class HandlerForceTorque
 {   
@@ -33,5 +35,7 @@ class HandlerForceTorque
         SensorsMap m_sensorsMap;    // map of known sensors
 
 };
+
+}
 
 

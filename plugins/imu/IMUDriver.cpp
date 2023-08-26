@@ -55,7 +55,7 @@ class yarp::dev::gzyarp::IMUDriver:
             }
 
             m_frameName = m_sensorName;
-            m_sensorData = HandlerIMU::getHandler()->getSensor(sensorScopedName);
+            m_sensorData = ::gzyarp::HandlerIMU::getHandler()->getSensor(sensorScopedName);
             
             if (!m_sensorData)
             {

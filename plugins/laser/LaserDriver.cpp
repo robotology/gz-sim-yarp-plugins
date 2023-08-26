@@ -44,7 +44,7 @@ class yarp::dev::gzyarp::LaserDriver:
                 m_sensorName = config.find("sensor_name").asString().substr(pos + separator.size() - 1); 
             }
             m_frameName = m_sensorName;
-            m_sensorData = HandlerLaser::getHandler()->getSensor(sensorScopedName);
+            m_sensorData = ::gzyarp::HandlerLaser::getHandler()->getSensor(sensorScopedName);
 
             if (!m_sensorData)
             {
