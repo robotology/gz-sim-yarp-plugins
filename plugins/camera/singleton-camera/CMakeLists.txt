@@ -1,5 +1,5 @@
 add_library(gz-sim-yarp-handler-camera SHARED Handler.cc Handler.hh)
-target_compile_features(HandlerCamera PRIVATE cxx_std_17)
+target_compile_features(gz-sim-yarp-handler-camera PRIVATE cxx_std_17)
 
 target_link_libraries(gz-sim-yarp-handler-camera
   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
@@ -10,7 +10,4 @@ target_link_libraries(gz-sim-yarp-handler-camera
     YARP::YARP_init)
 
 # Add install target
-install(TARGETS gz-sim-yarp-handler-camera
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+install(TARGETS gz-sim-yarp-handler-camera)

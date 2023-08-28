@@ -1,6 +1,6 @@
 
 add_library(gz-sim-yarp-handler-imu SHARED Handler.cc Handler.hh)
-target_compile_features(HandlerIMU PRIVATE cxx_std_17)
+target_compile_features(gz-sim-yarp-handler-imu PRIVATE cxx_std_17)
 
 target_link_libraries(gz-sim-yarp-handler-imu
   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
@@ -11,7 +11,4 @@ target_link_libraries(gz-sim-yarp-handler-imu
     YARP::YARP_init)
 
 # Add install target
-install(TARGETS gz-sim-yarp-handler-imu
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+install(TARGETS gz-sim-yarp-handler-imu)

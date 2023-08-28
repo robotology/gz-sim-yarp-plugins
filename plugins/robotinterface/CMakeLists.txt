@@ -11,8 +11,5 @@ target_link_libraries(gz-sim-yarp-robotinterface-system
     YARP::YARP_init
     gz-sim-yarp-handler)
 
-install(TARGETS gz-sim-yarp-robotinterface-system
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+install(TARGETS gz-sim-yarp-robotinterface-system)
   
