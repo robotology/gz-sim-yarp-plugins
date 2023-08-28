@@ -8,10 +8,7 @@
   ~~~
 - 2nd terminal:
   ~~~
-  export LIBGL_ALWAYS_SOFTWARE=1 
-  cd build
-  export GZ_SIM_SYSTEM_PLUGIN_PATH=`pwd`:`pwd`/lib
-  cd ../tutorial/forcetorque/model_one_sensor
+  cd tutorial/forcetorque/model_one_sensor
   gz sim model.sdf
   ~~~
 - 3rd terminal:
@@ -27,6 +24,15 @@ Finally start the simulation in Gazebo. The output is:
 () () () () () (((0.0 0.0 -98.0 0.0 0.0 0.0) 0.0749999999999999972244)) () () () ()
 () () () () () (((0.0 0.0 -98.0 0.0 0.0 0.0) 0.140999999999999986455)) () () () ()
 ...
+~~~
+
+If you are using Linux on WSLg and you have the following error
+~~~
+OGRE EXCEPTION(9:UnimplementedException):  in GL3PlusTextureGpu::copyTo at ./RenderSystems/GL3Plus/src/OgreGL3PlusTextureGpu.cpp (line 685)
+~~~
+try forcing software rendering:
+~~~
+export LIBGL_ALWAYS_SOFTWARE=1
 ~~~
 
 ## Run model in Gazebo Garden without YARP integration

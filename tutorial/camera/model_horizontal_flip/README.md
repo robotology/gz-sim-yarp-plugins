@@ -8,10 +8,7 @@
   ~~~
 - 2nd terminal:
   ~~~
-  export LIBGL_ALWAYS_SOFTWARE=1 
-  cd build
-  export GZ_SIM_SYSTEM_PLUGIN_PATH=`pwd`:`pwd`/lib
-  cd ../tutorial/camera/model_horizontal_flip
+  cd tutorial/camera/model_horizontal_flip
   gz sim model.sdf
   ~~~
 - 3rd terminal:
@@ -29,5 +26,12 @@ Finally start the simulation in Gazebo.
 - Gazebo simulation
   ![Gazebo simulation](imgs/simulation.png "Gazebo simulation")
 
-
+If you are using Linux on WSLg and you have the following error
+~~~
+OGRE EXCEPTION(9:UnimplementedException):  in GL3PlusTextureGpu::copyTo at ./RenderSystems/GL3Plus/src/OgreGL3PlusTextureGpu.cpp (line 685)
+~~~
+try forcing software rendering:
+~~~
+export LIBGL_ALWAYS_SOFTWARE=1
+~~~
 

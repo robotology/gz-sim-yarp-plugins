@@ -8,10 +8,7 @@
   ~~~
 - 2nd terminal:
   ~~~
-  export LIBGL_ALWAYS_SOFTWARE=1 
-  cd build
-  export GZ_SIM_SYSTEM_PLUGIN_PATH=`pwd`:`pwd`/lib
-  cd ../tutorial/imu
+  cd tutorial/imu
   gz sim model.sdf
   ~~~
 - 3rd terminal:
@@ -28,6 +25,15 @@ Finally start the simulation in Gazebo. The output is:
 
 (((-2.65163859086565008197e-17 -6.92733521733797742996e-17 1.07010834988178922973e-17) 0.918000000000000038192)) (((-4.09782279403881113319e-15 5.95134124642898954114e-16 9.79999999999999715783) 0.918000000000000038192)) () (((-4.95593801967022345119e-18 7.07755278231224452645e-18 1.0) 0.918000000000000038192)) () () () () () ()
 ...
+~~~
+
+If you are using Linux on WSLg and you have the following error
+~~~
+OGRE EXCEPTION(9:UnimplementedException):  in GL3PlusTextureGpu::copyTo at ./RenderSystems/GL3Plus/src/OgreGL3PlusTextureGpu.cpp (line 685)
+~~~
+try forcing software rendering:
+~~~
+export LIBGL_ALWAYS_SOFTWARE=1
 ~~~
 
 ## Run model in Gazebo Garden without YARP integration
