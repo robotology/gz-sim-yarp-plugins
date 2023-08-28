@@ -8,7 +8,6 @@
   ~~~
 - 2nd terminal:
   ~~~
-  export LIBGL_ALWAYS_SOFTWARE=1
   cd tutorial/camera/model
   gz sim model.sdf
   ~~~
