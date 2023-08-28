@@ -14,3 +14,9 @@ target_link_libraries(gz-sim-yarp-laser-system
     YARP::YARP_init
     Handler
     HandlerLaser)
+
+# Add install target
+install(TARGETS gz-sim-yarp-laser-system
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")

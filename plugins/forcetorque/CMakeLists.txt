@@ -14,3 +14,9 @@ target_link_libraries(gz-sim-yarp-forcetorque-system
     YARP::YARP_init
     Handler
     HandlerForceTorque)
+
+# Add install target
+install(TARGETS gz-sim-yarp-forcetorque-system
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")

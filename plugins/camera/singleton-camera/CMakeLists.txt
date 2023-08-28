@@ -8,3 +8,9 @@ target_link_libraries(HandlerCamera
     ${YARP_LIBRARIES}
     YARP::YARP_os
     YARP::YARP_init)
+
+# Add install target
+install(TARGETS HandlerCamera
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")

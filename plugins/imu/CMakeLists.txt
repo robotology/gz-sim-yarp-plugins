@@ -14,3 +14,9 @@ target_link_libraries(gz-sim-yarp-imu-system
     YARP::YARP_init
     Handler
     HandlerIMU)
+
+# Add install target
+install(TARGETS gz-sim-yarp-imu-system
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")

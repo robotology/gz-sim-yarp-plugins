@@ -9,3 +9,9 @@ target_link_libraries(HandlerLaser
     ${YARP_LIBRARIES}
     YARP::YARP_os
     YARP::YARP_init)
+
+# Add install target
+install(TARGETS HandlerLaser
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")

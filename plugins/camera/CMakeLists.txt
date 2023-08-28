@@ -14,3 +14,9 @@ target_link_libraries(gz-sim-yarp-camera-system
     YARP::YARP_init
     Handler
     HandlerCamera)
+
+# Add install target
+install(TARGETS gz-sim-yarp-camera-system
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
