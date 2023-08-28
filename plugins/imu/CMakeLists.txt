@@ -12,8 +12,8 @@ target_link_libraries(gz-sim-yarp-imu-system
     ${YARP_LIBRARIES}
     YARP::YARP_os
     YARP::YARP_init
-    Handler
-    HandlerIMU)
+    gz-sim-yarp-handler
+    gz-sim-yarp-handler-imu)
 
 # Add install target
 install(TARGETS gz-sim-yarp-imu-system

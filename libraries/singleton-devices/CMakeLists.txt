@@ -1,8 +1,8 @@
 
-add_library(Handler SHARED Handler.cc Handler.hh)
-target_compile_features(Handler PRIVATE cxx_std_17)
+add_library(gz-sim-yarp-handler SHARED Handler.cc Handler.hh)
+target_compile_features(gz-sim-yarp-handler PRIVATE cxx_std_17)
 
-target_link_libraries(Handler
+target_link_libraries(gz-sim-yarp-handler
   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
   PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
   PRIVATE
@@ -10,7 +10,7 @@ target_link_libraries(Handler
     YARP::YARP_os
     YARP::YARP_init)
 
-install(TARGETS Handler
+install(TARGETS gz-sim-yarp-handler
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")

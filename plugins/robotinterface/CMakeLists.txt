@@ -9,7 +9,7 @@ target_link_libraries(gz-sim-yarp-robotinterface-system
     ${YARP_LIBRARIES}
     YARP::YARP_os
     YARP::YARP_init
-    Handler)
+    gz-sim-yarp-handler)
 
 install(TARGETS gz-sim-yarp-robotinterface-system
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"

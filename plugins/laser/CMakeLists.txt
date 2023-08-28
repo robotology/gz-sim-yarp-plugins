@@ -12,8 +12,8 @@ target_link_libraries(gz-sim-yarp-laser-system
     ${YARP_LIBRARIES}
     YARP::YARP_os
     YARP::YARP_init
-    Handler
-    HandlerLaser)
+    gz-sim-yarp-handler
+    gz-sim-yarp-handler-laser)
 
 # Add install target
 install(TARGETS gz-sim-yarp-laser-system

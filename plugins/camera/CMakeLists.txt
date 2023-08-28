@@ -12,8 +12,8 @@ target_link_libraries(gz-sim-yarp-camera-system
     ${YARP_LIBRARIES}
     YARP::YARP_os
     YARP::YARP_init
-    Handler
-    HandlerCamera)
+    gz-sim-yarp-handler
+    gz-sim-yarp-handler-camera)
 
 # Add install target
 install(TARGETS gz-sim-yarp-camera-system
