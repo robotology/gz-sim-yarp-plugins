@@ -45,9 +45,9 @@ sudo apt remove yarp && sudo apt autoremove
 ~~~
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_INSTALL_PREFIX=<desired_install_prefix> ..
 make
-sudo make install
+make install
 ~~~
 To notify Gazebo of the new plugins compiled, it is necessary to modify the GZ_SIM_SYSTEM_PLUGIN_PATH environment variable:
 ```
