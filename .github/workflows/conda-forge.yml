@@ -82,8 +82,7 @@ jobs:
         cd build
         ctest -E "^LaserTest|^CameraTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
 
-    # This is commented until we fix https://github.com/robotology/gz-yarp-plugins/issues/28
-    # - name: Install
-    #  run: |
-    #    cd build
-    #    cmake --build . --config ${{ matrix.build_type }} --target install
+    - name: Install
+      run: |
+        cd build
+        cmake --build . --config ${{ matrix.build_type }} --target install

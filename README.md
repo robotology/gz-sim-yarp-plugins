@@ -2,7 +2,13 @@
 
 **This repository contains a preliminary work in progress of integration of Modern Gazebo (gz) and YARP devices, a port of some functionalities of https://github.com/robotology/gazebo-yarp-plugins to Modern Gazebo. The repo is working in progress, and public interfaces can change without warning.**
 
-## Install/Uninstall Gazebo Garden
+## Quick start
+- [Install Gazebo Garden](#install_gazebo)
+- [Install YARP](#install_yarp)
+- [Install gz-sim-yarp-plugins](#install_gz-sim-yarp-plugins)
+  
+
+### <a name="install_gazebo"></a> Install Gazebo Garden
 #### Binary Installation in Ubuntu (or WSL)
 First install some necessary tools:  
 ```
@@ -21,7 +27,7 @@ sudo apt-get install gz-garden
 sudo apt remove gz-garden && sudo apt autoremove
 ```
 
-## Install YARP
+### <a name="install_yarp"></a> Install YARP
 
 #### Binary Installation in Ubuntu (or WSL)
 ```
@@ -35,10 +41,18 @@ sudo apt install yarp
 sudo apt remove yarp && sudo apt autoremove
 ```
 
-## Compilation
+## <a name="install_gz-sim-yarp-plugins"></a> Install gz-sim-yarp-plugins
 ~~~
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_INSTALL_PREFIX=<desired_install_prefix> ..
 make
+make install
 ~~~
+To notify Gazebo of the new plugins compiled, it is necessary to modify the GZ_SIM_SYSTEM_PLUGIN_PATH environment variable:
+```
+export GZ_SIM_SYSTEM_PLUGIN_PATH=${GZ_SIM_SYSTEM_PLUGIN_PATH}:/path/to/the/install/folder/lib
+```
+where `/path/to/the/install/folder/lib` is the directory containing the `libgz-sim-yarp-forcetorque-system.so`, `libgz-sim-yarp-camera-system.so`... files (by default `/usr/local/lib`)
+
+To avoid having to modify this environment variable each time, you can place this command in the `.bashrc` file in your home directory.

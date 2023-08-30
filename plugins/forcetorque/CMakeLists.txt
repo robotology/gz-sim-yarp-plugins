@@ -12,5 +12,8 @@ target_link_libraries(gz-sim-yarp-forcetorque-system
     ${YARP_LIBRARIES}
     YARP::YARP_os
     YARP::YARP_init
-    Handler
-    HandlerForceTorque)
+    gz-sim-yarp-handler
+    gz-sim-yarp-handler-forcetorque)
+
+# Add install target
+install(TARGETS gz-sim-yarp-forcetorque-system)
