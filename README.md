@@ -12,7 +12,7 @@ installing the dependencies with conda-forge on Linux, macOS or Windows, or apt 
 Create and activate an environment with the required dependencies:
 
 ~~~
-mamba create -c conda-forge -n gsypdev libgz-sim8 yarp cmake ninja pkg-config cmake compilers
+mamba create -c conda-forge -n gsypdev libgz-sim7 yarp cmake ninja pkg-config cmake compilers
 mamba activate gsypdev
 ~~~
 
