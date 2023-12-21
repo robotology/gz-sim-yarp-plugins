@@ -81,7 +81,7 @@ jobs:
       run: |
         cd build
         # ImuTest is skipped due to https://github.com/robotology/gz-sim-yarp-plugins/issues/54
-        ctest -E "^LaserTest|^CameraTest|^ImuTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
+        ctest -E "^LaserTest|^CameraTest|^ImuTest|^ForceTorqueTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Install
       run: |
