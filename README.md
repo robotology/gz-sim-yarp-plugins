@@ -1,19 +1,51 @@
-# gz-yarp-plugins
+# gz-sim-yarp-plugins
 
 **This repository contains a preliminary work in progress of integration of Modern Gazebo (gz) and YARP devices, a port of some functionalities of https://github.com/robotology/gazebo-yarp-plugins to Modern Gazebo. The repo is working in progress, and public interfaces can change without warning.**
 
-## Quick start
-- [Install Gazebo Garden](#install_gazebo)
-- [Install YARP](#install_yarp)
-- [Install gz-sim-yarp-plugins](#install_gz-sim-yarp-plugins)
-  
+## Installation
 
-### <a name="install_gazebo"></a> Install Gazebo Garden
-#### Binary Installation in Ubuntu (or WSL)
-First install some necessary tools:  
+At the moment we do not provide any binary for `gz-sim-yarp-plugins`, so you need to compile it from source, either
+installing the dependencies with conda-forge on Linux, macOS or Windows, or apt on Ubuntu.
+
+### Compile from source using conda-forge dependencies on Linux, macOS or Windows
+
+Create and activate an environment with the required dependencies:
+
+~~~
+mamba create -c conda-forge -n gsypdev libgz-sim8 yarp cmake ninja pkg-config cmake compilers
+mamba activate gsypdev
+~~~
+
+All the commands in this README should be executed in a terminal with the activated environment.
+
+Then, compile gz-sim-yarp-plugins itself, using the following commands on Linux and macOS:
+~~~
+git clone https://github.dev/robotology/gz-sim-yarp-plugins
+mkdir build
+cd build
+cmake -GNinja -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DCMAKE_PREFIX_PATH=$CONDA_PREFIX ..
+ninja
+ninja install
+~~~
+
+or the following commands on Windows:
+~~~
+git clone https://github.dev/robotology/gz-sim-yarp-plugins
+mkdir build
+cd build
+cmake -GNinja -DCMAKE_INSTALL_PREFIX=%CONDA_PREFIX%\Library -DCMAKE_PREFIX_PATH=%CONDA_PREFIX%\Library ..
+ninja
+ninja install
+~~~
+
+
+### Compile from source using apt dependencies on Linux, macOS or Windows
+
+
+First install some necessary dependencies from apt  
 ```
 sudo apt-get update
-sudo apt-get install lsb-release wget gnupg
+sudo apt-get install lsb-release wget gnupg cmake pkg-config ninja-build build-essential
 ```
 Then install Gazebo Garden:
 ```
@@ -22,37 +54,56 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-
 sudo apt-get update
 sudo apt-get install gz-garden
 ```
-#### Uninstalling binary install
-```
-sudo apt remove gz-garden && sudo apt autoremove
-```
 
-### <a name="install_yarp"></a> Install YARP
-
-#### Binary Installation in Ubuntu (or WSL)
-```
-sudo sh -c 'echo "deb http://www.icub.eu/ubuntu `lsb_release -cs` contrib/science" > /etc/apt/sources.list.d/icub.list'
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 57A5ACB6110576A6
-sudo apt update
-sudo apt install yarp
-```
-#### Uninstalling binary install
-```
-sudo apt remove yarp && sudo apt autoremove
-```
-
-## <a name="install_gz-sim-yarp-plugins"></a> Install gz-sim-yarp-plugins
+Then, you need to install [`ycm-cmake-modules`](https://github.com/robotology/ycm) and [`yarp`](https://github.com/robotology/yarp), for which no apt binaries are available. You can install them easily via the `robotology-superbuild`, or otherwise with the following commands:
 ~~~
+mkdir ~/gsyp_ws
+cd ~/gsyp_ws
+git clone https://github.com/robotology/ycm
+git clone https://github.com/robotology/yarp
+cd ycm
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=<desired_install_prefix> ..
-make
-make install
+cmake -GNinja -DCMAKE_INSTALL_PREFIX=~/gsyp_ws/install -DCMAKE_PREFIX_PATH=~/gsyp_ws/install ..
+ninja
+ninja install
+cd ~/gsyp_ws/yarp
+cd yarp
+git checkout v3.9.0
+mkdir build
+cd build
+cmake -GNinja -DCMAKE_INSTALL_PREFIX=~/gsyp_ws/install -DCMAKE_PREFIX_PATH=~/gsyp_ws/install ..
+ninja
+ninja install
 ~~~
-To notify Gazebo of the new plugins compiled, it is necessary to modify the GZ_SIM_SYSTEM_PLUGIN_PATH environment variable:
-```
-export GZ_SIM_SYSTEM_PLUGIN_PATH=${GZ_SIM_SYSTEM_PLUGIN_PATH}:/path/to/the/install/folder/lib
-```
-where `/path/to/the/install/folder/lib` is the directory containing the `libgz-sim-yarp-forcetorque-system.so`, `libgz-sim-yarp-camera-system.so`... files (by default `/usr/local/lib`)
 
-To avoid having to modify this environment variable each time, you can place this command in the `.bashrc` file in your home directory.
+Then, install `gz-sim-yarp-plugins` itself:
+~~~
+git clone https://github.dev/robotology/gz-sim-yarp-plugins
+mkdir build
+cd build
+cmake -GNinja -DCMAKE_INSTALL_PREFIX=~/gsyp_ws/install -DCMAKE_PREFIX_PATH=~/gsyp_ws/install ..
+ninja
+ninja install
+~~~
+
+## Usage
+
+To notify Gazebo of the new plugins compiled, it is necessary to modify the `GZ_SIM_SYSTEM_PLUGIN_PATH` environment variable, for example on Linux:
+```
+export GZ_SIM_SYSTEM_PLUGIN_PATH=${GZ_SIM_SYSTEM_PLUGIN_PATH}:<install_location>/lib
+```
+where `<install_location>` is the directory passed to `CMAKE_INSTALL_PREFIX` during the CMake configuration.
+
+Once the plugins are available, you can see how to use the different plugins by looking in the directories contained in the `tutorial` folder of this repo. Each directory is an example, and contains a README that shows how to run that example.
+
+## Run Tests
+
+To run the tests, just configure the project with the `BUILD_TESTING` option, and run `ctest`:
+~~~
+cd build
+cmake -DBUILD_TESTING:BOOL=ON
+ctest
+~~~
+
+For more details, check how the tests are run as part of the Continuous Integration, in [`.github/workflows`](.github/workflows).
