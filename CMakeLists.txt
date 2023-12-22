@@ -1,8 +1,7 @@
-if(NOT DEFINED CMAKE_MINIMUM_REQUIRED_VERSION)
-  cmake_minimum_required(VERSION 3.16)
-endif()
+cmake_minimum_required(VERSION 3.16)
 
-project(GazeboYARPPlugins)
+project(gz-sim-yarp-plugins)
+
 find_package(gz-cmake3 REQUIRED)
 find_package(YARP REQUIRED COMPONENTS robotinterface os)
 
