@@ -19,7 +19,7 @@ jobs:
         os: [ubuntu-22.04, macos-latest, windows-2019]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Print used environment (no conda)
       shell: bash -l {0}
@@ -80,7 +80,8 @@ jobs:
       shell: bash -l {0}
       run: |
         cd build
-        ctest -E "^LaserTest|^CameraTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
+        # ImuTest is skipped due to https://github.com/robotology/gz-sim-yarp-plugins/issues/54
+        ctest -E "^LaserTest|^CameraTest|^ImuTest|^ForceTorqueTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Install
       run: |

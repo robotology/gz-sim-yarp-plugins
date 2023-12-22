@@ -20,8 +20,8 @@ jobs:
       matrix:
         build_type: [Release, Debug]
         os: [ubuntu-22.04]
-        ycm_tag: [v0.15.3]
-        yarp_tag: [v3.8.1]
+        ycm_tag: [v0.16.2]
+        yarp_tag: [v3.9.0]
         gazebo_distro: [garden]
 
     steps:
