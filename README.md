@@ -43,19 +43,23 @@ ninja install
 
 
 First install some necessary dependencies from apt  
-```
+
+~~~
 sudo apt-get update
 sudo apt-get install lsb-release wget gnupg cmake pkg-config ninja-build build-essential
-```
+~~~
+
 Then install Gazebo Garden:
-```
+
+~~~
 sudo wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
 sudo apt-get update
 sudo apt-get install gz-garden
-```
+~~~
 
 Then, you need to install [`ycm-cmake-modules`](https://github.com/robotology/ycm) and [`yarp`](https://github.com/robotology/yarp), for which no apt binaries are available. You can install them easily via the `robotology-superbuild`, or otherwise with the following commands:
+
 ~~~
 mkdir ~/gsyp_ws
 cd ~/gsyp_ws
@@ -78,6 +82,7 @@ ninja install
 ~~~
 
 Then, install `gz-sim-yarp-plugins` itself:
+
 ~~~
 git clone https://github.dev/robotology/gz-sim-yarp-plugins
 mkdir build
@@ -90,9 +95,11 @@ ninja install
 ## Usage
 
 To notify Gazebo of the new plugins compiled, it is necessary to modify the `GZ_SIM_SYSTEM_PLUGIN_PATH` environment variable, for example on Linux:
-```
+
+~~~
 export GZ_SIM_SYSTEM_PLUGIN_PATH=${GZ_SIM_SYSTEM_PLUGIN_PATH}:<install_location>/lib
-```
+~~~
+
 where `<install_location>` is the directory passed to `CMAKE_INSTALL_PREFIX` during the CMake configuration.
 
 Once the plugins are available, you can see how to use the different plugins by looking in the directories contained in the `tutorial` folder of this repo. Each directory is an example, and contains a README that shows how to run that example.
