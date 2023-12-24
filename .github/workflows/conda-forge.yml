@@ -54,6 +54,12 @@ jobs:
         echo "CC=${compiler_path}" >> $GITHUB_ENV
         echo "CXX=${compiler_path}" >> $GITHUB_ENV
 
+    - name: Print used environment
+      shell: bash -l {0}
+      run: |
+        micromamba list
+        env
+
     - name: Configure
       shell: bash -l {0}
       run: |
