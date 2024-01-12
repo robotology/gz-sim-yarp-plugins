@@ -1,56 +1,56 @@
-#include <gz/sim/Model.hh>
-#include <gz/sim/Util.hh>
-#include <gz/sim/System.hh>
+#include "ForceTorqueDriver.cpp"
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Joint.hh>
+#include <gz/sim/Model.hh>
 #include <gz/sim/Sensor.hh>
-#include <yarp/os/LogStream.h>
-#include <yarp/os/Network.h>
+#include <gz/sim/System.hh>
+#include <gz/sim/Util.hh>
+#include <gz/sim/components/Sensor.hh>
+#include <gz/transport/Node.hh>
 #include <iostream>
+#include <sdf/ForceTorque.hh>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
-#include "ForceTorqueDriver.cpp"
-#include <sdf/ForceTorque.hh>
-#include <gz/transport/Node.hh>
-#include <gz/sim/components/Sensor.hh>
-
+#include <yarp/os/LogStream.h>
+#include <yarp/os/Network.h>
 
 using namespace gz;
 using namespace sim;
 using namespace systems;
 
-namespace gzyarp 
+namespace gzyarp
 {
 
-class ForceTorque
-      : public System,
-        public ISystemConfigure,
-        public ISystemPreUpdate,
-        public ISystemPostUpdate
+class ForceTorque : public System,
+                    public ISystemConfigure,
+                    public ISystemPreUpdate,
+                    public ISystemPostUpdate
 {
-  public:
-    ForceTorque() : m_deviceRegistered(false)
+public:
+    ForceTorque()
+        : m_deviceRegistered(false)
     {
     }
-    
+
     virtual ~ForceTorque()
     {
-      if (m_deviceRegistered) 
-      {
-          Handler::getHandler()->removeDevice(m_deviceScopedName);
-          m_deviceRegistered = false;
-      }
-      
-      if( m_forceTorqueDriver.isValid() ) m_forceTorqueDriver.close();
-      HandlerForceTorque::getHandler()->removeSensor(sensorScopedName);
-      yarp::os::Network::fini();
+        if (m_deviceRegistered)
+        {
+            Handler::getHandler()->removeDevice(m_deviceScopedName);
+            m_deviceRegistered = false;
+        }
+
+        if (m_forceTorqueDriver.isValid())
+            m_forceTorqueDriver.close();
+        HandlerForceTorque::getHandler()->removeSensor(sensorScopedName);
+        yarp::os::Network::fini();
     }
-    
-    virtual void Configure(const Entity &_entity,
-                          const std::shared_ptr<const sdf::Element> &_sdf,
-                          EntityComponentManager &_ecm,
-                          EventManager &/*_eventMgr*/) override
-    { 
+
+    virtual void Configure(const Entity& _entity,
+                           const std::shared_ptr<const sdf::Element>& _sdf,
+                           EntityComponentManager& _ecm,
+                           EventManager& /*_eventMgr*/) override
+    {
         yarp::os::Network::init();
         if (!yarp::os::Network::checkNetwork())
         {
@@ -59,9 +59,14 @@ class ForceTorque
         }
 
         std::string netWrapper = "analogServer";
-        ::yarp::dev::Drivers::factory().add(new ::yarp::dev::DriverCreatorOf< ::yarp::dev::gzyarp::ForceTorqueDriver>
-                                            ("gazebo_forcetorque", netWrapper.c_str(), "ForceTorqueDriver"));
-                                            
+        ::yarp::dev::Drivers::factory().add(
+            new ::yarp::dev::DriverCreatorOf<::yarp::dev::gzyarp::ForceTorqueDriver>("gazebo_"
+                                                                                     "forcetorque",
+                                                                                     netWrapper
+                                                                                         .c_str(),
+                                                                                     "ForceTorqueDr"
+                                                                                     "iver"));
+
         ::yarp::os::Property driver_properties;
 
         bool wipe = false;
@@ -79,15 +84,15 @@ class ForceTorque
                 yError() << "gz-sim-yarp-forcetorque-system : missing jointName parameter";
                 return;
             }
-            yInfo() << "gz-sim-yarp-forcetorque-system: configuration of sensor " << driver_properties.find("sensorName").asString() 
+            yInfo() << "gz-sim-yarp-forcetorque-system: configuration of sensor "
+                    << driver_properties.find("sensorName").asString()
                     << " loaded from yarpConfigurationString : " << configuration_string << "\n";
-        }
-        else 
+        } else
         {
             yError() << "gz-sim-yarp-forcetorque-system : missing yarpConfigurationString element";
-            return; 
+            return;
         }
-        
+
         std::string sensorName = driver_properties.find("sensorName").asString();
         std::string jointName = driver_properties.find("jointName").asString();
         auto model = Model(_entity);
@@ -96,55 +101,57 @@ class ForceTorque
 
         sensorScopedName = scopedName(this->sensor, _ecm);
         this->forceTorqueData.sensorScopedName = sensorScopedName;
-        
+
         driver_properties.put(YarpForceTorqueScopedName.c_str(), sensorScopedName.c_str());
         if (!driver_properties.check("yarpDeviceName"))
         {
-            yError() << "gz-sim-yarp-forcetorque-system : missing yarpDeviceName parameter for device" << sensorScopedName;
+            yError() << "gz-sim-yarp-forcetorque-system : missing yarpDeviceName parameter for "
+                        "device"
+                     << sensorScopedName;
             return;
         }
 
-        //Insert the pointer in the singleton handler for retriving it in the yarp driver
+        // Insert the pointer in the singleton handler for retriving it in the yarp driver
         HandlerForceTorque::getHandler()->setSensor(&(this->forceTorqueData));
 
-        driver_properties.put("device","gazebo_forcetorque");
+        driver_properties.put("device", "gazebo_forcetorque");
         driver_properties.put("sensor_name", sensorName);
-        if( !m_forceTorqueDriver.open(driver_properties) ) 
+        if (!m_forceTorqueDriver.open(driver_properties))
         {
-            yError()<<"gz-sim-yarp-forcetorque-system Plugin failed: error in opening yarp driver";
+            yError() << "gz-sim-yarp-forcetorque-system Plugin failed: error in opening yarp "
+                        "driver";
             return;
         }
 
-        m_deviceScopedName = sensorScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
+        m_deviceScopedName
+            = sensorScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
 
-        if(!Handler::getHandler()->setDevice(m_deviceScopedName, &m_forceTorqueDriver))
+        if (!Handler::getHandler()->setDevice(m_deviceScopedName, &m_forceTorqueDriver))
         {
-            yError()<<"gz-sim-yarp-forcetorque-system: failed setting scopedDeviceName(=" << m_deviceScopedName << ")";
+            yError() << "gz-sim-yarp-forcetorque-system: failed setting scopedDeviceName(="
+                     << m_deviceScopedName << ")";
             return;
         }
         m_deviceRegistered = true;
         yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
     }
 
-    virtual void PreUpdate(const UpdateInfo &_info,
-                         EntityComponentManager &_ecm) override
+    virtual void PreUpdate(const UpdateInfo& _info, EntityComponentManager& _ecm) override
     {
-        if(!this->ftInitialized && _ecm.ComponentData<components::SensorTopic>(sensor).has_value())
+        if (!this->ftInitialized && _ecm.ComponentData<components::SensorTopic>(sensor).has_value())
         {
             this->ftInitialized = true;
             auto ftTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value();
             this->node.Subscribe(ftTopicName, &ForceTorque::ftCb, this);
         }
     }
-  
 
-    virtual void PostUpdate(const UpdateInfo &_info,
-                            const EntityComponentManager &_ecm) override
+    virtual void PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm) override
     {
         gz::msgs::Wrench ftMsg;
         {
-          std::lock_guard<std::mutex> lock(this->ftMsgMutex);
-          ftMsg = this->ftMsg;
+            std::lock_guard<std::mutex> lock(this->ftMsgMutex);
+            ftMsg = this->ftMsg;
         }
 
         std::lock_guard<std::mutex> lock(forceTorqueData.m_mutex);
@@ -154,16 +161,16 @@ class ForceTorque
         forceTorqueData.m_data[3] = (ftMsg.torque().x() != 0) ? ftMsg.torque().x() : 0;
         forceTorqueData.m_data[4] = (ftMsg.torque().y() != 0) ? ftMsg.torque().y() : 0;
         forceTorqueData.m_data[5] = (ftMsg.torque().z() != 0) ? ftMsg.torque().z() : 0;
-        forceTorqueData.simTime = _info.simTime.count()/1e9;
+        forceTorqueData.simTime = _info.simTime.count() / 1e9;
     }
 
-    void ftCb(const gz::msgs::Wrench &_msg)
+    void ftCb(const gz::msgs::Wrench& _msg)
     {
         std::lock_guard<std::mutex> lock(this->ftMsgMutex);
         ftMsg = _msg;
     }
- 
-  private: 
+
+private:
     Entity sensor;
     yarp::dev::PolyDriver m_forceTorqueDriver;
     std::string m_deviceScopedName;
@@ -174,17 +181,13 @@ class ForceTorque
     gz::transport::Node node;
     gz::msgs::Wrench ftMsg;
     std::mutex ftMsgMutex;
-
 };
 
-}
+} // namespace gzyarp
 
- 
 // Register plugin
 GZ_ADD_PLUGIN(gzyarp::ForceTorque,
               gz::sim::System,
               gzyarp::ForceTorque::ISystemConfigure,
               gzyarp::ForceTorque::ISystemPreUpdate,
               gzyarp::ForceTorque::ISystemPostUpdate)
-
- 
