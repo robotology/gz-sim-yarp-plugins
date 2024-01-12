@@ -23,7 +23,8 @@
     ~~~
 
     We can see the measures of the two sensors with the command:
-    - `yarp read /read /forcetorque1/measures:o`
+  - `yarp read /readft1 /forcetorque1/measures:o`
+
     ~~~
     () () () () () (((0.0 0.0 0.0 0.0 0.0 0.0) 0.0)) () () () ()
     () () () () () (((0.0 0.0 -196.0 0.0 0.0 0.0) 0.0389999999999999999445)) () () () ()
@@ -32,7 +33,8 @@
     () () () () () (((0.0 0.0 -196.0 0.0 0.0 0.0) 0.275000000000000022204)) () () () ()
     ...
     ~~~
-    - `yarp read /read /forcetorque2/measures:o`
+
+  - `yarp read /readft2 /forcetorque2/measures:o`
     ~~~
     () () () () () (((0.0 0.0 -98.0 0.0 0.0 0.0) 8.53100000000000058265)) () () () ()
     () () () () () (((0.0 0.0 -98.0 0.0 0.0 0.0) 8.61299999999999954525)) () () () ()
