@@ -18,19 +18,19 @@ HandlerBaseState* HandlerBaseState::getHandler()
     return s_handle;
 }
 
-bool HandlerBaseState::setSensor(BaseStateData* _sensorDataPtr)
+bool HandlerBaseState::setModel(BaseStateData* _sensorDataPtr)
 {
     bool ret = false;
-    std::string sensorScopedName = _sensorDataPtr->sensorScopedName;
-    SensorsMap::iterator sensor = m_sensorsMap.find(sensorScopedName);
+    std::string m_modelScopedName = _sensorDataPtr->m_modelScopedName;
+    ModelsMap::iterator sensor = m_modelsMap.find(m_modelScopedName);
 
-    if (sensor != m_sensorsMap.end())
+    if (sensor != m_modelsMap.end())
         ret = true;
     else
     {
         // sensor does not exists. Add to map
-        if (!m_sensorsMap
-                 .insert(std::pair<std::string, BaseStateData*>(sensorScopedName, _sensorDataPtr))
+        if (!m_modelsMap
+                 .insert(std::pair<std::string, BaseStateData*>(m_modelScopedName, _sensorDataPtr))
                  .second)
         {
             yError() << "Error in gzyarp::HandlerBaseState while inserting a new sensor pointer!";
@@ -45,28 +45,28 @@ bool HandlerBaseState::setSensor(BaseStateData* _sensorDataPtr)
     return ret;
 }
 
-BaseStateData* HandlerBaseState::getSensor(const std::string& sensorScopedName) const
+BaseStateData* HandlerBaseState::getModel(const std::string& m_modelScopedName) const
 {
     BaseStateData* tmp;
 
-    SensorsMap::const_iterator sensor = m_sensorsMap.find(sensorScopedName);
-    if (sensor != m_sensorsMap.end())
+    ModelsMap::const_iterator sensor = m_modelsMap.find(m_modelScopedName);
+    if (sensor != m_modelsMap.end())
     {
         tmp = sensor->second;
     } else
     {
-        yError() << "Sensor was not found: " << sensorScopedName;
+        yError() << "Sensor was not found: " << m_modelScopedName;
         tmp = NULL;
     }
     return tmp;
 }
 
-void HandlerBaseState::removeSensor(const std::string& sensorName)
+void HandlerBaseState::removeModel(const std::string& sensorName)
 {
-    SensorsMap::iterator sensor = m_sensorsMap.find(sensorName);
-    if (sensor != m_sensorsMap.end())
+    ModelsMap::iterator sensor = m_modelsMap.find(sensorName);
+    if (sensor != m_modelsMap.end())
     {
-        m_sensorsMap.erase(sensor);
+        m_modelsMap.erase(sensor);
     } else
     {
         yError() << "Could not remove sensor " << sensorName << ". Sensor was not found";
@@ -74,9 +74,9 @@ void HandlerBaseState::removeSensor(const std::string& sensorName)
 }
 
 HandlerBaseState::HandlerBaseState()
-    : m_sensorsMap()
+    : m_modelsMap()
 {
-    m_sensorsMap.clear();
+    m_modelsMap.clear();
 }
 
 HandlerBaseState* HandlerBaseState::s_handle = NULL;

@@ -8,9 +8,9 @@
 struct BaseStateData
 {
     std::mutex m_mutex;
-    std::array<double, 6> m_data;
-    std::string sensorScopedName;
-    double simTime;
+    std::array<double, 18> m_data;
+    std::string m_modelScopedName;
+    double m_simTime;
 };
 
 namespace gzyarp
@@ -22,18 +22,18 @@ class HandlerBaseState
 public:
     static HandlerBaseState* getHandler();
 
-    bool setSensor(BaseStateData* _sensorDataPtr);
+    bool setModel(BaseStateData* _modelDataPtr);
 
-    BaseStateData* getSensor(const std::string& sensorScopedName) const;
+    BaseStateData* getModel(const std::string& m_modelScopedName) const;
 
-    void removeSensor(const std::string& sensorName);
+    void removeModel(const std::string& modelName);
 
 private:
     HandlerBaseState();
     static HandlerBaseState* s_handle;
     static std::mutex& mutex();
-    typedef std::map<std::string, BaseStateData*> SensorsMap;
-    SensorsMap m_sensorsMap; // map of known sensors
+    typedef std::map<std::string, BaseStateData*> ModelsMap;
+    ModelsMap m_modelsMap; // map of known sensors
 };
 
 } // namespace gzyarp
