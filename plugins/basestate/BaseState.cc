@@ -51,7 +51,6 @@ public:
                            EntityComponentManager& _ecm,
                            EventManager& /*_eventMgr*/) override
     {
-        // std::cerr << "-----------------------> CALLING CONFIGURE " << std::endl;
         yarp::os::Network::init();
         if (!yarp::os::Network::checkNetwork())
         {
@@ -129,7 +128,7 @@ public:
         m_deviceScopedName
             = m_modelScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
 
-        if (!Handler::getHandler()->setDevice(m_modelScopedName, &m_baseStateDriver))
+        if (!Handler::getHandler()->setDevice(m_deviceScopedName, &m_baseStateDriver))
         {
             yError() << "gz-sim-yarp-basestate-system: failed setting scopedDeviceName(="
                      << m_deviceScopedName << ")";
