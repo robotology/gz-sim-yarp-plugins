@@ -12,4 +12,3 @@ target_link_libraries(gz-sim-yarp-robotinterface-system
     gz-sim-yarp-handler)
 
 install(TARGETS gz-sim-yarp-robotinterface-system)
-  
