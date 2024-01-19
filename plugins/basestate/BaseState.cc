@@ -1,6 +1,7 @@
 #include "BaseStateDriver.cpp"
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Joint.hh>
+#include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/Sensor.hh>
 #include <gz/sim/System.hh>
@@ -21,10 +22,7 @@ using namespace systems;
 namespace gzyarp
 {
 
-class BaseState : public System,
-                  public ISystemConfigure,
-                  public ISystemPreUpdate,
-                  public ISystemPostUpdate
+class BaseState : public System, public ISystemConfigure, public ISystemPostUpdate
 {
 public:
     BaseState()
@@ -99,6 +97,11 @@ public:
         auto model = Model(_entity);
         this->m_baseLink = model.LinkByName(_ecm, baseLinkName);
 
+        // Enable velocity computation in Gazebo
+        Link(this->m_baseLink).EnableAccelerationChecks(_ecm, true);
+        // Enable acceleration computation in Gazebo
+        Link(this->m_baseLink).EnableAccelerationChecks(_ecm, true);
+
         m_modelScopedName = scopedName(model.Entity(), _ecm);
         this->m_baseStateData.m_modelScopedName = m_modelScopedName;
 
@@ -138,40 +141,44 @@ public:
         yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
     }
 
-    virtual void PreUpdate(const UpdateInfo& _info, EntityComponentManager& _ecm) override
-    {
-        if (!this->m_bsInitialized
-            && _ecm.ComponentData<components::SensorTopic>(m_baseLink).has_value())
-        {
-            this->m_bsInitialized = true;
-            auto ftTopicName = _ecm.ComponentData<components::SensorTopic>(m_baseLink).value();
-            this->m_node.Subscribe(ftTopicName, &BaseState::ftCb, this);
-        }
-    }
-
     virtual void PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm) override
     {
-        /*
-        gz::msgs::Wrench m_bsMsg;
-        {
-            std::lock_guard<std::mutex> lock(this->m_msgMutex);
-            m_bsMsg = this->m_bsMsg;
-        }
+        Link baseLink = Link(m_baseLink);
+        // Get the pose of the origin of the link frame in the world reference frame
+        math::Pose3d worldBasePose = baseLink.WorldPose(_ecm).value();
 
-        std::lock_guard<std::mutex> lock(forceTorqueData.m_mutex);
-        forceTorqueData.m_data[0] = (m_bsMsg.force().x() != 0) ? m_bsMsg.force().x() : 0;
-        forceTorqueData.m_data[1] = (m_bsMsg.force().y() != 0) ? m_bsMsg.force().y() : 0;
-        forceTorqueData.m_data[2] = (m_bsMsg.force().z() != 0) ? m_bsMsg.force().z() : 0;
-        forceTorqueData.m_data[3] = (m_bsMsg.torque().x() != 0) ? m_bsMsg.torque().x() : 0;
-        forceTorqueData.m_data[4] = (m_bsMsg.torque().y() != 0) ? m_bsMsg.torque().y() : 0;
-        forceTorqueData.m_data[5] = (m_bsMsg.torque().z() != 0) ? m_bsMsg.torque().z() : 0;
-        forceTorqueData.m_simTime = _info.m_simTime.count() / 1e9;*/
-    }
+        // Get the velocity of the origin of the link frame in the world reference frame
+        math::Vector3d worldBaseLinVel = baseLink.WorldLinearVelocity(_ecm).value();
+        math::Vector3d worldBaseAngVel = baseLink.WorldAngularVelocity(_ecm).value();
 
-    void ftCb(const gz::msgs::Wrench& _msg)
-    {
-        std::lock_guard<std::mutex> lock(this->m_msgMutex);
-        m_bsMsg = _msg;
+        // Get the acceleration of the center of mass of the link in the world reference frame
+        math::Vector3d worldBaseLinAcc = baseLink.WorldLinearAcceleration(_ecm).value();
+        math::Vector3d worldBaseAngAcc = baseLink.WorldAngularAcceleration(_ecm).value();
+
+        std::lock_guard<std::mutex> lock(m_baseStateData.m_mutex);
+        // Serialize the state vector
+        m_baseStateData.m_data[0] = worldBasePose.Pos().X();
+        m_baseStateData.m_data[1] = worldBasePose.Pos().Y();
+        m_baseStateData.m_data[2] = worldBasePose.Pos().Z();
+        m_baseStateData.m_data[3] = worldBasePose.Rot().Roll();
+        m_baseStateData.m_data[4] = worldBasePose.Rot().Pitch();
+        m_baseStateData.m_data[5] = worldBasePose.Rot().Yaw();
+
+        m_baseStateData.m_data[6] = worldBaseLinVel.X();
+        m_baseStateData.m_data[7] = worldBaseLinVel.Y();
+        m_baseStateData.m_data[8] = worldBaseLinVel.Z();
+        m_baseStateData.m_data[9] = worldBaseAngVel.X();
+        m_baseStateData.m_data[10] = worldBaseAngVel.Y();
+        m_baseStateData.m_data[11] = worldBaseAngVel.Z();
+
+        m_baseStateData.m_data[12] = worldBaseLinAcc.X();
+        m_baseStateData.m_data[13] = worldBaseLinAcc.Y();
+        m_baseStateData.m_data[14] = worldBaseLinAcc.Z();
+        m_baseStateData.m_data[15] = worldBaseAngAcc.X();
+        m_baseStateData.m_data[16] = worldBaseAngAcc.Y();
+        m_baseStateData.m_data[17] = worldBaseAngAcc.Z();
+
+        m_baseStateData.m_simTime = _info.simTime.count() / 1e9;
     }
 
 private:
@@ -182,7 +189,6 @@ private:
     bool m_deviceRegistered;
     BaseStateData m_baseStateData;
     bool m_bsInitialized;
-    gz::transport::Node m_node;
     gz::msgs::Wrench m_bsMsg;
     std::mutex m_msgMutex;
 };
@@ -193,5 +199,4 @@ private:
 GZ_ADD_PLUGIN(gzyarp::BaseState,
               gz::sim::System,
               gzyarp::BaseState::ISystemConfigure,
-              gzyarp::BaseState::ISystemPreUpdate,
               gzyarp::BaseState::ISystemPostUpdate)
