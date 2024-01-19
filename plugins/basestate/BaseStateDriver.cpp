@@ -94,6 +94,8 @@ public:
 
     yarp::os::Stamp getLastInputStamp()
     {
+        std::lock_guard<std::mutex> lock(m_baseLinkData->m_mutex);
+        m_lastTimestamp.update(m_baseLinkData->m_simTime);
         return m_lastTimestamp;
     }
 
