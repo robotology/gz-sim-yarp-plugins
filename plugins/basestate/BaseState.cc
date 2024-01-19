@@ -9,7 +9,6 @@
 #include <gz/sim/components/Sensor.hh>
 #include <gz/transport/Node.hh>
 #include <iostream>
-// #include <sdf/BaseState.hh>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 #include <yarp/os/LogStream.h>
@@ -102,8 +101,10 @@ public:
         // Enable acceleration computation in Gazebo
         Link(this->m_baseLink).EnableAccelerationChecks(_ecm, true);
 
-        m_modelScopedName = scopedName(model.Entity(), _ecm);
+        m_modelScopedName = scopedName(m_baseLink, _ecm);
         this->m_baseStateData.m_modelScopedName = m_modelScopedName;
+
+        std::cout << "===================>> m_modelScopedName: " << m_modelScopedName << std::endl;
 
         driver_properties.put(YarpBaseStateScopedName.c_str(), m_modelScopedName.c_str());
 
@@ -143,19 +144,50 @@ public:
 
     virtual void PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm) override
     {
+        bool dataAvailable = true;
         Link baseLink = Link(m_baseLink);
+
+        math::Pose3d worldBasePose;
+        math::Vector3d worldBaseLinVel;
+        math::Vector3d worldBaseAngVel;
+        math::Vector3d worldBaseLinAcc;
+        math::Vector3d worldBaseAngAcc;
+
         // Get the pose of the origin of the link frame in the world reference frame
-        math::Pose3d worldBasePose = baseLink.WorldPose(_ecm).value();
+        if (dataAvailable && baseLink.WorldPose(_ecm).has_value())
+            math::Pose3d worldBasePose = baseLink.WorldPose(_ecm).value();
+        else
+            dataAvailable = false;
 
         // Get the velocity of the origin of the link frame in the world reference frame
-        math::Vector3d worldBaseLinVel = baseLink.WorldLinearVelocity(_ecm).value();
-        math::Vector3d worldBaseAngVel = baseLink.WorldAngularVelocity(_ecm).value();
+        if (dataAvailable && baseLink.WorldLinearVelocity(_ecm).has_value())
+            math::Vector3d worldBaseLinVel = baseLink.WorldLinearVelocity(_ecm).value();
+        else
+            dataAvailable = false;
+        if (dataAvailable && baseLink.WorldAngularVelocity(_ecm).has_value())
+            math::Vector3d worldBaseAngVel = baseLink.WorldAngularVelocity(_ecm).value();
+        else
+            dataAvailable = false;
 
         // Get the acceleration of the center of mass of the link in the world reference frame
-        math::Vector3d worldBaseLinAcc = baseLink.WorldLinearAcceleration(_ecm).value();
-        math::Vector3d worldBaseAngAcc = baseLink.WorldAngularAcceleration(_ecm).value();
+        if (dataAvailable && baseLink.WorldLinearAcceleration(_ecm).has_value())
+            math::Vector3d worldBaseLinAcc = baseLink.WorldLinearAcceleration(_ecm).value();
+        else
+            dataAvailable = false;
+        if (dataAvailable && baseLink.WorldAngularAcceleration(_ecm).has_value())
+            math::Vector3d worldBaseAngAcc = baseLink.WorldAngularAcceleration(_ecm).value();
+        else
+            dataAvailable = false;
 
         std::lock_guard<std::mutex> lock(m_baseStateData.m_mutex);
+        if (!dataAvailable)
+        {
+            m_baseStateData.m_dataAvailable = false;
+            return;
+        }
+
+        m_baseStateData.m_dataAvailable = true;
+
         // Serialize the state vector
         m_baseStateData.m_data[0] = worldBasePose.Pos().X();
         m_baseStateData.m_data[1] = worldBasePose.Pos().Y();

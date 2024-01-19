@@ -8,8 +8,9 @@
 struct BaseStateData
 {
     std::mutex m_mutex;
-    std::array<double, 18> m_data;
     std::string m_modelScopedName;
+    bool m_dataAvailable;
+    std::array<double, 18> m_data;
     double m_simTime;
 };
 

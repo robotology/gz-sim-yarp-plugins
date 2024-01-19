@@ -76,6 +76,13 @@ public:
         }
 
         std::lock_guard<std::mutex> lock(m_baseLinkData->m_mutex);
+
+        if (!m_baseLinkData->m_dataAvailable)
+        {
+            yWarning() << "BaseState data not available";
+            return AS_ERROR;
+        }
+
         yarp::sig::Vector baseStateData;
 
         baseStateData.resize(YarpBaseStateChannelsNumber, 0.0);
@@ -95,6 +102,13 @@ public:
     yarp::os::Stamp getLastInputStamp()
     {
         std::lock_guard<std::mutex> lock(m_baseLinkData->m_mutex);
+
+        if (!m_baseLinkData->m_dataAvailable)
+        {
+            yDebug() << "BaseState data not available";
+            return m_lastTimestamp;
+        }
+
         m_lastTimestamp.update(m_baseLinkData->m_simTime);
         return m_lastTimestamp;
     }
