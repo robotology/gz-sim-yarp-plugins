@@ -94,14 +94,14 @@ public:
         std::string baseLinkName = driver_properties.find("baseLink").asString();
 
         auto model = Model(_entity);
-        this->m_baseLink = model.LinkByName(_ecm, baseLinkName);
+        this->m_baseLinkEntity = model.LinkByName(_ecm, baseLinkName);
 
         // Enable velocity computation in Gazebo
-        Link(this->m_baseLink).EnableAccelerationChecks(_ecm, true);
+        Link(this->m_baseLinkEntity).EnableAccelerationChecks(_ecm, true);
         // Enable acceleration computation in Gazebo
-        Link(this->m_baseLink).EnableAccelerationChecks(_ecm, true);
+        Link(this->m_baseLinkEntity).EnableAccelerationChecks(_ecm, true);
 
-        m_modelScopedName = scopedName(m_baseLink, _ecm);
+        m_modelScopedName = scopedName(m_baseLinkEntity, _ecm);
         this->m_baseStateData.m_modelScopedName = m_modelScopedName;
 
         std::cout << "===================>> m_modelScopedName: " << m_modelScopedName << std::endl;
@@ -145,7 +145,7 @@ public:
     virtual void PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm) override
     {
         bool dataAvailable = true;
-        Link baseLink = Link(m_baseLink);
+        Link baseLink = Link(m_baseLinkEntity);
 
         math::Pose3d worldBasePose;
         math::Vector3d worldBaseLinVel;
@@ -214,7 +214,7 @@ public:
     }
 
 private:
-    Entity m_baseLink;
+    Entity m_baseLinkEntity;
     yarp::dev::PolyDriver m_baseStateDriver;
     std::string m_deviceScopedName;
     std::string m_modelScopedName;
