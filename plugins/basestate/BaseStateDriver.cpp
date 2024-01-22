@@ -94,8 +94,6 @@ public:
 
         out = baseStateData;
 
-        m_lastTimestamp.update(m_baseLinkData->m_simTime); // TODO move in proper place
-
         return AS_OK;
     }
 
@@ -104,13 +102,9 @@ public:
         std::lock_guard<std::mutex> lock(m_baseLinkData->m_mutex);
 
         if (!m_baseLinkData->m_dataAvailable)
-        {
-            yDebug() << "BaseState data not available";
-            return m_lastTimestamp;
-        }
+            yDebug() << "BaseState data not available.";
 
-        m_lastTimestamp.update(m_baseLinkData->m_simTime);
-        return m_lastTimestamp;
+        return m_baseLinkData->m_simTimestamp;
     }
 
     int calibrateChannel(int ch, double v)
@@ -145,6 +139,5 @@ public:
 
 private:
     BaseStateData* m_baseLinkData;
-    yarp::os::Stamp m_lastTimestamp;
     std::string m_baseLinkName;
 };

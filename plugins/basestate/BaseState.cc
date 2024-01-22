@@ -99,12 +99,12 @@ public:
         if (_ecm.HasEntity(baseLinkEntity))
         {
             this->m_baseLinkEntity = baseLinkEntity;
-            yInfo() << "gz-sim-yarp-basestate-system: baseLinkEntity '" << baseLinkName
+            yInfo() << "gz-sim-yarp-basestate-system: base link name '" << baseLinkName
                     << "' found.";
         } else
         {
-            yError() << "gz-sim-yarp-basestate-system: The base link name '" << baseLinkName
-                     << "' was not found.";
+            yError() << "gz-sim-yarp-basestate-system: base link name '" << baseLinkName
+                     << "' configured was not found in the model definition.";
             return;
         }
 
@@ -222,7 +222,7 @@ public:
         m_baseStateData.m_data[16] = worldBaseAngAcc.Y();
         m_baseStateData.m_data[17] = worldBaseAngAcc.Z();
 
-        m_baseStateData.m_simTime = _info.simTime.count() / 1e9;
+        m_baseStateData.m_simTimestamp.update(_info.simTime.count() / 1e9);
     }
 
 private:

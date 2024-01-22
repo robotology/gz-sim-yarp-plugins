@@ -11,7 +11,7 @@ struct BaseStateData
     std::string m_modelScopedName;
     bool m_dataAvailable;
     std::array<double, 18> m_data;
-    double m_simTime;
+    yarp::os::Stamp m_simTimestamp;
 };
 
 namespace gzyarp
