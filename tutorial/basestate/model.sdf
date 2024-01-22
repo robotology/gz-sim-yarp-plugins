@@ -82,6 +82,7 @@
           </geometry>
         </collision>
       </link>
+      <!-- Launch the other YARP devices, in this case a baseState_nws_yarp to expose the baseState on a YARP port -->
       <plugin name="gzyarp::BaseState" filename="gz-sim-yarp-basestate-system">
         <yarpConfigurationString>(yarpDeviceName basestate_plugin_device) (baseLink link_1)</yarpConfigurationString>
       </plugin>
