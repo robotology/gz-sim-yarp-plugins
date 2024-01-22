@@ -1,5 +1,5 @@
 #include "../../libraries/singleton-devices/Handler.hh"
-#include "singleton-basestate/Handler.hh"
+#include "singleton-basestate/BaseStateDataSingleton.hh"
 #include <mutex>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAnalogSensor.h>
@@ -51,7 +51,9 @@ public:
             m_baseLinkName = config.find("baseLink").asString().substr(pos + separator.size() - 1);
         }
 
-        m_baseLinkData = ::gzyarp::HandlerBaseState::getHandler()->getModel(m_modelScopedName);
+        m_baseLinkData
+            = ::gzyarp::BaseStateDataSingleton::getBaseStateDataHandler()->getBaseStateData(
+                m_modelScopedName);
 
         if (!m_baseLinkData)
         {
@@ -74,9 +76,9 @@ public:
             out.resize(YarpBaseStateChannelsNumber);
         }
 
-        std::lock_guard<std::mutex> lock(m_baseLinkData->m_mutex);
+        std::lock_guard<std::mutex> lock(m_baseLinkData->mutex);
 
-        if (!m_baseLinkData->m_dataAvailable)
+        if (!m_baseLinkData->dataAvailable)
         {
             yWarning() << "BaseState data not available";
             return AS_ERROR;
@@ -88,7 +90,7 @@ public:
 
         for (size_t i = 0; i < YarpBaseStateChannelsNumber; i++)
         {
-            baseStateData[i] = m_baseLinkData->m_data[i];
+            baseStateData[i] = m_baseLinkData->data[i];
         }
 
         out = baseStateData;
@@ -98,12 +100,12 @@ public:
 
     yarp::os::Stamp getLastInputStamp()
     {
-        std::lock_guard<std::mutex> lock(m_baseLinkData->m_mutex);
+        std::lock_guard<std::mutex> lock(m_baseLinkData->mutex);
 
-        if (!m_baseLinkData->m_dataAvailable)
+        if (!m_baseLinkData->dataAvailable)
             yDebug() << "BaseState data not available.";
 
-        return m_baseLinkData->m_simTimestamp;
+        return m_baseLinkData->simTimestamp;
     }
 
     int calibrateChannel(int ch, double v)

@@ -39,7 +39,7 @@ public:
 
         if (m_baseStateDriver.isValid())
             m_baseStateDriver.close();
-        HandlerBaseState::getHandler()->removeModel(m_modelScopedName);
+        BaseStateDataSingleton::getBaseStateDataHandler()->removeBaseLink(m_baseLinkScopedName);
         yarp::os::Network::fini();
     }
 
@@ -98,7 +98,7 @@ public:
         Entity baseLinkEntity = model.LinkByName(_ecm, baseLinkName);
         if (_ecm.HasEntity(baseLinkEntity))
         {
-            this->m_baseLinkEntity = baseLinkEntity;
+            m_baseLinkEntity = baseLinkEntity;
             yInfo() << "gz-sim-yarp-basestate-system: base link name '" << baseLinkName
                     << "' found.";
         } else
@@ -108,30 +108,31 @@ public:
             return;
         }
 
-        this->m_baseLink = Link(this->m_baseLinkEntity);
+        // Create link from entity
+        m_baseLink = Link(m_baseLinkEntity);
         // Enable velocity computation in Gazebo
-        this->m_baseLink.EnableVelocityChecks(_ecm, true);
+        m_baseLink.EnableVelocityChecks(_ecm, true);
         // Enable acceleration computation in Gazebo
-        this->m_baseLink.EnableAccelerationChecks(_ecm, true);
+        m_baseLink.EnableAccelerationChecks(_ecm, true);
 
-        m_modelScopedName = scopedName(m_baseLinkEntity, _ecm);
-        this->m_baseStateData.m_modelScopedName = m_modelScopedName;
+        m_baseLinkScopedName = scopedName(m_baseLinkEntity, _ecm);
+        m_baseStateData.baseLinkScopedName = m_baseLinkScopedName;
 
-        driver_properties.put(YarpBaseStateScopedName.c_str(), m_modelScopedName.c_str());
+        driver_properties.put(YarpBaseStateScopedName.c_str(), m_baseLinkScopedName.c_str());
 
         if (!driver_properties.check("yarpDeviceName"))
         {
             yError() << "gz-sim-yarp-basestate-system : missing yarpDeviceName parameter for "
                         "device "
-                     << m_modelScopedName;
+                     << m_baseLinkScopedName;
             return;
         }
 
         // Insert the pointer in the singleton handler for retrieving it in the yarp driver
-        HandlerBaseState::getHandler()->setModel(&(this->m_baseStateData));
+        BaseStateDataSingleton::getBaseStateDataHandler()->setBaseStateData(&(m_baseStateData));
 
         driver_properties.put("device", "gazebo_basestate");
-        driver_properties.put("robot", m_modelScopedName);
+        driver_properties.put("robot", m_baseLinkScopedName);
 
         if (!m_baseStateDriver.open(driver_properties))
         {
@@ -141,7 +142,7 @@ public:
         }
 
         m_deviceScopedName
-            = m_modelScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
+            = m_baseLinkScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
 
         if (!Handler::getHandler()->setDevice(m_deviceScopedName, &m_baseStateDriver))
         {
@@ -164,76 +165,73 @@ public:
         math::Vector3d worldBaseAngAcc;
 
         // Get the pose of the origin of the link frame in the world reference frame
-        if (dataAvailable && this->m_baseLink.WorldPose(_ecm).has_value())
-            worldBasePose = this->m_baseLink.WorldPose(_ecm).value();
+        if (dataAvailable && m_baseLink.WorldPose(_ecm).has_value())
+            worldBasePose = m_baseLink.WorldPose(_ecm).value();
         else
             dataAvailable = false;
 
         // Get the velocity of the origin of the link frame in the world reference frame
-        if (dataAvailable && this->m_baseLink.WorldLinearVelocity(_ecm).has_value())
-            worldBaseLinVel = this->m_baseLink.WorldLinearVelocity(_ecm).value();
+        if (dataAvailable && m_baseLink.WorldLinearVelocity(_ecm).has_value())
+            worldBaseLinVel = m_baseLink.WorldLinearVelocity(_ecm).value();
         else
             dataAvailable = false;
-        if (dataAvailable && this->m_baseLink.WorldAngularVelocity(_ecm).has_value())
-            worldBaseAngVel = this->m_baseLink.WorldAngularVelocity(_ecm).value();
+        if (dataAvailable && m_baseLink.WorldAngularVelocity(_ecm).has_value())
+            worldBaseAngVel = m_baseLink.WorldAngularVelocity(_ecm).value();
         else
             dataAvailable = false;
 
         // Get the acceleration of the center of mass of the link in the world reference frame
-        if (dataAvailable && this->m_baseLink.WorldLinearAcceleration(_ecm).has_value())
-            worldBaseLinAcc = this->m_baseLink.WorldLinearAcceleration(_ecm).value();
+        if (dataAvailable && m_baseLink.WorldLinearAcceleration(_ecm).has_value())
+            worldBaseLinAcc = m_baseLink.WorldLinearAcceleration(_ecm).value();
         else
             dataAvailable = false;
-        if (dataAvailable && this->m_baseLink.WorldAngularAcceleration(_ecm).has_value())
-            worldBaseAngAcc = this->m_baseLink.WorldAngularAcceleration(_ecm).value();
+        if (dataAvailable && m_baseLink.WorldAngularAcceleration(_ecm).has_value())
+            worldBaseAngAcc = m_baseLink.WorldAngularAcceleration(_ecm).value();
         else
             dataAvailable = false;
 
-        std::lock_guard<std::mutex> lock(m_baseStateData.m_mutex);
+        std::lock_guard<std::mutex> lock(m_baseStateData.mutex);
         if (!dataAvailable)
         {
-            m_baseStateData.m_dataAvailable = false;
+            m_baseStateData.dataAvailable = false;
             return;
         }
 
-        m_baseStateData.m_dataAvailable = true;
+        m_baseStateData.dataAvailable = true;
 
         // Serialize the state vector
-        m_baseStateData.m_data[0] = worldBasePose.Pos().X();
-        m_baseStateData.m_data[1] = worldBasePose.Pos().Y();
-        m_baseStateData.m_data[2] = worldBasePose.Pos().Z();
-        m_baseStateData.m_data[3] = worldBasePose.Rot().Roll();
-        m_baseStateData.m_data[4] = worldBasePose.Rot().Pitch();
-        m_baseStateData.m_data[5] = worldBasePose.Rot().Yaw();
+        m_baseStateData.data[0] = worldBasePose.Pos().X();
+        m_baseStateData.data[1] = worldBasePose.Pos().Y();
+        m_baseStateData.data[2] = worldBasePose.Pos().Z();
+        m_baseStateData.data[3] = worldBasePose.Rot().Roll();
+        m_baseStateData.data[4] = worldBasePose.Rot().Pitch();
+        m_baseStateData.data[5] = worldBasePose.Rot().Yaw();
 
-        m_baseStateData.m_data[6] = worldBaseLinVel.X();
-        m_baseStateData.m_data[7] = worldBaseLinVel.Y();
-        m_baseStateData.m_data[8] = worldBaseLinVel.Z();
-        m_baseStateData.m_data[9] = worldBaseAngVel.X();
-        m_baseStateData.m_data[10] = worldBaseAngVel.Y();
-        m_baseStateData.m_data[11] = worldBaseAngVel.Z();
+        m_baseStateData.data[6] = worldBaseLinVel.X();
+        m_baseStateData.data[7] = worldBaseLinVel.Y();
+        m_baseStateData.data[8] = worldBaseLinVel.Z();
+        m_baseStateData.data[9] = worldBaseAngVel.X();
+        m_baseStateData.data[10] = worldBaseAngVel.Y();
+        m_baseStateData.data[11] = worldBaseAngVel.Z();
 
-        m_baseStateData.m_data[12] = worldBaseLinAcc.X();
-        m_baseStateData.m_data[13] = worldBaseLinAcc.Y();
-        m_baseStateData.m_data[14] = worldBaseLinAcc.Z();
-        m_baseStateData.m_data[15] = worldBaseAngAcc.X();
-        m_baseStateData.m_data[16] = worldBaseAngAcc.Y();
-        m_baseStateData.m_data[17] = worldBaseAngAcc.Z();
+        m_baseStateData.data[12] = worldBaseLinAcc.X();
+        m_baseStateData.data[13] = worldBaseLinAcc.Y();
+        m_baseStateData.data[14] = worldBaseLinAcc.Z();
+        m_baseStateData.data[15] = worldBaseAngAcc.X();
+        m_baseStateData.data[16] = worldBaseAngAcc.Y();
+        m_baseStateData.data[17] = worldBaseAngAcc.Z();
 
-        m_baseStateData.m_simTimestamp.update(_info.simTime.count() / 1e9);
+        m_baseStateData.simTimestamp.update(_info.simTime.count() / 1e9);
     }
 
 private:
+    bool m_deviceRegistered;
+    std::string m_baseLinkScopedName;
+    std::string m_deviceScopedName;
     Entity m_baseLinkEntity;
     Link m_baseLink;
     yarp::dev::PolyDriver m_baseStateDriver;
-    std::string m_deviceScopedName;
-    std::string m_modelScopedName;
-    bool m_deviceRegistered;
     BaseStateData m_baseStateData;
-    bool m_bsInitialized;
-    gz::msgs::Wrench m_bsMsg;
-    std::mutex m_msgMutex;
 };
 
 } // namespace gzyarp
