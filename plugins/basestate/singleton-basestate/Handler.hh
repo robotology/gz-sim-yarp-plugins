@@ -4,6 +4,7 @@
 #include <string>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
+#include <yarp/os/Stamp.h>
 
 struct BaseStateData
 {

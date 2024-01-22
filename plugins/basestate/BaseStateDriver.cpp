@@ -51,7 +51,6 @@ public:
             m_baseLinkName = config.find("baseLink").asString().substr(pos + separator.size() - 1);
         }
 
-        // m_frameName = m_baseLinkName;
         m_baseLinkData = ::gzyarp::HandlerBaseState::getHandler()->getModel(m_modelScopedName);
 
         if (!m_baseLinkData)
