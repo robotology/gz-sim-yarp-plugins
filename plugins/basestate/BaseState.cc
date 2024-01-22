@@ -94,7 +94,19 @@ public:
         std::string baseLinkName = driver_properties.find("baseLink").asString();
 
         auto model = Model(_entity);
-        this->m_baseLinkEntity = model.LinkByName(_ecm, baseLinkName);
+
+        Entity baseLinkEntity = model.LinkByName(_ecm, baseLinkName);
+        if (_ecm.HasEntity(baseLinkEntity))
+        {
+            this->m_baseLinkEntity = baseLinkEntity;
+            yInfo() << "gz-sim-yarp-basestate-system: baseLinkEntity '" << baseLinkName
+                    << "' found.";
+        } else
+        {
+            yError() << "gz-sim-yarp-basestate-system: The base link name '" << baseLinkName
+                     << "' was not found.";
+            return;
+        }
 
         // Enable velocity computation in Gazebo
         Link(this->m_baseLinkEntity).EnableVelocityChecks(_ecm, true);
