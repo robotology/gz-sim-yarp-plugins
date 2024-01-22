@@ -97,7 +97,7 @@ public:
         this->m_baseLinkEntity = model.LinkByName(_ecm, baseLinkName);
 
         // Enable velocity computation in Gazebo
-        Link(this->m_baseLinkEntity).EnableAccelerationChecks(_ecm, true);
+        Link(this->m_baseLinkEntity).EnableVelocityChecks(_ecm, true);
         // Enable acceleration computation in Gazebo
         Link(this->m_baseLinkEntity).EnableAccelerationChecks(_ecm, true);
 
