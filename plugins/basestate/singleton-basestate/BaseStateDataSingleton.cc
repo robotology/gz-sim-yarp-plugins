@@ -12,7 +12,9 @@ BaseStateDataSingleton* BaseStateDataSingleton::getBaseStateDataHandler()
     {
         s_handle = new BaseStateDataSingleton();
         if (!s_handle)
+        {
             yError() << "Error while calling gzyarp::HandlerBaseState constructor";
+        }
     }
 
     return s_handle;
@@ -24,8 +26,9 @@ bool BaseStateDataSingleton::setBaseStateData(BaseStateData* _baseStateDataPtr)
     BaseLinksMap::iterator baseLink = m_baseLinksMap.find(_baseStateDataPtr->baseLinkScopedName);
 
     if (baseLink != m_baseLinksMap.end())
+    {
         ret = true;
-    else
+    } else
     {
         // baseLink does not exists. Add to map
         if (!m_baseLinksMap
@@ -43,7 +46,9 @@ bool BaseStateDataSingleton::setBaseStateData(BaseStateData* _baseStateDataPtr)
                         "Fatal error.";
             ret = false;
         } else
+        {
             ret = true;
+        }
     }
     return ret;
 }

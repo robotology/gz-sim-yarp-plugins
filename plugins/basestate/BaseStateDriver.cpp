@@ -103,7 +103,9 @@ public:
         std::lock_guard<std::mutex> lock(m_baseLinkData->mutex);
 
         if (!m_baseLinkData->dataAvailable)
+        {
             yDebug() << "BaseState data not available.";
+        }
 
         return m_baseLinkData->simTimestamp;
     }

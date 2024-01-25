@@ -38,7 +38,9 @@ public:
         }
 
         if (m_baseStateDriver.isValid())
+        {
             m_baseStateDriver.close();
+        }
         BaseStateDataSingleton::getBaseStateDataHandler()->removeBaseLink(m_baseLinkScopedName);
         yarp::os::Network::fini();
     }
@@ -166,63 +168,76 @@ public:
 
         // Get the pose of the origin of the link frame in the world reference frame
         if (dataAvailable && m_baseLink.WorldPose(_ecm).has_value())
+        {
             worldBasePose = m_baseLink.WorldPose(_ecm).value();
-        else
+        } else
+        {
             dataAvailable = false;
+        }
 
         // Get the velocity of the origin of the link frame in the world reference frame
         if (dataAvailable && m_baseLink.WorldLinearVelocity(_ecm).has_value())
-            worldBaseLinVel = m_baseLink.WorldLinearVelocity(_ecm).value();
-        else
-            dataAvailable = false;
-        if (dataAvailable && m_baseLink.WorldAngularVelocity(_ecm).has_value())
-            worldBaseAngVel = m_baseLink.WorldAngularVelocity(_ecm).value();
-        else
-            dataAvailable = false;
-
-        // Get the acceleration of the center of mass of the link in the world reference frame
-        if (dataAvailable && m_baseLink.WorldLinearAcceleration(_ecm).has_value())
-            worldBaseLinAcc = m_baseLink.WorldLinearAcceleration(_ecm).value();
-        else
-            dataAvailable = false;
-        if (dataAvailable && m_baseLink.WorldAngularAcceleration(_ecm).has_value())
-            worldBaseAngAcc = m_baseLink.WorldAngularAcceleration(_ecm).value();
-        else
-            dataAvailable = false;
-
-        std::lock_guard<std::mutex> lock(m_baseStateData.mutex);
-        if (!dataAvailable)
         {
-            m_baseStateData.dataAvailable = false;
-            return;
+            worldBaseLinVel = m_baseLink.WorldLinearVelocity(_ecm).value();
+        } else
+        {
+            dataAvailable = false;
+            if (dataAvailable && m_baseLink.WorldAngularVelocity(_ecm).has_value())
+            {
+                worldBaseAngVel = m_baseLink.WorldAngularVelocity(_ecm).value();
+            } else
+            {
+                dataAvailable = false;
+            }
+
+            // Get the acceleration of the center of mass of the link in the world reference frame
+            if (dataAvailable && m_baseLink.WorldLinearAcceleration(_ecm).has_value())
+            {
+                worldBaseLinAcc = m_baseLink.WorldLinearAcceleration(_ecm).value();
+            } else
+            {
+                dataAvailable = false;
+            }
+            if (dataAvailable && m_baseLink.WorldAngularAcceleration(_ecm).has_value())
+            {
+                worldBaseAngAcc = m_baseLink.WorldAngularAcceleration(_ecm).value();
+            } else
+            {
+                dataAvailable = false;
+            }
+            std::lock_guard<std::mutex> lock(m_baseStateData.mutex);
+            if (!dataAvailable)
+            {
+                m_baseStateData.dataAvailable = false;
+                return;
+            }
+
+            m_baseStateData.dataAvailable = true;
+
+            // Serialize the state vector
+            m_baseStateData.data[0] = worldBasePose.Pos().X();
+            m_baseStateData.data[1] = worldBasePose.Pos().Y();
+            m_baseStateData.data[2] = worldBasePose.Pos().Z();
+            m_baseStateData.data[3] = worldBasePose.Rot().Roll();
+            m_baseStateData.data[4] = worldBasePose.Rot().Pitch();
+            m_baseStateData.data[5] = worldBasePose.Rot().Yaw();
+
+            m_baseStateData.data[6] = worldBaseLinVel.X();
+            m_baseStateData.data[7] = worldBaseLinVel.Y();
+            m_baseStateData.data[8] = worldBaseLinVel.Z();
+            m_baseStateData.data[9] = worldBaseAngVel.X();
+            m_baseStateData.data[10] = worldBaseAngVel.Y();
+            m_baseStateData.data[11] = worldBaseAngVel.Z();
+
+            m_baseStateData.data[12] = worldBaseLinAcc.X();
+            m_baseStateData.data[13] = worldBaseLinAcc.Y();
+            m_baseStateData.data[14] = worldBaseLinAcc.Z();
+            m_baseStateData.data[15] = worldBaseAngAcc.X();
+            m_baseStateData.data[16] = worldBaseAngAcc.Y();
+            m_baseStateData.data[17] = worldBaseAngAcc.Z();
+
+            m_baseStateData.simTimestamp.update(_info.simTime.count() / 1e9);
         }
-
-        m_baseStateData.dataAvailable = true;
-
-        // Serialize the state vector
-        m_baseStateData.data[0] = worldBasePose.Pos().X();
-        m_baseStateData.data[1] = worldBasePose.Pos().Y();
-        m_baseStateData.data[2] = worldBasePose.Pos().Z();
-        m_baseStateData.data[3] = worldBasePose.Rot().Roll();
-        m_baseStateData.data[4] = worldBasePose.Rot().Pitch();
-        m_baseStateData.data[5] = worldBasePose.Rot().Yaw();
-
-        m_baseStateData.data[6] = worldBaseLinVel.X();
-        m_baseStateData.data[7] = worldBaseLinVel.Y();
-        m_baseStateData.data[8] = worldBaseLinVel.Z();
-        m_baseStateData.data[9] = worldBaseAngVel.X();
-        m_baseStateData.data[10] = worldBaseAngVel.Y();
-        m_baseStateData.data[11] = worldBaseAngVel.Z();
-
-        m_baseStateData.data[12] = worldBaseLinAcc.X();
-        m_baseStateData.data[13] = worldBaseLinAcc.Y();
-        m_baseStateData.data[14] = worldBaseLinAcc.Z();
-        m_baseStateData.data[15] = worldBaseAngAcc.X();
-        m_baseStateData.data[16] = worldBaseAngAcc.Y();
-        m_baseStateData.data[17] = worldBaseAngAcc.Z();
-
-        m_baseStateData.simTimestamp.update(_info.simTime.count() / 1e9);
-    }
 
 private:
     bool m_deviceRegistered;
