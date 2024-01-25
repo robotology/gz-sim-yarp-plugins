@@ -182,6 +182,7 @@ public:
         } else
         {
             dataAvailable = false;
+        }
             if (dataAvailable && m_baseLink.WorldAngularVelocity(_ecm).has_value())
             {
                 worldBaseAngVel = m_baseLink.WorldAngularVelocity(_ecm).value();
