@@ -1,4 +1,3 @@
-project(basestate)
 
 add_subdirectory(singleton-basestate)
 
