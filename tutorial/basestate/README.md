@@ -77,15 +77,3 @@ On each line are listed 18 elements:
 
 As you can observe from the basestate plugin output, the base link frame starts at 0.2m height on Z direction (the 3rd value printed on each line) and when the simulation runs the cube falls on the ground; the Z value then remains constant to ~0.05m.
 
-> [!NOTE]
-> If you are using Linux on WSLg and you have the following error:
->
-> ~~~
-> OGRE EXCEPTION(9:UnimplementedException):  in GL3PlusTextureGpu::copyTo at ./RenderSystems/GL3Plus/src/OgreGL3PlusTextureGpu.cpp (line 685)
-> ~~~
->
-> try forcing software rendering:
->
-> ~~~
-> export LIBGL_ALWAYS_SOFTWARE=1
-> ~~~
