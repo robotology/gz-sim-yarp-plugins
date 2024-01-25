@@ -183,29 +183,31 @@ public:
         {
             dataAvailable = false;
         }
-            if (dataAvailable && m_baseLink.WorldAngularVelocity(_ecm).has_value())
-            {
-                worldBaseAngVel = m_baseLink.WorldAngularVelocity(_ecm).value();
-            } else
-            {
-                dataAvailable = false;
-            }
+        if (dataAvailable && m_baseLink.WorldAngularVelocity(_ecm).has_value())
+        {
+            worldBaseAngVel = m_baseLink.WorldAngularVelocity(_ecm).value();
+        } else
+        {
+            dataAvailable = false;
+        }
 
-            // Get the acceleration of the center of mass of the link in the world reference frame
-            if (dataAvailable && m_baseLink.WorldLinearAcceleration(_ecm).has_value())
-            {
-                worldBaseLinAcc = m_baseLink.WorldLinearAcceleration(_ecm).value();
-            } else
-            {
-                dataAvailable = false;
-            }
-            if (dataAvailable && m_baseLink.WorldAngularAcceleration(_ecm).has_value())
-            {
-                worldBaseAngAcc = m_baseLink.WorldAngularAcceleration(_ecm).value();
-            } else
-            {
-                dataAvailable = false;
-            }
+        // Get the acceleration of the center of mass of the link in the world reference frame
+        if (dataAvailable && m_baseLink.WorldLinearAcceleration(_ecm).has_value())
+        {
+            worldBaseLinAcc = m_baseLink.WorldLinearAcceleration(_ecm).value();
+        } else
+        {
+            dataAvailable = false;
+        }
+        if (dataAvailable && m_baseLink.WorldAngularAcceleration(_ecm).has_value())
+        {
+            worldBaseAngAcc = m_baseLink.WorldAngularAcceleration(_ecm).value();
+        } else
+        {
+            dataAvailable = false;
+        }
+
+        {
             std::lock_guard<std::mutex> lock(m_baseStateData.mutex);
             if (!dataAvailable)
             {
@@ -239,6 +241,7 @@ public:
 
             m_baseStateData.simTimestamp.update(_info.simTime.count() / 1e9);
         }
+    }
 
 private:
     bool m_deviceRegistered;

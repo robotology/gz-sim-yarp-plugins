@@ -76,24 +76,26 @@ public:
             out.resize(YarpBaseStateChannelsNumber);
         }
 
-        std::lock_guard<std::mutex> lock(m_baseLinkData->mutex);
-
-        if (!m_baseLinkData->dataAvailable)
         {
-            yWarning() << "BaseState data not available";
-            return AS_ERROR;
+            std::lock_guard<std::mutex> lock(m_baseLinkData->mutex);
+
+            if (!m_baseLinkData->dataAvailable)
+            {
+                yWarning() << "BaseState data not available";
+                return AS_ERROR;
+            }
+
+            yarp::sig::Vector baseStateData;
+
+            baseStateData.resize(YarpBaseStateChannelsNumber, 0.0);
+
+            for (size_t i = 0; i < YarpBaseStateChannelsNumber; i++)
+            {
+                baseStateData[i] = m_baseLinkData->data[i];
+            }
+
+            out = baseStateData;
         }
-
-        yarp::sig::Vector baseStateData;
-
-        baseStateData.resize(YarpBaseStateChannelsNumber, 0.0);
-
-        for (size_t i = 0; i < YarpBaseStateChannelsNumber; i++)
-        {
-            baseStateData[i] = m_baseLinkData->data[i];
-        }
-
-        out = baseStateData;
 
         return AS_OK;
     }

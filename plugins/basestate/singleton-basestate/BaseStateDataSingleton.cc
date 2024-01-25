@@ -7,16 +7,17 @@ namespace gzyarp
 
 BaseStateDataSingleton* BaseStateDataSingleton::getBaseStateDataHandler()
 {
-    std::lock_guard<std::mutex> lock(mutex());
-    if (!s_handle)
     {
-        s_handle = new BaseStateDataSingleton();
+        std::lock_guard<std::mutex> lock(mutex());
         if (!s_handle)
         {
-            yError() << "Error while calling gzyarp::HandlerBaseState constructor";
+            s_handle = new BaseStateDataSingleton();
+            if (!s_handle)
+            {
+                yError() << "Error while calling gzyarp::HandlerBaseState constructor";
+            }
         }
     }
-
     return s_handle;
 }
 
