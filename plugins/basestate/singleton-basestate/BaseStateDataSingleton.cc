@@ -60,7 +60,7 @@ BaseStateDataSingleton::getBaseStateData(const std::string& _baseLinkScopedName)
     } else
     {
         yError() << "Base link was not found: " << _baseLinkScopedName;
-        tmp = NULL;
+        tmp = nullptr;
     }
     return tmp;
 }
