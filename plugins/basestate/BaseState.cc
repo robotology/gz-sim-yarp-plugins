@@ -58,13 +58,11 @@ public:
         }
 
         std::string netWrapper = "analogServer";
+
+        using BaseStateDriverCreator
+            = ::yarp::dev::DriverCreatorOf<::yarp::dev::gzyarp::BaseStateDriver>;
         ::yarp::dev::Drivers::factory().add(
-            new ::yarp::dev::DriverCreatorOf<::yarp::dev::gzyarp::BaseStateDriver>("gazebo_"
-                                                                                   "basestate",
-                                                                                   netWrapper
-                                                                                       .c_str(),
-                                                                                   "BaseStateDrive"
-                                                                                   "r"));
+            new BaseStateDriverCreator("gazebo_basestate", netWrapper.c_str(), "BaseStateDriver"));
 
         ::yarp::os::Property driver_properties;
 
