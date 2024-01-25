@@ -51,18 +51,18 @@ bool BaseStateDataSingleton::setBaseStateData(BaseStateData* _baseStateDataPtr)
 BaseStateData*
 BaseStateDataSingleton::getBaseStateData(const std::string& _baseLinkScopedName) const
 {
-    BaseStateData* tmp;
+    BaseStateData* dataPtr;
 
     BaseLinksMap::const_iterator baseLink = m_baseLinksMap.find(_baseLinkScopedName);
     if (baseLink != m_baseLinksMap.end())
     {
-        tmp = baseLink->second;
+        dataPtr = baseLink->second;
     } else
     {
         yError() << "Base link was not found: " << _baseLinkScopedName;
-        tmp = nullptr;
+        dataPtr = nullptr;
     }
-    return tmp;
+    return dataPtr;
 }
 
 void BaseStateDataSingleton::removeBaseLink(const std::string& _baseLinkScopedName)
