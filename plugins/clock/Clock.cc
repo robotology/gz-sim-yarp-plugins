@@ -12,7 +12,10 @@ using namespace gz;
 using namespace sim;
 using namespace systems;
 
+using yarp::os::Bottle;
+using yarp::os::BufferedPort;
 using yarp::os::Log;
+using yarp::os::Network;
 
 namespace gzyarp
 {
@@ -20,15 +23,30 @@ namespace gzyarp
 class Clock : public System, public ISystemPostUpdate
 {
 public:
+    Clock()
+    {
+        m_portName = "/clock";
+        m_clockPort.open(m_portName);
+    }
+
+    ~Clock()
+    {
+        m_clockPort.close();
+    }
+
     void PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm) override
     {
         std::cout << "SimTime: " << _info.simTime.count() << std::endl;
+        Bottle& b = m_clockPort.prepare();
+        b.clear();
+        b.addInt64(_info.simTime.count());
+        m_clockPort.write();
     }
 
 private:
-    yarp::os::Network* m_network;
+    yarp::os::Network m_network;
     std::string m_portName;
-    yarp::os::BufferedPort<yarp::os::Bottle>* m_clockPort;
+    yarp::os::BufferedPort<yarp::os::Bottle> m_clockPort;
 };
 
 } // namespace gzyarp
