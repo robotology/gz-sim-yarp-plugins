@@ -49,11 +49,6 @@ public:
                            EntityComponentManager& _ecm,
                            EventManager& /*_eventMgr*/) override
     {
-        if (!yarp::os::Network::checkNetwork())
-        {
-            yError() << "Yarp network does not seem to be available, is the yarpserver running?";
-            return;
-        }
 
         std::string netWrapper = "analogServer";
 
