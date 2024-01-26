@@ -36,7 +36,6 @@ public:
 
     void PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm) override
     {
-        std::cout << "SimTime: " << _info.simTime.count() << std::endl;
         Bottle& b = m_clockPort.prepare();
         b.clear();
         b.addInt64(_info.simTime.count());
