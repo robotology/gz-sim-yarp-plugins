@@ -1,4 +1,3 @@
-project(clock)
 
 add_library(gz-sim-yarp-clock-system SHARED Clock.cc)
 target_compile_features(gz-sim-yarp-clock-system PRIVATE cxx_std_17)
