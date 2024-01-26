@@ -42,7 +42,6 @@ public:
             m_baseStateDriver.close();
         }
         BaseStateDataSingleton::getBaseStateDataHandler()->removeBaseLink(m_baseLinkScopedName);
-        yarp::os::Network::fini();
     }
 
     virtual void Configure(const Entity& _entity,
@@ -50,7 +49,6 @@ public:
                            EntityComponentManager& _ecm,
                            EventManager& /*_eventMgr*/) override
     {
-        yarp::os::Network::init();
         if (!yarp::os::Network::checkNetwork())
         {
             yError() << "Yarp network does not seem to be available, is the yarpserver running?";
@@ -249,6 +247,7 @@ private:
     Link m_baseLink;
     yarp::dev::PolyDriver m_baseStateDriver;
     BaseStateData m_baseStateData;
+    yarp::os::Network m_yarpNetwork;
 };
 
 } // namespace gzyarp
