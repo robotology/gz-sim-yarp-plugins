@@ -20,19 +20,19 @@ using yarp::os::Network;
 namespace gzyarp
 {
 
-class Clock : public System, public ISystemConfigure, public ISystemPostUpdate
+class Clock : public System, public ISystemConfigure, public ISystemPostUpdate, public ISystemReset
 {
 public:
     Clock()
         : m_portName("/clock")
         , m_initialized(false)
     {
-        std::cout << "===========> constructor" << std::endl;
+        yDebug() << "Clock plugin Constructor invoked";
     }
 
     ~Clock()
     {
-        std::cout << "===========> destructor" << std::endl;
+        yDebug() << "Clock plugin Destructor invoked";
         m_clockPort.close();
     }
 
@@ -41,7 +41,7 @@ public:
                            EntityComponentManager& _ecm,
                            EventManager& /*_eventMgr*/) override
     {
-        std::cout << "===========> configure" << std::endl;
+        yDebug() << "Clock plugin Configure invoked";
 
         if (!m_initialized)
         {
@@ -59,7 +59,7 @@ public:
     {
         if (_info.paused)
         {
-            yDebug() << "Simulation pause, skipping clock update";
+            // yDebug() << "Simulation pause, skipping clock update";
             return;
         }
 
@@ -67,6 +67,11 @@ public:
         b.clear();
         b.addInt64(_info.simTime.count());
         m_clockPort.write();
+    }
+
+    void Reset(const UpdateInfo& _info, EntityComponentManager& _ecm) override
+    {
+        yDebug() << "Clock plugin Reset invoked";
     }
 
 private:
@@ -82,4 +87,5 @@ private:
 GZ_ADD_PLUGIN(gzyarp::Clock,
               gz::sim::System,
               gzyarp::Clock::ISystemConfigure,
-              gzyarp::Clock::ISystemPostUpdate)
+              gzyarp::Clock::ISystemPostUpdate,
+              gzyarp::Clock::ISystemReset)
