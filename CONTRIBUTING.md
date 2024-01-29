@@ -1,8 +1,8 @@
 # Contributing
 
-This page is used as a starting point for contributing to the development of `gz-yarp-plugins`.
+This page is used as a starting point for contributing to the development of `gz-sim-yarp-plugins`.
 
-If you would like to contribute to the development of `gazebo-yarp-plugins`, please get in contact with the development team using [GitHub issues](https://github.com/robotology/gz-sim-yarp-plugins/issues).
+If you would like to contribute to the development of `gz-sim-yarp-plugins`, please get in contact with the development team using [GitHub issues](https://github.com/robotology/gz-sim-yarp-plugins/issues).
 
 If you need a new feature or to fix a bug, please [fill a GitHub issue](https://github.com/robotology/gz-sim-yarp-plugins/issues/new) describing the feature or the bugfix you would like to implement.
 
