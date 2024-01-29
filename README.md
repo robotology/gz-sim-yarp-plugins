@@ -1,6 +1,6 @@
 # gz-sim-yarp-plugins
 
-[!WARNING]  
+> [!WARNING]  
 > This repository contains a preliminary work in progress of integration of Modern Gazebo (gz) and YARP devices, a port of some functionalities of <https://github.com/robotology/gazebo-yarp-plugins> to Modern Gazebo. \
 > The repo is working in progress, and public interfaces can change without warning.
 
