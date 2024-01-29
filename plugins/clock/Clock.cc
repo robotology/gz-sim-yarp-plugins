@@ -31,7 +31,6 @@ public:
 
     ~Clock()
     {
-        yDebug() << "Clock plugin Destructor invoked";
         m_clockPort.close();
     }
 
@@ -40,8 +39,6 @@ public:
                            EntityComponentManager& _ecm,
                            EventManager& /*_eventMgr*/) override
     {
-        yDebug() << "Clock plugin Configure invoked";
-
         if (!m_initialized)
         {
             m_initialized = true;
@@ -50,7 +47,7 @@ public:
                 yError() << "Failed to open port" << m_portName;
                 return;
             }
-            yInfo() << "Clock plugin initialized";
+            yInfo() << "gz-sim-yarp-clock-system plugin initialized.";
         }
     }
 
@@ -58,7 +55,6 @@ public:
     {
         if (_info.paused)
         {
-            // yDebug() << "Simulation pause, skipping clock update";
             return;
         }
 
@@ -70,7 +66,7 @@ public:
 
     void Reset(const UpdateInfo& _info, EntityComponentManager& _ecm) override
     {
-        yDebug() << "Clock plugin Reset invoked";
+        yInfo() << "gz-sim-yarp-clock-system plugin Reset invoked.";
     }
 
 private:
