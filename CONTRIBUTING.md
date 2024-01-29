@@ -11,9 +11,7 @@ If you need a new feature or to fix a bug, please [fill a GitHub issue](https://
 We adopt a consistent code style.
 If you want to contribute to this project, we kindly ask you to conform to the code style guidelines.
 
-We do not enforce the style (at least at the current stage) but we will probably offer scripts to ease the process in the future.
-
-More precisely, we try to use the **WebKit** coding style (see [WebKit page](http://www.webkit.org/coding/coding-style.html)).
+To enforce our coding style we are using the [clang-format](https://clang.llvm.org/docs/ClangFormat.html) code formatting tool, through the [.clang-format](.clang-format) file. The majority of IDEs and editors automatically detect this file and apply the formatting automatically (e.g. when saving). For example, for Visual Studio Code see [the official documentation](https://code.visualstudio.com/docs/cpp/cpp-ide#_code-formatting).
 
 ## Patches and features contribution
 
