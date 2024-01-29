@@ -33,4 +33,4 @@ In a nutshell, development of new features/bugfixes happens in separated branch.
 you can open a pull request against master, where your code will be review by other contributors prior to merging it.
 
 > [!NOTE]  
-> **For maintainers:** Every time a new PR has to be merged in the `main` branch, the merge mode to use is [Squash and merge](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges#squash-and-merge-your-commits). This will help the blame of code changes, maintain a cleaner history on the `main` branch and facilitate code bisection for regression issues.
+> **For maintainers:** Every time a new PR has to be merged in the `main` branch, the merge mode to use is [Squash and merge](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges#squash-and-merge-your-commits) unless the commits in the PR are not already curated. This will help the blame of code changes, maintain a cleaner history on the `main` branch and facilitate code bisection for regression issues.
