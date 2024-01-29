@@ -12,7 +12,6 @@ using namespace gz;
 using namespace sim;
 using namespace systems;
 
-using std::chrono::nanoseconds;
 using yarp::os::Bottle;
 using yarp::os::BufferedPort;
 using yarp::os::Log;
@@ -27,7 +26,6 @@ public:
     Clock()
         : m_portName("/clock")
         , m_initialized(false)
-        , m_lastTimestampSent(0)
     {
         std::cout << "===========> constructor" << std::endl;
     }
@@ -59,9 +57,9 @@ public:
 
     void PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm) override
     {
-        if (_info.simTime.count() == m_lastTimestampSent.count())
+        if (_info.paused)
         {
-            yDebug() << "Skipping clock update, same timestamp as last update";
+            yDebug() << "Simulation pause, skipping clock update";
             return;
         }
 
@@ -69,8 +67,6 @@ public:
         b.clear();
         b.addInt64(_info.simTime.count());
         m_clockPort.write();
-
-        m_lastTimestampSent = nanoseconds(_info.simTime.count());
     }
 
 private:
@@ -78,7 +74,6 @@ private:
     yarp::os::Network m_network;
     std::string m_portName;
     yarp::os::BufferedPort<yarp::os::Bottle> m_clockPort;
-    nanoseconds m_lastTimestampSent;
 };
 
 } // namespace gzyarp
