@@ -1,6 +1,8 @@
 # gz-sim-yarp-plugins
 
-**This repository contains a preliminary work in progress of integration of Modern Gazebo (gz) and YARP devices, a port of some functionalities of https://github.com/robotology/gazebo-yarp-plugins to Modern Gazebo. The repo is working in progress, and public interfaces can change without warning.**
+[!WARNING]  
+> This repository contains a preliminary work in progress of integration of Modern Gazebo (gz) and YARP devices, a port of some functionalities of <https://github.com/robotology/gazebo-yarp-plugins> to Modern Gazebo. \
+> The repo is working in progress, and public interfaces can change without warning.
 
 ## Installation
 
@@ -19,6 +21,7 @@ mamba activate gsypdev
 All the commands in this README should be executed in a terminal with the activated environment.
 
 Then, compile gz-sim-yarp-plugins itself, using the following commands on Linux and macOS:
+
 ~~~
 git clone https://github.dev/robotology/gz-sim-yarp-plugins
 mkdir build
@@ -29,6 +32,7 @@ ninja install
 ~~~
 
 or the following commands on Windows:
+
 ~~~
 git clone https://github.dev/robotology/gz-sim-yarp-plugins
 mkdir build
@@ -38,9 +42,7 @@ ninja
 ninja install
 ~~~
 
-
 ### Compile from source using apt dependencies on Linux, macOS or Windows
-
 
 First install some necessary dependencies from apt  
 
@@ -107,6 +109,7 @@ Once the plugins are available, you can see how to use the different plugins by 
 ## Run Tests
 
 To run the tests, just configure the project with the `BUILD_TESTING` option, and run `ctest`:
+
 ~~~
 cd build
 cmake -DBUILD_TESTING:BOOL=ON
@@ -114,3 +117,7 @@ ctest
 ~~~
 
 For more details, check how the tests are run as part of the Continuous Integration, in [`.github/workflows`](.github/workflows).
+
+## Contributing
+
+Refer to the [Contributing page](CONTRIBUTING.md).
