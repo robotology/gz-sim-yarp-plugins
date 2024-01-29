@@ -27,7 +27,6 @@ public:
         : m_portName("/clock")
         , m_initialized(false)
     {
-        yDebug() << "Clock plugin Constructor invoked";
     }
 
     ~Clock()
