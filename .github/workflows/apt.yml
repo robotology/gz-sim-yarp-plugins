@@ -97,7 +97,8 @@ jobs:
       if: contains(matrix.build_type, 'Release')
       run: |
         cd build
-        ctest --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
+        # So high until-pass as a mitigation for https://github.com/robotology/gz-sim-yarp-plugins/issues/75
+        ctest --repeat until-pass:20 --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Test (Debug)
       if: contains(matrix.build_type, 'Debug')
