@@ -32,5 +32,5 @@ Development of new features follows the [GitHub Flow](https://guides.github.com/
 In a nutshell, development of new features/bugfixes happens in separated branch. When you believe your contribution is stable
 you can open a pull request against master, where your code will be review by other contributors prior to merging it.
 
-[!NOTE]  
+> [!NOTE]  
 > **For maintainers:** Every time a new PR has to be merged in the `main` branch, the merge mode to use is [Squash and merge](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges#squash-and-merge-your-commits). This will help the blame of code changes, maintain a cleaner history on the `main` branch and facilitate code bisection for regression issues.
