@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ControlBoardData.hh"
 #include "ControlBoardDataSingleton.hh"
 
 #include <yarp/dev/DeviceDriver.h>
@@ -18,8 +19,7 @@ namespace gzyarp
 
 const std::string YarpControlBoardScopedName = "robotScopedName";
 
-class ControlBoardDriver : public DeviceDriver
-//    public IInteractionMode,
+class ControlBoardDriver : public DeviceDriver, public IInteractionMode
 //    public IControlMode,
 //    public ITorqueControl,
 //    public IAxisInfo,
@@ -30,14 +30,15 @@ public:
     bool open(yarp::os::Searchable& config) override;
     bool close() override;
 
-    // // IInteractionMode
-    // bool getInteractionMode(int axis, yarp::dev::InteractionModeEnum* mode) override;
-    // bool
-    // getInteractionModes(int n_joints, int* joints, yarp::dev::InteractionModeEnum* modes)
-    // override; bool getInteractionModes(yarp::dev::InteractionModeEnum* modes) override; bool
-    // setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode) override; bool
-    // setInteractionModes(int n_joints, int* joints, yarp::dev::InteractionModeEnum* modes)
-    // override; bool setInteractionModes(yarp::dev::InteractionModeEnum* modes) override;
+    // IInteractionMode
+    bool getInteractionMode(int axis, yarp::dev::InteractionModeEnum* mode) override;
+    bool
+    getInteractionModes(int n_joints, int* joints, yarp::dev::InteractionModeEnum* modes) override;
+    bool getInteractionModes(yarp::dev::InteractionModeEnum* modes) override;
+    bool setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode) override;
+    bool
+    setInteractionModes(int n_joints, int* joints, yarp::dev::InteractionModeEnum* modes) override;
+    bool setInteractionModes(yarp::dev::InteractionModeEnum* modes) override;
 
     // // IControlMode
     // bool getControlMode(int j, int* mode) override;
@@ -70,6 +71,8 @@ public:
     // bool getEncoderTimed(int j, double* encs, double* time) override;
 
 private:
+    std::string m_controlBoardScopedName;
+
     ControlBoardData* m_controlBoardData;
 };
 
