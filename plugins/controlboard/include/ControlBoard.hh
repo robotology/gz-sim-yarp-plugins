@@ -22,27 +22,29 @@ public:
     ~ControlBoard();
 
     // ISystemConfigure interface
-    void Configure(const Entity& _entity,
+    void Configure(const gz::sim::Entity& _entity,
                    const std::shared_ptr<const sdf::Element>& _sdf,
-                   EntityComponentManager& _ecm,
-                   EventManager& _eventMgr) override;
+                   gz::sim::EntityComponentManager& _ecm,
+                   gz::sim::EventManager& _eventMgr) override;
 
     // ISystemPreUpdate interface
-    void PreUpdate(const UpdateInfo& _info, EntityComponentManager& _ecm) override;
+    void
+    PreUpdate(const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm) override;
 
     // ISystemPostUpdate interface
-    void PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm) override;
+    void PostUpdate(const gz::sim::UpdateInfo& _info,
+                    const gz::sim::EntityComponentManager& _ecm) override;
 
     // ISystemReset interface
-    void Reset(const UpdateInfo& _info, EntityComponentManager& _ecm) override;
+    void Reset(const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm) override;
 
 private:
     bool m_deviceRegistered;
-    std::string m_modelScopedName;
+    std::string m_robotScopedName;
     std::string m_deviceScopedName;
     gz::sim::Entity m_modelEntity;
     yarp::dev::PolyDriver m_controlBoardDriver;
-    ControlBoardData m_ControlBoardData;
+    ControlBoardData m_controlBoardData;
     yarp::os::Network m_yarpNetwork;
 };
 
