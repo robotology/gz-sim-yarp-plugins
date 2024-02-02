@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ControlBoardDataSingleton.hh"
+
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAxisInfo.h>
 #include <yarp/dev/IControlMode.h>
@@ -68,6 +70,7 @@ public:
     // bool getEncoderTimed(int j, double* encs, double* time) override;
 
 private:
+    ControlBoardData* m_controlBoardData;
 };
 
 } // namespace gzyarp

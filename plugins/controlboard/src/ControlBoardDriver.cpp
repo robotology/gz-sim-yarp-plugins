@@ -1,5 +1,7 @@
 #include "../include/ControlBoardDriver.hh"
 
+#include "../include/ControlBoardDataSingleton.hh"
+
 namespace yarp
 {
 namespace dev
@@ -7,9 +9,14 @@ namespace dev
 namespace gzyarp
 {
 
+// DeviceDriver
 bool ControlBoardDriver::open(yarp::os::Searchable& config)
 {
-    return true;
+    auto m_controlBoardScopedName = config.find(YarpControlBoardScopedName).asString();
+
+    m_controlBoardData
+        = ::gzyarp::ControlBoardDataSingleton::getControlBoardHandler()->getControlBoardData(
+            m_controlBoardScopedName);
 }
 
 bool ControlBoardDriver::close()
