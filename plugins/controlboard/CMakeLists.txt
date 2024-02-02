@@ -1,11 +1,13 @@
 set(HEADER_FILES
     include/ControlBoard.hh
     include/ControlBoardDriver.hh
+    include/ControlBoardDataSingleton.hh
 )
 
 set(SRC_FILES
     src/ControlBoard.cpp
     src/ControlBoardDriver.cpp
+    src/ControlBoardDataSingleton.cpp
 )
 
 add_library(gz-sim-yarp-controlboard-system SHARED ${HEADER_FILES} ${SRC_FILES})
