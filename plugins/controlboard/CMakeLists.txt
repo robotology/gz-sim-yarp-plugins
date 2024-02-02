@@ -2,6 +2,7 @@ set(HEADER_FILES
     include/ControlBoard.hh
     include/ControlBoardDriver.hh
     include/ControlBoardDataSingleton.hh
+    include/ControlBoardData.hh
 )
 
 set(SRC_FILES

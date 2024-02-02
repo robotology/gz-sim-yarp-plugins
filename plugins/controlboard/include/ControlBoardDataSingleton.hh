@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ControlBoardData.hh"
+
 #include <array>
 #include <gz/common/Event.hh>
 #include <mutex>
@@ -7,12 +9,6 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 #include <yarp/os/Stamp.h>
-
-struct ControlBoardData
-{
-    std::mutex mutex;
-    std::string modelScopedName;
-};
 
 namespace gzyarp
 {
