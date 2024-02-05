@@ -322,6 +322,40 @@ bool ControlBoardDriver::setControlModes(int* modes)
     return true;
 }
 
+// IAxisInfo
+
+bool ControlBoardDriver::getAxisName(int axis, std::string& name)
+{
+    // TODO integrate with IJointCoupled interface
+
+    name = m_controlBoardData->getJointName(axis);
+
+    return true;
+}
+
+bool ControlBoardDriver::getJointType(int axis, yarp::dev::JointTypeEnum& type)
+{
+    // TODO integrate with IJointCoupled interface
+
+    return yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
+}
+
+// ITorqueControl
+
+// bool ControlBoardDriver::getAxes(int* ax)
+// {
+//     // TODO integrate with IJointCoupled interface
+//     *ax = m_controlBoardData->joints.size();
+
+//     return true;
+// }
+
+// bool ControlBoardDriver::getRefTorques(double* t)
+// {
+
+//     return true;
+// }
+
 } // namespace gzyarp
 } // namespace dev
 } // namespace yarp

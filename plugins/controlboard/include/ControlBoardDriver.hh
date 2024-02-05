@@ -19,9 +19,11 @@ namespace gzyarp
 
 const std::string YarpControlBoardScopedName = "robotScopedName";
 
-class ControlBoardDriver : public DeviceDriver, public IInteractionMode, public IControlMode
-//    public ITorqueControl,
-//    public IAxisInfo,
+class ControlBoardDriver : public DeviceDriver,
+                           public IInteractionMode,
+                           public IControlMode,
+                           //    public ITorqueControl,
+                           public IAxisInfo
 //    public IEncodersTimed
 {
 public:
@@ -64,9 +66,9 @@ public:
     // bool getTorqueRange(int j, double* min, double* max) override;
     // bool getTorqueRanges(double* min, double* max) override;
 
-    // // IAxisInfo
-    // bool getAxisName(int axis, std::string& name) override;
-    // bool getJointType(int axis, yarp::dev::JointTypeEnum& type) override;
+    // IAxisInfo
+    bool getAxisName(int axis, std::string& name) override;
+    bool getJointType(int axis, yarp::dev::JointTypeEnum& type) override;
 
     // // IEncodersTimed
     // bool getEncodersTimed(double* encs, double* time) override;
