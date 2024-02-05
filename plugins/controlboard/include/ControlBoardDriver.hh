@@ -19,18 +19,19 @@ namespace gzyarp
 
 const std::string YarpControlBoardScopedName = "robotScopedName";
 
-class ControlBoardDriver : public DeviceDriver, public IInteractionMode
-//    public IControlMode,
+class ControlBoardDriver : public DeviceDriver, public IInteractionMode, public IControlMode
 //    public ITorqueControl,
 //    public IAxisInfo,
 //    public IEncodersTimed
 {
 public:
     // DeviceDriver
+
     bool open(yarp::os::Searchable& config) override;
     bool close() override;
 
     // IInteractionMode
+
     bool getInteractionMode(int axis, yarp::dev::InteractionModeEnum* mode) override;
     bool
     getInteractionModes(int n_joints, int* joints, yarp::dev::InteractionModeEnum* modes) override;
@@ -40,13 +41,14 @@ public:
     setInteractionModes(int n_joints, int* joints, yarp::dev::InteractionModeEnum* modes) override;
     bool setInteractionModes(yarp::dev::InteractionModeEnum* modes) override;
 
-    // // IControlMode
-    // bool getControlMode(int j, int* mode) override;
-    // bool getControlModes(int* modes) override;
-    // bool getControlModes(const int n_joint, const int* joints, int* modes) override;
-    // bool setControlMode(const int j, const int mode) override;
-    // bool setControlModes(const int n_joint, const int* joints, int* modes) override;
-    // bool setControlModes(int* modes) override;
+    // IControlMode
+
+    bool getControlMode(int j, int* mode) override;
+    bool getControlModes(int* modes) override;
+    bool getControlModes(const int n_joint, const int* joints, int* modes) override;
+    bool setControlMode(const int j, const int mode) override;
+    bool setControlModes(const int n_joint, const int* joints, int* modes) override;
+    bool setControlModes(int* modes) override;
 
     // // ITorqueControl
     // bool getAxes(int* ax) override;

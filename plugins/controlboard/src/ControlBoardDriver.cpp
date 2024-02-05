@@ -16,6 +16,7 @@ namespace gzyarp
 {
 
 // DeviceDriver
+
 bool ControlBoardDriver::open(yarp::os::Searchable& config)
 {
     m_controlBoardScopedName = config.find(YarpControlBoardScopedName).asString();
@@ -29,6 +30,8 @@ bool ControlBoardDriver::close()
 {
     return true;
 }
+
+// IInteractionMode
 
 bool ControlBoardDriver::getInteractionMode(int axis, yarp::dev::InteractionModeEnum* mode)
 {
@@ -156,6 +159,161 @@ bool ControlBoardDriver::setInteractionModes(yarp::dev::InteractionModeEnum* mod
     for (int i = 0; i < m_controlBoardData->joints.size(); i++)
     {
         if (!ControlBoardDriver::setInteractionMode(i, modes[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// IControlMode
+
+bool ControlBoardDriver::getControlMode(int j, int* mode)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (!mode)
+    {
+        yError() << "Error while getting control mode: mode array is null";
+        return false;
+    }
+
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while getting control mode: joint index out of range";
+        return false;
+    }
+
+    *mode = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).controlMode;
+
+    return true;
+}
+
+bool ControlBoardDriver::getControlModes(int* modes)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (!modes)
+    {
+        yError() << "Error while getting control modes: modes array is null";
+        return false;
+    }
+
+    // for (int i = 0; i < m_controlBoardData->joints.size(); i++)
+    // {
+    //     if (!ControlBoardDriver::getControlMode(i, &modes[i]))
+    //     {
+    //         return false;
+    //     }
+    // }
+
+    for (auto& [key, value] : m_controlBoardData->joints)
+    {
+        if (!ControlBoardDriver::getControlMode(m_controlBoardData->getJointIndex(key),
+                                                &modes[m_controlBoardData->getJointIndex(key)]))
+        {
+            yError() << "Error while getting control mode for joint " + key;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ControlBoardDriver::getControlModes(const int n_joint, const int* joints, int* modes)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (!joints)
+    {
+        yError() << "Error while getting control modes: joints array is null";
+        return false;
+    }
+    if (!modes)
+    {
+        yError() << "Error while getting control modes: modes array is null";
+        return false;
+    }
+
+    for (int i = 0; i < n_joint; i++)
+    {
+        if (!ControlBoardDriver::getControlMode(joints[i], &modes[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ControlBoardDriver::setControlMode(const int j, const int mode)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while setting control mode: joint index out of range";
+        return false;
+    }
+
+    // Only accept supported control modes
+    // The only not supported control mode is
+    // (for now) VOCAB_CM_MIXED
+    if (!(mode == VOCAB_CM_POSITION || mode == VOCAB_CM_POSITION_DIRECT || mode == VOCAB_CM_VELOCITY
+          || mode == VOCAB_CM_TORQUE || mode == VOCAB_CM_MIXED || mode == VOCAB_CM_PWM
+          || mode == VOCAB_CM_CURRENT || mode == VOCAB_CM_IDLE || mode == VOCAB_CM_FORCE_IDLE))
+    {
+        yWarning() << "request control mode " << yarp::os::Vocab32::decode(mode)
+                   << " that is not supported by "
+                   << " gz-sim-yarp-controlboard-system plugin.";
+        return false;
+    }
+
+    m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).controlMode = mode;
+
+    return true;
+}
+
+bool ControlBoardDriver::setControlModes(const int n_joint, const int* joints, int* modes)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (!joints)
+    {
+        yError() << "Error while setting control modes: joints array is null";
+        return false;
+    }
+    if (!modes)
+    {
+        yError() << "Error while setting control modes: modes array is null";
+        return false;
+    }
+
+    for (int i = 0; i < n_joint; i++)
+    {
+        if (!ControlBoardDriver::setControlMode(joints[i], modes[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ControlBoardDriver::setControlModes(int* modes)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (!modes)
+    {
+        yError() << "Error while setting control modes: modes array is null";
+        return false;
+    }
+
+    for (int i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::setControlMode(i, modes[i]))
         {
             return false;
         }
