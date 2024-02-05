@@ -13,6 +13,9 @@ struct JointProperties
     std::string jointName;
     yarp::dev::InteractionModeEnum interactionMode;
     yarp::conf::vocab32_t controlMode;
+    double refTorque; // Desired reference torques for torque control mode [Nm]
+    double torque; // Measured torques [Nm]
+    double maxTorqueAbs; // Maximum torque absolute value [Nm]
 };
 
 class ControlBoardData

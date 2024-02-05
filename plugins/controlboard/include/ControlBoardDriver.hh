@@ -22,7 +22,7 @@ const std::string YarpControlBoardScopedName = "robotScopedName";
 class ControlBoardDriver : public DeviceDriver,
                            public IInteractionMode,
                            public IControlMode,
-                           //    public ITorqueControl,
+                           public ITorqueControl,
                            public IAxisInfo
 //    public IEncodersTimed
 {
@@ -53,18 +53,18 @@ public:
     bool setControlModes(int* modes) override;
 
     // // ITorqueControl
-    // bool getAxes(int* ax) override;
-    // bool getRefTorques(double* t) override;
-    // bool getRefTorque(int j, double* t) override;
-    // bool setRefTorques(const double* t) override;
-    // bool setRefTorque(int j, double t) override;
-    // bool setRefTorques(const int n_joint, const int* joints, const double* t) override;
-    // bool getMotorTorqueParams(int j, yarp::dev::MotorTorqueParameters* params) override;
-    // bool setMotorTorqueParams(int j, const yarp::dev::MotorTorqueParameters params) override;
-    // bool getTorque(int j, double* t) override;
-    // bool getTorques(double* t) override;
-    // bool getTorqueRange(int j, double* min, double* max) override;
-    // bool getTorqueRanges(double* min, double* max) override;
+    bool getAxes(int* ax) override;
+    bool getRefTorques(double* t) override;
+    bool getRefTorque(int j, double* t) override;
+    bool setRefTorques(const double* t) override;
+    bool setRefTorque(int j, double t) override;
+    bool setRefTorques(const int n_joint, const int* joints, const double* t) override;
+    bool getMotorTorqueParams(int j, yarp::dev::MotorTorqueParameters* params) override;
+    bool setMotorTorqueParams(int j, const yarp::dev::MotorTorqueParameters params) override;
+    bool getTorque(int j, double* t) override;
+    bool getTorques(double* t) override;
+    bool getTorqueRange(int j, double* min, double* max) override;
+    bool getTorqueRanges(double* min, double* max) override;
 
     // IAxisInfo
     bool getAxisName(int axis, std::string& name) override;

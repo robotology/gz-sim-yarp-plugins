@@ -24,6 +24,8 @@ bool ControlBoardDriver::open(yarp::os::Searchable& config)
     m_controlBoardData
         = ::gzyarp::ControlBoardDataSingleton::getControlBoardHandler()->getControlBoardData(
             m_controlBoardScopedName);
+
+    return true;
 }
 
 bool ControlBoardDriver::close()
@@ -337,24 +339,201 @@ bool ControlBoardDriver::getJointType(int axis, yarp::dev::JointTypeEnum& type)
 {
     // TODO integrate with IJointCoupled interface
 
-    return yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
+    type = yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
+
+    return true;
 }
 
 // ITorqueControl
 
-// bool ControlBoardDriver::getAxes(int* ax)
-// {
-//     // TODO integrate with IJointCoupled interface
-//     *ax = m_controlBoardData->joints.size();
+bool ControlBoardDriver::getAxes(int* ax)
+{
+    // TODO integrate with IJointCoupled interface
+    *ax = m_controlBoardData->joints.size();
 
-//     return true;
-// }
+    return true;
+}
 
-// bool ControlBoardDriver::getRefTorques(double* t)
-// {
+bool ControlBoardDriver::getRefTorque(int j, double* t)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
-//     return true;
-// }
+    if (!t)
+    {
+        yError() << "Error while getting reference torque: t is null";
+        return false;
+    }
+
+    *t = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).refTorque;
+
+    return true;
+}
+
+bool ControlBoardDriver::getRefTorques(double* t)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (!t)
+    {
+        yError() << "Error while getting reference torques: t array is null";
+        return false;
+    }
+
+    for (int i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::getRefTorque(i, &t[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ControlBoardDriver::setRefTorque(int j, double t)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).refTorque = t;
+
+    return true;
+}
+
+bool ControlBoardDriver::setRefTorques(const double* t)
+{
+    if (!t)
+    {
+        yError() << "Error while setting reference torques: t array is null";
+        return false;
+    }
+
+    for (int i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::setRefTorque(i, t[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ControlBoardDriver::setRefTorques(const int n_joint, const int* joints, const double* t)
+{
+    if (!joints)
+    {
+        yError() << "Error while setting reference torques: joints array is null";
+        return false;
+    }
+    if (!t)
+    {
+        yError() << "Error while setting reference torques: t array is null";
+        return false;
+    }
+
+    for (int i = 0; i < n_joint; i++)
+    {
+        if (!ControlBoardDriver::setRefTorque(joints[i], t[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ControlBoardDriver::getMotorTorqueParams(int j, yarp::dev::MotorTorqueParameters* params)
+{
+    // TODO
+
+    return false;
+}
+
+bool ControlBoardDriver::setMotorTorqueParams(int j, const yarp::dev::MotorTorqueParameters params)
+{
+    // TODO
+
+    return false;
+}
+
+bool ControlBoardDriver::getTorque(int j, double* t)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (!t)
+    {
+        yError() << "Error while getting torque: t is null";
+        return false;
+    }
+
+    *t = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).torque;
+
+    return true;
+}
+
+bool ControlBoardDriver::getTorques(double* t)
+{
+    if (!t)
+    {
+        yError() << "Error while getting torques: t array is null";
+        return false;
+    }
+
+    for (int i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::getTorque(i, &t[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ControlBoardDriver::getTorqueRange(int j, double* min, double* max)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (!min)
+    {
+        yError() << "Error while getting torque range: min is null";
+        return false;
+    }
+    if (!max)
+    {
+        yError() << "Error while getting torque range: max is null";
+        return false;
+    }
+
+    *min = -m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).maxTorqueAbs;
+    *max = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).maxTorqueAbs;
+
+    return true;
+}
+
+bool ControlBoardDriver::getTorqueRanges(double* min, double* max)
+{
+    if (!min)
+    {
+        yError() << "Error while getting torque ranges: min array is null";
+        return false;
+    }
+    if (!max)
+    {
+        yError() << "Error while getting torque ranges: max array is null";
+        return false;
+    }
+
+    for (int i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::getTorqueRange(i, &min[i], &max[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 } // namespace gzyarp
 } // namespace dev
