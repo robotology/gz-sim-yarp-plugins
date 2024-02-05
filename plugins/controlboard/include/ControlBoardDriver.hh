@@ -23,8 +23,8 @@ class ControlBoardDriver : public DeviceDriver,
                            public IInteractionMode,
                            public IControlMode,
                            public ITorqueControl,
-                           public IAxisInfo
-//    public IEncodersTimed
+                           public IAxisInfo,
+                           public IEncodersTimed
 {
 public:
     // DeviceDriver
@@ -52,7 +52,8 @@ public:
     bool setControlModes(const int n_joint, const int* joints, int* modes) override;
     bool setControlModes(int* modes) override;
 
-    // // ITorqueControl
+    // ITorqueControl
+
     bool getAxes(int* ax) override;
     bool getRefTorques(double* t) override;
     bool getRefTorque(int j, double* t) override;
@@ -67,12 +68,24 @@ public:
     bool getTorqueRanges(double* min, double* max) override;
 
     // IAxisInfo
+
     bool getAxisName(int axis, std::string& name) override;
     bool getJointType(int axis, yarp::dev::JointTypeEnum& type) override;
 
-    // // IEncodersTimed
-    // bool getEncodersTimed(double* encs, double* time) override;
-    // bool getEncoderTimed(int j, double* encs, double* time) override;
+    // IEncodersTimed
+
+    bool resetEncoder(int j) override;
+    bool resetEncoders() override;
+    bool setEncoder(int j, double val) override;
+    bool setEncoders(const double* vals) override;
+    bool getEncoder(int j, double* v) override;
+    bool getEncoders(double* encs) override;
+    bool getEncoderSpeed(int j, double* sp) override;
+    bool getEncoderSpeeds(double* spds) override;
+    bool getEncoderAcceleration(int j, double* spds) override;
+    bool getEncoderAccelerations(double* accs) override;
+    bool getEncodersTimed(double* encs, double* time) override;
+    bool getEncoderTimed(int j, double* encs, double* time) override;
 
 private:
     std::string m_controlBoardScopedName;

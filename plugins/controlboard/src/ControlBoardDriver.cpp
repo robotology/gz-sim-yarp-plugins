@@ -363,6 +363,11 @@ bool ControlBoardDriver::getRefTorque(int j, double* t)
         yError() << "Error while getting reference torque: t is null";
         return false;
     }
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while getting reference torque: joint index out of range";
+        return false;
+    }
 
     *t = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).refTorque;
 
@@ -393,6 +398,12 @@ bool ControlBoardDriver::getRefTorques(double* t)
 bool ControlBoardDriver::setRefTorque(int j, double t)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while setting reference torque: joint index out of range";
+        return false;
+    }
 
     m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).refTorque = t;
 
@@ -465,6 +476,16 @@ bool ControlBoardDriver::getTorque(int j, double* t)
         yError() << "Error while getting torque: t is null";
         return false;
     }
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while getting torque: joint index out of range";
+        return false;
+    }
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while getting torque: joint index out of range";
+        return false;
+    }
 
     *t = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).torque;
 
@@ -504,6 +525,11 @@ bool ControlBoardDriver::getTorqueRange(int j, double* min, double* max)
         yError() << "Error while getting torque range: max is null";
         return false;
     }
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while getting torque range: joint index out of range";
+        return false;
+    }
 
     *min = -m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).maxTorqueAbs;
     *max = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).maxTorqueAbs;
@@ -527,6 +553,194 @@ bool ControlBoardDriver::getTorqueRanges(double* min, double* max)
     for (int i = 0; i < m_controlBoardData->joints.size(); i++)
     {
         if (!ControlBoardDriver::getTorqueRange(i, &min[i], &max[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// IEncodersTimed
+
+/**
+ * Since we don't know how to reset gazebo encoders, we will simply add the actual value to the
+ * future encoders readings
+ */
+bool ControlBoardDriver::resetEncoder(int j)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while resetting encoder: joint index out of range";
+        return false;
+    }
+
+    m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).zeroPosition
+        = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).position;
+
+    return true;
+}
+
+bool ControlBoardDriver::resetEncoders()
+{
+    for (int i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::resetEncoder(i))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ControlBoardDriver::setEncoder(int j, double val)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while setting encoder: joint index out of range";
+        return false;
+    }
+
+    m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).zeroPosition
+        = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).position - val;
+
+    return true;
+}
+
+bool ControlBoardDriver::setEncoders(const double* vals)
+{
+    if (!vals)
+    {
+        yError() << "Error while setting encoders: vals array is null";
+        return false;
+    }
+
+    for (int i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::setEncoder(i, vals[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ControlBoardDriver::getEncoder(int j, double* v)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (!v)
+    {
+        yError() << "Error while getting encoder: v is null";
+        return false;
+    }
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while getting encoder: joint index out of range";
+        return false;
+    }
+
+    *v = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).position
+         - m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).zeroPosition;
+
+    return true;
+}
+
+bool ControlBoardDriver::getEncoders(double* encs)
+{
+    if (!encs)
+    {
+        yError() << "Error while getting encoders: encs array is null";
+        return false;
+    }
+
+    for (int i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::getEncoder(i, &encs[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ControlBoardDriver::getEncoderSpeed(int j, double* sp)
+{
+    // TODO
+
+    return false;
+}
+
+bool ControlBoardDriver::getEncoderSpeeds(double* spds)
+{
+    // TODO
+
+    return false;
+}
+
+bool ControlBoardDriver::getEncoderAcceleration(int j, double* spds)
+{
+    // TODO
+
+    return false;
+}
+
+bool ControlBoardDriver::getEncoderAccelerations(double* accs)
+{
+    // TODO
+
+    return false;
+}
+
+bool ControlBoardDriver::getEncoderTimed(int j, double* encs, double* time)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (!encs)
+    {
+        yError() << "Error while getting encoder: encs is null";
+        return false;
+    }
+    if (!time)
+    {
+        yError() << "Error while getting encoder: time is null";
+        return false;
+    }
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while getting encoder: joint index out of range";
+        return false;
+    }
+
+    *encs = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).position
+            - m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).zeroPosition;
+
+    return true;
+}
+
+bool ControlBoardDriver::getEncodersTimed(double* encs, double* time)
+{
+    if (!encs)
+    {
+        yError() << "Error while getting encoders: encs array is null";
+        return false;
+    }
+    if (!time)
+    {
+        yError() << "Error while getting encoders: time is null";
+        return false;
+    }
+
+    for (int i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::getEncoderTimed(i, &encs[i], &time[i]))
         {
             return false;
         }
