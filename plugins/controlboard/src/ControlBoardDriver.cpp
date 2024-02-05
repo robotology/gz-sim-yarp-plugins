@@ -57,8 +57,6 @@ bool ControlBoardDriver::getInteractionModes(int n_joints,
                                              int* joints,
                                              yarp::dev::InteractionModeEnum* modes)
 {
-    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
-
     if (!joints)
     {
         yError() << "Error while getting interaction modes: joints array is null";
@@ -83,8 +81,6 @@ bool ControlBoardDriver::getInteractionModes(int n_joints,
 
 bool ControlBoardDriver::getInteractionModes(yarp::dev::InteractionModeEnum* modes)
 {
-    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
-
     if (!modes)
     {
         yError() << "Error while getting interaction modes: modes array is null";
@@ -124,8 +120,6 @@ bool ControlBoardDriver::setInteractionModes(int n_joints,
                                              int* joints,
                                              yarp::dev::InteractionModeEnum* modes)
 {
-    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
-
     if (!joints)
     {
         yError() << "Error while setting interaction modes: joints array is null";
@@ -150,8 +144,6 @@ bool ControlBoardDriver::setInteractionModes(int n_joints,
 
 bool ControlBoardDriver::setInteractionModes(yarp::dev::InteractionModeEnum* modes)
 {
-    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
-
     if (!modes)
     {
         yError() << "Error while setting interaction modes: modes array is null";
@@ -194,8 +186,6 @@ bool ControlBoardDriver::getControlMode(int j, int* mode)
 
 bool ControlBoardDriver::getControlModes(int* modes)
 {
-    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
-
     if (!modes)
     {
         yError() << "Error while getting control modes: modes array is null";
@@ -225,8 +215,6 @@ bool ControlBoardDriver::getControlModes(int* modes)
 
 bool ControlBoardDriver::getControlModes(const int n_joint, const int* joints, int* modes)
 {
-    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
-
     if (!joints)
     {
         yError() << "Error while getting control modes: joints array is null";
@@ -279,8 +267,6 @@ bool ControlBoardDriver::setControlMode(const int j, const int mode)
 
 bool ControlBoardDriver::setControlModes(const int n_joint, const int* joints, int* modes)
 {
-    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
-
     if (!joints)
     {
         yError() << "Error while setting control modes: joints array is null";
@@ -305,8 +291,6 @@ bool ControlBoardDriver::setControlModes(const int n_joint, const int* joints, i
 
 bool ControlBoardDriver::setControlModes(int* modes)
 {
-    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
-
     if (!modes)
     {
         yError() << "Error while setting control modes: modes array is null";
@@ -349,6 +333,8 @@ bool ControlBoardDriver::getJointType(int axis, yarp::dev::JointTypeEnum& type)
 bool ControlBoardDriver::getAxes(int* ax)
 {
     // TODO integrate with IJointCoupled interface
+
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
     *ax = m_controlBoardData->joints.size();
 
     return true;
@@ -376,8 +362,6 @@ bool ControlBoardDriver::getRefTorque(int j, double* t)
 
 bool ControlBoardDriver::getRefTorques(double* t)
 {
-    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
-
     if (!t)
     {
         yError() << "Error while getting reference torques: t array is null";
