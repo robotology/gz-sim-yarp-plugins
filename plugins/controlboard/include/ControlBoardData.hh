@@ -3,6 +3,7 @@
 #include <map>
 #include <mutex>
 #include <string>
+#include <vector>
 
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IInteractionMode.h>
@@ -11,7 +12,7 @@
 
 struct JointProperties
 {
-    std::string jointName;
+    std::string name;
     yarp::dev::InteractionModeEnum interactionMode;
     yarp::conf::vocab32_t controlMode;
     double refTorque; // Desired reference torques for torque control mode [Nm]
@@ -28,9 +29,6 @@ class ControlBoardData
 public:
     std::mutex mutex;
     std::string modelScopedName;
-    std::map<std::string, JointProperties> joints;
+    std::vector<JointProperties> joints;
     yarp::os::Stamp simTime;
-
-    std::string getJointName(const int& jointIndex) const;
-    int getJointIndex(const std::string& jointName) const;
 };

@@ -1,4 +1,5 @@
 #include "../include/ControlBoardDataSingleton.hh"
+
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
@@ -85,6 +86,8 @@ ControlBoardDataSingleton::ControlBoardDataSingleton()
 {
     m_controlBoardMap.clear();
 }
+
+ControlBoardDataSingleton* ControlBoardDataSingleton::s_handle = nullptr;
 
 std::mutex& ControlBoardDataSingleton::mutex()
 {

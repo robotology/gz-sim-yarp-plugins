@@ -39,16 +39,7 @@ bool ControlBoardDriver::getInteractionMode(int axis, yarp::dev::InteractionMode
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
-    try
-    {
-        *mode
-            = m_controlBoardData->joints.at(m_controlBoardData->getJointName(axis)).interactionMode;
-    } catch (const std::exception& e)
-    {
-        yError() << "Error while getting interaction mode for axis " + std::to_string(axis) + ": \n"
-                        + e.what();
-        return false;
-    }
+    *mode = m_controlBoardData->joints.at(axis).interactionMode;
 
     return true;
 }
@@ -104,8 +95,7 @@ bool ControlBoardDriver::setInteractionMode(int axis, yarp::dev::InteractionMode
 
     try
     {
-        m_controlBoardData->joints.at(m_controlBoardData->getJointName(axis)).interactionMode
-            = mode;
+        m_controlBoardData->joints.at(axis).interactionMode = mode;
     } catch (const std::exception& e)
     {
         yError() << "Error while setting interaction mode for axis " + std::to_string(axis) + ": \n"
@@ -175,11 +165,12 @@ bool ControlBoardDriver::getControlMode(int j, int* mode)
 
     if (j < 0 || j >= m_controlBoardData->joints.size())
     {
-        yError() << "Error while getting control mode: joint index out of range";
+        yError() << "Error while getting control mode: joint index " + std::to_string(j)
+                        + " out of range";
         return false;
     }
 
-    *mode = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).controlMode;
+    *mode = m_controlBoardData->joints.at(j).controlMode;
 
     return true;
 }
@@ -192,20 +183,10 @@ bool ControlBoardDriver::getControlModes(int* modes)
         return false;
     }
 
-    // for (int i = 0; i < m_controlBoardData->joints.size(); i++)
-    // {
-    //     if (!ControlBoardDriver::getControlMode(i, &modes[i]))
-    //     {
-    //         return false;
-    //     }
-    // }
-
-    for (auto& [key, value] : m_controlBoardData->joints)
+    for (int i = 0; i < m_controlBoardData->joints.size(); i++)
     {
-        if (!ControlBoardDriver::getControlMode(m_controlBoardData->getJointIndex(key),
-                                                &modes[m_controlBoardData->getJointIndex(key)]))
+        if (!ControlBoardDriver::getControlMode(i, &modes[i]))
         {
-            yError() << "Error while getting control mode for joint " + key;
             return false;
         }
     }
@@ -260,7 +241,7 @@ bool ControlBoardDriver::setControlMode(const int j, const int mode)
         return false;
     }
 
-    m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).controlMode = mode;
+    m_controlBoardData->joints.at(j).controlMode = mode;
 
     return true;
 }
@@ -314,7 +295,7 @@ bool ControlBoardDriver::getAxisName(int axis, std::string& name)
 {
     // TODO integrate with IJointCoupled interface
 
-    name = m_controlBoardData->getJointName(axis);
+    name = m_controlBoardData->joints.at(axis).name;
 
     return true;
 }
@@ -355,7 +336,7 @@ bool ControlBoardDriver::getRefTorque(int j, double* t)
         return false;
     }
 
-    *t = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).refTorque;
+    *t = m_controlBoardData->joints.at(j).refTorque;
 
     return true;
 }
@@ -385,11 +366,12 @@ bool ControlBoardDriver::setRefTorque(int j, double t)
 
     if (j < 0 || j >= m_controlBoardData->joints.size())
     {
-        yError() << "Error while setting reference torque: joint index out of range";
+        yError() << "Error while setting reference torque: joint index " + std::to_string(j)
+                        + " out of range";
         return false;
     }
 
-    m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).refTorque = t;
+    m_controlBoardData->joints.at(j).refTorque = t;
 
     return true;
 }
@@ -462,16 +444,12 @@ bool ControlBoardDriver::getTorque(int j, double* t)
     }
     if (j < 0 || j >= m_controlBoardData->joints.size())
     {
-        yError() << "Error while getting torque: joint index out of range";
-        return false;
-    }
-    if (j < 0 || j >= m_controlBoardData->joints.size())
-    {
-        yError() << "Error while getting torque: joint index out of range";
+        yError() << "Error while getting torque: joint index " + std::to_string(j)
+                        + " out of range";
         return false;
     }
 
-    *t = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).torque;
+    *t = m_controlBoardData->joints.at(j).torque;
 
     return true;
 }
@@ -511,12 +489,13 @@ bool ControlBoardDriver::getTorqueRange(int j, double* min, double* max)
     }
     if (j < 0 || j >= m_controlBoardData->joints.size())
     {
-        yError() << "Error while getting torque range: joint index out of range";
+        yError() << "Error while getting torque range: joint index " + std::to_string(j)
+                        + " out of range";
         return false;
     }
 
-    *min = -m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).maxTorqueAbs;
-    *max = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).maxTorqueAbs;
+    *min = -m_controlBoardData->joints.at(j).maxTorqueAbs;
+    *max = m_controlBoardData->joints.at(j).maxTorqueAbs;
 
     return true;
 }
@@ -561,8 +540,7 @@ bool ControlBoardDriver::resetEncoder(int j)
         return false;
     }
 
-    m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).zeroPosition
-        = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).position;
+    m_controlBoardData->joints.at(j).zeroPosition = m_controlBoardData->joints.at(j).position;
 
     return true;
 }
@@ -586,12 +564,12 @@ bool ControlBoardDriver::setEncoder(int j, double val)
 
     if (j < 0 || j >= m_controlBoardData->joints.size())
     {
-        yError() << "Error while setting encoder: joint index out of range";
+        yError() << "Error while setting encoder: joint index " + std::to_string(j)
+                        + " out of range";
         return false;
     }
 
-    m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).zeroPosition
-        = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).position - val;
+    m_controlBoardData->joints.at(j).zeroPosition = m_controlBoardData->joints.at(j).position - val;
 
     return true;
 }
@@ -626,12 +604,12 @@ bool ControlBoardDriver::getEncoder(int j, double* v)
     }
     if (j < 0 || j >= m_controlBoardData->joints.size())
     {
-        yError() << "Error while getting encoder: joint index out of range";
+        yError() << "Error while getting encoder: joint index " + std::to_string(j)
+                        + " out of range";
         return false;
     }
 
-    *v = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).position
-         - m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).zeroPosition;
+    *v = m_controlBoardData->joints.at(j).position - m_controlBoardData->joints.at(j).zeroPosition;
 
     return true;
 }
@@ -699,12 +677,13 @@ bool ControlBoardDriver::getEncoderTimed(int j, double* encs, double* time)
     }
     if (j < 0 || j >= m_controlBoardData->joints.size())
     {
-        yError() << "Error while getting encoder: joint index out of range";
+        yError() << "Error while getting encoder: joint index " + std::to_string(j)
+                        + " out of range";
         return false;
     }
 
-    *encs = m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).position
-            - m_controlBoardData->joints.at(m_controlBoardData->getJointName(j)).zeroPosition;
+    *encs
+        = m_controlBoardData->joints.at(j).position - m_controlBoardData->joints.at(j).zeroPosition;
 
     return true;
 }
