@@ -86,4 +86,10 @@ ControlBoardDataSingleton::ControlBoardDataSingleton()
     m_controlBoardMap.clear();
 }
 
+std::mutex& ControlBoardDataSingleton::mutex()
+{
+    static std::mutex s_mutex;
+    return s_mutex;
+}
+
 } // namespace gzyarp
