@@ -86,7 +86,7 @@ void ControlBoard::Configure(const Entity& _entity,
     ControlBoardDataSingleton::getControlBoardHandler()->setControlBoardData(&(m_controlBoardData));
 
     driver_properties.put("robot", m_robotScopedName);
-    driver_properties.put("device", m_deviceScopedName);
+    driver_properties.put("device", "gazebo_controlboard");
 
     if (!m_controlBoardDriver.open(driver_properties))
     {
