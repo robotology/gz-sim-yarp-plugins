@@ -401,6 +401,27 @@ bool ControlBoardDriver::getVelLimits(int axis, double* min, double* max)
     return true;
 }
 
+// IRemoteVariables
+
+bool ControlBoardDriver::getRemoteVariable(std::string key, yarp::os::Bottle& val)
+{
+    // TODO
+    std::cerr << "getRemoteVariable called" << std::endl;
+    return false;
+}
+bool ControlBoardDriver::setRemoteVariable(std::string key, const yarp::os::Bottle& val)
+{
+    // TODO
+    std::cerr << "setRemoteVariable called" << std::endl;
+    return false;
+}
+bool ControlBoardDriver::getRemoteVariablesList(yarp::os::Bottle* listOfKeys)
+{
+    // TODO
+    std::cerr << "getRemoteVariablesList called" << std::endl;
+    return false;
+}
+
 // ITorqueControl
 
 bool ControlBoardDriver::getAxes(int* ax)

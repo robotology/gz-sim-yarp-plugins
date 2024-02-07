@@ -10,6 +10,7 @@
 #include <yarp/dev/IEncodersTimed.h>
 #include <yarp/dev/IInteractionMode.h>
 #include <yarp/dev/IPositionControl.h>
+#include <yarp/dev/IRemoteVariables.h>
 #include <yarp/dev/ITorqueControl.h>
 #include <yarp/dev/IVelocityControl.h>
 
@@ -28,6 +29,7 @@ class ControlBoardDriver : public DeviceDriver,
                            public IInteractionMode,
                            public IControlMode,
                            public IControlLimits,
+                           public IRemoteVariables,
                            public ITorqueControl,
                            public IPositionControl,
                            public IVelocityControl
@@ -84,6 +86,12 @@ public:
     bool getLimits(int axis, double* min, double* max) override;
     bool setVelLimits(int axis, double min, double max) override;
     bool getVelLimits(int axis, double* min, double* max) override;
+
+    // IRemoteVariables
+
+    bool getRemoteVariable(std::string key, yarp::os::Bottle& val) override;
+    bool setRemoteVariable(std::string key, const yarp::os::Bottle& val) override;
+    bool getRemoteVariablesList(yarp::os::Bottle* listOfKeys) override;
 
     // ITorqueControl
 
