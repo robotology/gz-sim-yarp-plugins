@@ -11,6 +11,7 @@
 #include <yarp/dev/IInteractionMode.h>
 #include <yarp/dev/IPositionControl.h>
 #include <yarp/dev/ITorqueControl.h>
+#include <yarp/dev/IVelocityControl.h>
 
 namespace yarp
 {
@@ -28,7 +29,8 @@ class ControlBoardDriver : public DeviceDriver,
                            public IControlMode,
                            public IControlLimits,
                            public ITorqueControl,
-                           public IPositionControl
+                           public IPositionControl,
+                           public IVelocityControl
 {
 public:
     // DeviceDriver
@@ -124,6 +126,12 @@ public:
     bool getRefSpeeds(const int n_joint, const int* joints, double* spds) override;
     bool getRefAccelerations(const int n_joint, const int* joints, double* accs) override;
     bool stop(const int n_joint, const int* joints) override;
+
+    // IVelocityControl
+
+    bool velocityMove(int j, double sp) override;
+    bool velocityMove(const double* sp) override;
+    bool velocityMove(const int n_joint, const int* joints, const double* spds) override;
 
 private:
     std::string m_controlBoardScopedName;

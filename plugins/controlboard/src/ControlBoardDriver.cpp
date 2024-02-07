@@ -742,6 +742,24 @@ bool ControlBoardDriver::stop(const int n_joint, const int* joints)
     return false;
 }
 
+// IVelocityControl
+
+bool ControlBoardDriver::velocityMove(int j, double sp)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::velocityMove(const double* sp)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::velocityMove(const int n_joint, const int* joints, const double* spds)
+{
+    // TODO
+    return false;
+}
+
 // IEncodersTimed
 
 /**
