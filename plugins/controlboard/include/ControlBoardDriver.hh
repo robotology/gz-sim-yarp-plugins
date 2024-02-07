@@ -9,6 +9,7 @@
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IEncodersTimed.h>
 #include <yarp/dev/IInteractionMode.h>
+#include <yarp/dev/IPositionControl.h>
 #include <yarp/dev/ITorqueControl.h>
 
 namespace yarp
@@ -26,7 +27,8 @@ class ControlBoardDriver : public DeviceDriver,
                            public IInteractionMode,
                            public IControlMode,
                            public IControlLimits,
-                           public ITorqueControl
+                           public ITorqueControl,
+                           public IPositionControl
 {
 public:
     // DeviceDriver
@@ -95,6 +97,33 @@ public:
     bool getTorques(double* t) override;
     bool getTorqueRange(int j, double* min, double* max) override;
     bool getTorqueRanges(double* min, double* max) override;
+
+    // IPositionControl
+
+    bool positionMove(int j, double ref) override;
+    bool positionMove(const double* refs) override;
+    bool relativeMove(int j, double delta) override;
+    bool relativeMove(const double* deltas) override;
+    bool checkMotionDone(int j, bool* flag) override;
+    bool checkMotionDone(bool* flag) override;
+    bool setRefSpeed(int j, double sp) override;
+    bool setRefSpeeds(const double* spds) override;
+    bool setRefAcceleration(int j, double acc) override;
+    bool setRefAccelerations(const double* accs) override;
+    bool getRefSpeed(int j, double* ref) override;
+    bool getRefSpeeds(double* spds) override;
+    bool getRefAcceleration(int j, double* acc) override;
+    bool getRefAccelerations(double* accs) override;
+    bool stop(int j) override;
+    bool stop() override;
+    bool positionMove(const int n_joint, const int* joints, const double* refs) override;
+    bool relativeMove(const int n_joint, const int* joints, const double* deltas) override;
+    bool checkMotionDone(const int n_joint, const int* joints, bool* flag) override;
+    bool setRefSpeeds(const int n_joint, const int* joints, const double* spds) override;
+    bool setRefAccelerations(const int n_joint, const int* joints, const double* accs) override;
+    bool getRefSpeeds(const int n_joint, const int* joints, double* spds) override;
+    bool getRefAccelerations(const int n_joint, const int* joints, double* accs) override;
+    bool stop(const int n_joint, const int* joints) override;
 
 private:
     std::string m_controlBoardScopedName;

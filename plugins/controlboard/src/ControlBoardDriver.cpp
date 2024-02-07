@@ -616,6 +616,132 @@ bool ControlBoardDriver::getTorqueRanges(double* min, double* max)
     return true;
 }
 
+// IPositionControl
+
+bool ControlBoardDriver::positionMove(int j, double ref)
+{
+    // TODO
+    return false;
+}
+
+bool ControlBoardDriver::positionMove(const double* refs)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::relativeMove(int j, double delta)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::relativeMove(const double* deltas)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::checkMotionDone(int j, bool* flag)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::checkMotionDone(bool* flag)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setRefSpeed(int j, double sp)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setRefSpeeds(const double* spds)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setRefAcceleration(int j, double acc)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setRefAccelerations(const double* accs)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getRefSpeed(int j, double* ref)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getRefSpeeds(double* spds)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getRefAcceleration(int j, double* acc)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getRefAccelerations(double* accs)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::stop(int j)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::stop()
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::positionMove(const int n_joint, const int* joints, const double* refs)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::relativeMove(const int n_joint, const int* joints, const double* deltas)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::checkMotionDone(const int n_joint, const int* joints, bool* flag)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setRefSpeeds(const int n_joint, const int* joints, const double* spds)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setRefAccelerations(const int n_joint,
+                                             const int* joints,
+                                             const double* accs)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getRefSpeeds(const int n_joint, const int* joints, double* spds)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getRefAccelerations(const int n_joint, const int* joints, double* accs)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::stop(const int n_joint, const int* joints)
+{
+    // TODO
+    return false;
+}
+
 // IEncodersTimed
 
 /**
