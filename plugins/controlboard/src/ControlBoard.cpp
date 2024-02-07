@@ -75,11 +75,14 @@ void ControlBoard::Configure(const Entity& _entity,
     }
 
     std::string deviceName = m_pluginParameters.find("yarpDeviceName").asString();
+
     m_robotScopedName = gz::sim::scopedName(_entity, _ecm, "/");
-    // DEBUG
-    m_robotScopedName = "single_pendulum";
+    yDebug() << "gz-sim-yarp-controlboard-system : robot scoped name: " << m_robotScopedName;
+
     m_deviceScopedName
         = m_robotScopedName + "/" + m_pluginParameters.find("yarpDeviceName").asString();
+    yDebug() << "gz-sim-yarp-controlboard-system : device scoped name: " << m_deviceScopedName;
+
     m_modelEntity = _entity;
 
     m_controlBoardData.modelScopedName = m_robotScopedName;
@@ -96,8 +99,10 @@ void ControlBoard::Configure(const Entity& _entity,
 
     if (_sdf->HasElement("initialConfiguration"))
     {
-        std::string configuration_s = _sdf->Get<std::string>("initialConfiguration");
-        m_pluginParameters.put("initialConfiguration", configuration_s);
+        std::string initialConfiguration = _sdf->Get<std::string>("initialConfiguration");
+        yDebug() << "gz-sim-yarp-controlboard-system: initialConfiguration: "
+                 << initialConfiguration;
+        m_pluginParameters.put("initialConfiguration", initialConfiguration);
     }
 
     if (!m_controlBoardDriver.open(m_pluginParameters))
@@ -120,8 +125,8 @@ void ControlBoard::Configure(const Entity& _entity,
         return;
     }
 
-    m_deviceRegistered = true;
     yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
+    m_deviceRegistered = true;
 }
 
 // pre-update
