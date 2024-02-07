@@ -89,7 +89,6 @@ public:
 
 private:
     std::string m_controlBoardScopedName;
-
     ControlBoardData* m_controlBoardData;
 };
 

@@ -2,6 +2,7 @@
 
 #include "ControlBoardDataSingleton.hh"
 
+#include <gz/sim/EntityComponentManager.hh>
 #include <gz/sim/System.hh>
 
 #include <yarp/dev/PolyDriver.h>
@@ -39,6 +40,8 @@ public:
     void Reset(const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm) override;
 
 private:
+    bool setJointProperties(const gz::sim::EntityComponentManager& _ecm);
+
     bool m_deviceRegistered;
     std::string m_robotScopedName;
     std::string m_deviceScopedName;
@@ -46,6 +49,7 @@ private:
     yarp::dev::PolyDriver m_controlBoardDriver;
     ControlBoardData m_controlBoardData;
     yarp::os::Network m_yarpNetwork;
+    yarp::os::Property m_pluginParameters;
 };
 
 } // namespace gzyarp

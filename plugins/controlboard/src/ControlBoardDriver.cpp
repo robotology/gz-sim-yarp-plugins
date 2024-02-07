@@ -5,7 +5,9 @@
 
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
+#include <yarp/os/Property.h>
 
+#include <iostream>
 #include <mutex>
 
 namespace yarp
@@ -19,7 +21,10 @@ namespace gzyarp
 
 bool ControlBoardDriver::open(yarp::os::Searchable& config)
 {
-    m_controlBoardScopedName = config.find(YarpControlBoardScopedName).asString();
+    yarp::os::Property pluginParameters{};
+    pluginParameters.fromString(config.toString().c_str());
+
+    m_controlBoardScopedName = pluginParameters.find(YarpControlBoardScopedName).asString();
 
     m_controlBoardData
         = ::gzyarp::ControlBoardDataSingleton::getControlBoardHandler()->getControlBoardData(
