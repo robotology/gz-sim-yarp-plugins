@@ -781,6 +781,59 @@ bool ControlBoardDriver::velocityMove(const int n_joint, const int* joints, cons
     return false;
 }
 
+// ICurrentControl
+
+bool ControlBoardDriver::getNumberOfMotors(int* ax)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getCurrent(int m, double* curr)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getCurrents(double* currs)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getCurrentRange(int m, double* min, double* max)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getCurrentRanges(double* min, double* max)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setRefCurrents(const double* currs)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setRefCurrent(int m, double curr)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setRefCurrents(const int n_motor, const int* motors, const double* currs)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getRefCurrents(double* currs)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getRefCurrent(int m, double* curr)
+{
+    // TODO
+    return false;
+}
+
 // IEncodersTimed
 
 /**

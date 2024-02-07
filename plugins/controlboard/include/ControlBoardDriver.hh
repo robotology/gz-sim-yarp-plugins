@@ -7,6 +7,7 @@
 #include <yarp/dev/IAxisInfo.h>
 #include <yarp/dev/IControlLimits.h>
 #include <yarp/dev/IControlMode.h>
+#include <yarp/dev/ICurrentControl.h>
 #include <yarp/dev/IEncodersTimed.h>
 #include <yarp/dev/IInteractionMode.h>
 #include <yarp/dev/IPositionControl.h>
@@ -32,7 +33,8 @@ class ControlBoardDriver : public DeviceDriver,
                            public IRemoteVariables,
                            public ITorqueControl,
                            public IPositionControl,
-                           public IVelocityControl
+                           public IVelocityControl,
+                           public ICurrentControl
 {
 public:
     // DeviceDriver
@@ -140,6 +142,19 @@ public:
     bool velocityMove(int j, double sp) override;
     bool velocityMove(const double* sp) override;
     bool velocityMove(const int n_joint, const int* joints, const double* spds) override;
+
+    // ICurrentControl
+
+    bool getNumberOfMotors(int* ax) override;
+    bool getCurrent(int m, double* curr) override;
+    bool getCurrents(double* currs) override;
+    bool getCurrentRange(int m, double* min, double* max) override;
+    bool getCurrentRanges(double* min, double* max) override;
+    bool setRefCurrents(const double* currs) override;
+    bool setRefCurrent(int m, double curr) override;
+    bool setRefCurrents(const int n_motor, const int* motors, const double* currs) override;
+    bool getRefCurrents(double* currs) override;
+    bool getRefCurrent(int m, double* curr) override;
 
 private:
     std::string m_controlBoardScopedName;
