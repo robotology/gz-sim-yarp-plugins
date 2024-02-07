@@ -138,12 +138,18 @@ public:
     bool getRefSpeeds(const int n_joint, const int* joints, double* spds) override;
     bool getRefAccelerations(const int n_joint, const int* joints, double* accs) override;
     bool stop(const int n_joint, const int* joints) override;
+    bool getTargetPosition(const int joint, double* ref) override;
+    bool getTargetPositions(double* refs) override;
+    bool getTargetPositions(const int n_joint, const int* joints, double* refs) override;
 
     // IVelocityControl
 
     bool velocityMove(int j, double sp) override;
     bool velocityMove(const double* sp) override;
     bool velocityMove(const int n_joint, const int* joints, const double* spds) override;
+    bool getRefVelocity(const int joint, double* vel) override;
+    bool getRefVelocities(double* vels) override;
+    bool getRefVelocities(const int n_joint, const int* joints, double* vels) override;
 
     // ICurrentControl
 

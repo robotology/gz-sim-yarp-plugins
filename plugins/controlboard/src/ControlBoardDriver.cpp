@@ -334,6 +334,7 @@ bool ControlBoardDriver::setLimits(int axis, double min, double max)
 
 bool ControlBoardDriver::getLimits(int axis, double* min, double* max)
 {
+    std::cerr << "getLimits called with axis " << std::to_string(axis) << std::endl;
 
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
@@ -355,6 +356,7 @@ bool ControlBoardDriver::getLimits(int axis, double* min, double* max)
 
     *min = m_controlBoardData->joints.at(axis).positionLimitMin;
     *max = m_controlBoardData->joints.at(axis).positionLimitMax;
+    std::cerr << "min: " << std::to_string(*min) << " max: " << std::to_string(*max) << std::endl;
 
     return true;
 }
@@ -377,6 +379,8 @@ bool ControlBoardDriver::setVelLimits(int axis, double min, double max)
 
 bool ControlBoardDriver::getVelLimits(int axis, double* min, double* max)
 {
+    std::cerr << "getVelLimits called" << std::endl;
+
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
     if (!min)
@@ -406,20 +410,20 @@ bool ControlBoardDriver::getVelLimits(int axis, double* min, double* max)
 bool ControlBoardDriver::getRemoteVariable(std::string key, yarp::os::Bottle& val)
 {
     // TODO
-    std::cerr << "getRemoteVariable called" << std::endl;
-    return false;
+    std::cerr << "getRemoteVariable called: " << key << std::endl;
+    return true;
 }
 bool ControlBoardDriver::setRemoteVariable(std::string key, const yarp::os::Bottle& val)
 {
     // TODO
-    std::cerr << "setRemoteVariable called" << std::endl;
-    return false;
+    std::cerr << "setRemoteVariable called: " << key << std::endl;
+    return true;
 }
 bool ControlBoardDriver::getRemoteVariablesList(yarp::os::Bottle* listOfKeys)
 {
     // TODO
     std::cerr << "getRemoteVariablesList called" << std::endl;
-    return false;
+    return true;
 }
 
 // ITorqueControl
@@ -642,125 +646,143 @@ bool ControlBoardDriver::getTorqueRanges(double* min, double* max)
 bool ControlBoardDriver::positionMove(int j, double ref)
 {
     // TODO
-    return false;
+    return true;
 }
 
 bool ControlBoardDriver::positionMove(const double* refs)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::relativeMove(int j, double delta)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::relativeMove(const double* deltas)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::checkMotionDone(int j, bool* flag)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::checkMotionDone(bool* flag)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setRefSpeed(int j, double sp)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setRefSpeeds(const double* spds)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setRefAcceleration(int j, double acc)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setRefAccelerations(const double* accs)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getRefSpeed(int j, double* ref)
 {
     // TODO
-    return false;
+    std::cerr << "getRefSpeed called" << std::endl;
+    return true;
 }
 bool ControlBoardDriver::getRefSpeeds(double* spds)
 {
     // TODO
-    return false;
+    std::cerr << "getRefSpeed called" << std::endl;
+    return true;
 }
 bool ControlBoardDriver::getRefAcceleration(int j, double* acc)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getRefAccelerations(double* accs)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::stop(int j)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::stop()
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::positionMove(const int n_joint, const int* joints, const double* refs)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::relativeMove(const int n_joint, const int* joints, const double* deltas)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::checkMotionDone(const int n_joint, const int* joints, bool* flag)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setRefSpeeds(const int n_joint, const int* joints, const double* spds)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setRefAccelerations(const int n_joint,
                                              const int* joints,
                                              const double* accs)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getRefSpeeds(const int n_joint, const int* joints, double* spds)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getRefAccelerations(const int n_joint, const int* joints, double* accs)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::stop(const int n_joint, const int* joints)
 {
     // TODO
-    return false;
+    return true;
+}
+
+bool ControlBoardDriver::getTargetPosition(const int joint, double* ref)
+{
+    // TODO
+    return true;
+}
+bool ControlBoardDriver::getTargetPositions(double* refs)
+{
+    // TODO
+    return true;
+}
+bool ControlBoardDriver::getTargetPositions(const int n_joint, const int* joints, double* refs)
+{
+    // TODO
+    return true;
 }
 
 // IVelocityControl
@@ -768,17 +790,32 @@ bool ControlBoardDriver::stop(const int n_joint, const int* joints)
 bool ControlBoardDriver::velocityMove(int j, double sp)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::velocityMove(const double* sp)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::velocityMove(const int n_joint, const int* joints, const double* spds)
 {
     // TODO
-    return false;
+    return true;
+}
+bool ControlBoardDriver::getRefVelocity(const int joint, double* vel)
+{
+    // TODO
+    return true;
+}
+bool ControlBoardDriver::getRefVelocities(double* vels)
+{
+    // TODO
+    return true;
+}
+bool ControlBoardDriver::getRefVelocities(const int n_joint, const int* joints, double* vels)
+{
+    // TODO
+    return true;
 }
 
 // ICurrentControl
@@ -786,52 +823,52 @@ bool ControlBoardDriver::velocityMove(const int n_joint, const int* joints, cons
 bool ControlBoardDriver::getNumberOfMotors(int* ax)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getCurrent(int m, double* curr)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getCurrents(double* currs)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getCurrentRange(int m, double* min, double* max)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getCurrentRanges(double* min, double* max)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setRefCurrents(const double* currs)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setRefCurrent(int m, double curr)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setRefCurrents(const int n_motor, const int* motors, const double* currs)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getRefCurrents(double* currs)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getRefCurrent(int m, double* curr)
 {
     // TODO
-    return false;
+    return true;
 }
 
 // IPidControl
@@ -839,107 +876,107 @@ bool ControlBoardDriver::getRefCurrent(int m, double* curr)
 bool ControlBoardDriver::setPid(const PidControlTypeEnum& pidtype, int j, const Pid& pid)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setPids(const PidControlTypeEnum& pidtype, const Pid* pids)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setPidReference(const PidControlTypeEnum& pidtype, int j, double ref)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setPidReferences(const PidControlTypeEnum& pidtype, const double* refs)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setPidErrorLimit(const PidControlTypeEnum& pidtype, int j, double limit)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setPidErrorLimits(const PidControlTypeEnum& pidtype, const double* limits)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getPidError(const PidControlTypeEnum& pidtype, int j, double* err)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getPidErrors(const PidControlTypeEnum& pidtype, double* errs)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getPidOutput(const PidControlTypeEnum& pidtype, int j, double* out)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getPidOutputs(const PidControlTypeEnum& pidtype, double* outs)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getPid(const PidControlTypeEnum& pidtype, int j, Pid* pid)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getPids(const PidControlTypeEnum& pidtype, Pid* pids)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getPidReference(const PidControlTypeEnum& pidtype, int j, double* ref)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getPidReferences(const PidControlTypeEnum& pidtype, double* refs)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getPidErrorLimit(const PidControlTypeEnum& pidtype, int j, double* limit)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::getPidErrorLimits(const PidControlTypeEnum& pidtype, double* limits)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::resetPid(const PidControlTypeEnum& pidtype, int j)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::disablePid(const PidControlTypeEnum& pidtype, int j)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::enablePid(const PidControlTypeEnum& pidtype, int j)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::setPidOffset(const PidControlTypeEnum& pidtype, int j, double v)
 {
     // TODO
-    return false;
+    return true;
 }
 bool ControlBoardDriver::isPidEnabled(const PidControlTypeEnum& pidtype, int j, bool* enabled)
 {
     // TODO
-    return false;
+    return true;
 }
 
 // IEncodersTimed
