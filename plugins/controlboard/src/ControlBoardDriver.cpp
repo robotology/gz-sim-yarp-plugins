@@ -834,6 +834,114 @@ bool ControlBoardDriver::getRefCurrent(int m, double* curr)
     return false;
 }
 
+// IPidControl
+
+bool ControlBoardDriver::setPid(const PidControlTypeEnum& pidtype, int j, const Pid& pid)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setPids(const PidControlTypeEnum& pidtype, const Pid* pids)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setPidReference(const PidControlTypeEnum& pidtype, int j, double ref)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setPidReferences(const PidControlTypeEnum& pidtype, const double* refs)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setPidErrorLimit(const PidControlTypeEnum& pidtype, int j, double limit)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setPidErrorLimits(const PidControlTypeEnum& pidtype, const double* limits)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getPidError(const PidControlTypeEnum& pidtype, int j, double* err)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getPidErrors(const PidControlTypeEnum& pidtype, double* errs)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getPidOutput(const PidControlTypeEnum& pidtype, int j, double* out)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getPidOutputs(const PidControlTypeEnum& pidtype, double* outs)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getPid(const PidControlTypeEnum& pidtype, int j, Pid* pid)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getPids(const PidControlTypeEnum& pidtype, Pid* pids)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getPidReference(const PidControlTypeEnum& pidtype, int j, double* ref)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getPidReferences(const PidControlTypeEnum& pidtype, double* refs)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getPidErrorLimit(const PidControlTypeEnum& pidtype, int j, double* limit)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::getPidErrorLimits(const PidControlTypeEnum& pidtype, double* limits)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::resetPid(const PidControlTypeEnum& pidtype, int j)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::disablePid(const PidControlTypeEnum& pidtype, int j)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::enablePid(const PidControlTypeEnum& pidtype, int j)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::setPidOffset(const PidControlTypeEnum& pidtype, int j, double v)
+{
+    // TODO
+    return false;
+}
+bool ControlBoardDriver::isPidEnabled(const PidControlTypeEnum& pidtype, int j, bool* enabled)
+{
+    // TODO
+    return false;
+}
+
 // IEncodersTimed
 
 /**

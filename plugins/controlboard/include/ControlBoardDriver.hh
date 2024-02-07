@@ -10,6 +10,7 @@
 #include <yarp/dev/ICurrentControl.h>
 #include <yarp/dev/IEncodersTimed.h>
 #include <yarp/dev/IInteractionMode.h>
+#include <yarp/dev/IPidControl.h>
 #include <yarp/dev/IPositionControl.h>
 #include <yarp/dev/IRemoteVariables.h>
 #include <yarp/dev/ITorqueControl.h>
@@ -34,7 +35,8 @@ class ControlBoardDriver : public DeviceDriver,
                            public ITorqueControl,
                            public IPositionControl,
                            public IVelocityControl,
-                           public ICurrentControl
+                           public ICurrentControl,
+                           public IPidControl
 {
 public:
     // DeviceDriver
@@ -155,6 +157,30 @@ public:
     bool setRefCurrents(const int n_motor, const int* motors, const double* currs) override;
     bool getRefCurrents(double* currs) override;
     bool getRefCurrent(int m, double* curr) override;
+
+    // IPidControl
+
+    bool setPid(const PidControlTypeEnum& pidtype, int j, const Pid& pid) override;
+    bool setPids(const PidControlTypeEnum& pidtype, const Pid* pids) override;
+    bool setPidReference(const PidControlTypeEnum& pidtype, int j, double ref) override;
+    bool setPidReferences(const PidControlTypeEnum& pidtype, const double* refs) override;
+    bool setPidErrorLimit(const PidControlTypeEnum& pidtype, int j, double limit) override;
+    bool setPidErrorLimits(const PidControlTypeEnum& pidtype, const double* limits) override;
+    bool getPidError(const PidControlTypeEnum& pidtype, int j, double* err) override;
+    bool getPidErrors(const PidControlTypeEnum& pidtype, double* errs) override;
+    bool getPidOutput(const PidControlTypeEnum& pidtype, int j, double* out) override;
+    bool getPidOutputs(const PidControlTypeEnum& pidtype, double* outs) override;
+    bool getPid(const PidControlTypeEnum& pidtype, int j, Pid* pid) override;
+    bool getPids(const PidControlTypeEnum& pidtype, Pid* pids) override;
+    bool getPidReference(const PidControlTypeEnum& pidtype, int j, double* ref) override;
+    bool getPidReferences(const PidControlTypeEnum& pidtype, double* refs) override;
+    bool getPidErrorLimit(const PidControlTypeEnum& pidtype, int j, double* limit) override;
+    bool getPidErrorLimits(const PidControlTypeEnum& pidtype, double* limits) override;
+    bool resetPid(const PidControlTypeEnum& pidtype, int j) override;
+    bool disablePid(const PidControlTypeEnum& pidtype, int j) override;
+    bool enablePid(const PidControlTypeEnum& pidtype, int j) override;
+    bool setPidOffset(const PidControlTypeEnum& pidtype, int j, double v) override;
+    bool isPidEnabled(const PidControlTypeEnum& pidtype, int j, bool* enabled) override;
 
 private:
     std::string m_controlBoardScopedName;
