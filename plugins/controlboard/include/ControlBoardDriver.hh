@@ -5,6 +5,7 @@
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAxisInfo.h>
+#include <yarp/dev/IControlLimits.h>
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IEncodersTimed.h>
 #include <yarp/dev/IInteractionMode.h>
@@ -20,17 +21,38 @@ namespace gzyarp
 const std::string YarpControlBoardScopedName = "robotScopedName";
 
 class ControlBoardDriver : public DeviceDriver,
+                           public IAxisInfo,
+                           public IEncodersTimed,
                            public IInteractionMode,
                            public IControlMode,
-                           public ITorqueControl,
-                           public IAxisInfo,
-                           public IEncodersTimed
+                           public IControlLimits,
+                           public ITorqueControl
 {
 public:
     // DeviceDriver
 
     bool open(yarp::os::Searchable& config) override;
     bool close() override;
+
+    // IAxisInfo
+
+    bool getAxisName(int axis, std::string& name) override;
+    bool getJointType(int axis, yarp::dev::JointTypeEnum& type) override;
+
+    // IEncodersTimed
+
+    bool resetEncoder(int j) override;
+    bool resetEncoders() override;
+    bool setEncoder(int j, double val) override;
+    bool setEncoders(const double* vals) override;
+    bool getEncoder(int j, double* v) override;
+    bool getEncoders(double* encs) override;
+    bool getEncoderSpeed(int j, double* sp) override;
+    bool getEncoderSpeeds(double* spds) override;
+    bool getEncoderAcceleration(int j, double* spds) override;
+    bool getEncoderAccelerations(double* accs) override;
+    bool getEncodersTimed(double* encs, double* time) override;
+    bool getEncoderTimed(int j, double* encs, double* time) override;
 
     // IInteractionMode
 
@@ -52,6 +74,13 @@ public:
     bool setControlModes(const int n_joint, const int* joints, int* modes) override;
     bool setControlModes(int* modes) override;
 
+    // IControlLimits
+
+    bool setLimits(int axis, double min, double max) override;
+    bool getLimits(int axis, double* min, double* max) override;
+    bool setVelLimits(int axis, double min, double max) override;
+    bool getVelLimits(int axis, double* min, double* max) override;
+
     // ITorqueControl
 
     bool getAxes(int* ax) override;
@@ -66,26 +95,6 @@ public:
     bool getTorques(double* t) override;
     bool getTorqueRange(int j, double* min, double* max) override;
     bool getTorqueRanges(double* min, double* max) override;
-
-    // IAxisInfo
-
-    bool getAxisName(int axis, std::string& name) override;
-    bool getJointType(int axis, yarp::dev::JointTypeEnum& type) override;
-
-    // IEncodersTimed
-
-    bool resetEncoder(int j) override;
-    bool resetEncoders() override;
-    bool setEncoder(int j, double val) override;
-    bool setEncoders(const double* vals) override;
-    bool getEncoder(int j, double* v) override;
-    bool getEncoders(double* encs) override;
-    bool getEncoderSpeed(int j, double* sp) override;
-    bool getEncoderSpeeds(double* spds) override;
-    bool getEncoderAcceleration(int j, double* spds) override;
-    bool getEncoderAccelerations(double* accs) override;
-    bool getEncodersTimed(double* encs, double* time) override;
-    bool getEncoderTimed(int j, double* encs, double* time) override;
 
 private:
     std::string m_controlBoardScopedName;

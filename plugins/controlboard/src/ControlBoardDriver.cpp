@@ -314,6 +314,93 @@ bool ControlBoardDriver::getJointType(int axis, yarp::dev::JointTypeEnum& type)
     return true;
 }
 
+// IControlLimits
+
+bool ControlBoardDriver::setLimits(int axis, double min, double max)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (axis < 0 || axis >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while setting limits: axis index out of range";
+        return false;
+    }
+
+    m_controlBoardData->joints.at(axis).positionLimitMin = min;
+    m_controlBoardData->joints.at(axis).positionLimitMax = max;
+
+    return true;
+}
+
+bool ControlBoardDriver::getLimits(int axis, double* min, double* max)
+{
+
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (!min)
+    {
+        yError() << "Error while getting limits: min is null";
+        return false;
+    }
+    if (!max)
+    {
+        yError() << "Error while getting limits: max is null";
+        return false;
+    }
+    if (axis < 0 || axis >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while getting limits: axis index out of range";
+        return false;
+    }
+
+    *min = m_controlBoardData->joints.at(axis).positionLimitMin;
+    *max = m_controlBoardData->joints.at(axis).positionLimitMax;
+
+    return true;
+}
+
+bool ControlBoardDriver::setVelLimits(int axis, double min, double max)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (axis < 0 || axis >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while setting velocity limits: axis index out of range";
+        return false;
+    }
+
+    m_controlBoardData->joints.at(axis).velocityLimitMin = min;
+    m_controlBoardData->joints.at(axis).velocityLimitMax = max;
+
+    return true;
+}
+
+bool ControlBoardDriver::getVelLimits(int axis, double* min, double* max)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (!min)
+    {
+        yError() << "Error while getting velocity limits: min is null";
+        return false;
+    }
+    if (!max)
+    {
+        yError() << "Error while getting velocity limits: max is null";
+        return false;
+    }
+    if (axis < 0 || axis >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while getting velocity limits: axis index out of range";
+        return false;
+    }
+
+    *min = m_controlBoardData->joints.at(axis).velocityLimitMin;
+    *max = m_controlBoardData->joints.at(axis).velocityLimitMax;
+
+    return true;
+}
+
 // ITorqueControl
 
 bool ControlBoardDriver::getAxes(int* ax)

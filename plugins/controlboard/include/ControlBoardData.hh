@@ -22,6 +22,10 @@ struct JointProperties
                          // as the starting one i.e.
                          // getEncoder(j)=m_zeroPosition+gazebo.getEncoder(j);
     double position; // Joint position [deg]
+    double positionLimitMin;
+    double positionLimitMax;
+    double velocityLimitMin;
+    double velocityLimitMax;
 };
 
 class ControlBoardData
