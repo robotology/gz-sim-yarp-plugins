@@ -40,8 +40,6 @@ public:
     void Reset(const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm) override;
 
 private:
-    bool setJointProperties(const gz::sim::EntityComponentManager& _ecm);
-
     bool m_deviceRegistered;
     std::string m_robotScopedName;
     std::string m_deviceScopedName;
@@ -50,6 +48,11 @@ private:
     ControlBoardData m_controlBoardData;
     yarp::os::Network m_yarpNetwork;
     yarp::os::Property m_pluginParameters;
+
+    bool setJointProperties(gz::sim::EntityComponentManager& _ecm);
+    bool readJointsMeasurements(const gz::sim::EntityComponentManager& _ecm);
+    void checkForJointsHwFault();
+    bool updateReferences(gz::sim::EntityComponentManager& _ecm);
 };
 
 } // namespace gzyarp

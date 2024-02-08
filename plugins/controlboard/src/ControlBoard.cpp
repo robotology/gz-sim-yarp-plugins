@@ -15,6 +15,8 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
+#include <cstdlib>
+
 using namespace gz;
 using namespace sim;
 using namespace systems;
@@ -42,7 +44,6 @@ ControlBoard::~ControlBoard()
     // ControlBoardDataSingleton::getControlBoardHandler()->removeControlBoard();
 }
 
-// configure
 void ControlBoard::Configure(const Entity& _entity,
                              const std::shared_ptr<const sdf::Element>& _sdf,
                              EntityComponentManager& _ecm,
@@ -129,19 +130,26 @@ void ControlBoard::Configure(const Entity& _entity,
     m_deviceRegistered = true;
 }
 
-// pre-update
 void ControlBoard::PreUpdate(const UpdateInfo& _info, EntityComponentManager& _ecm)
 {
-    // TODO
+    if (!updateReferences(_ecm))
+    {
+        yError() << "Error while updating control references";
+    }
 }
 
-// post-update
 void ControlBoard::PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm)
 {
-    // TODO
+    // TODO Update timestamp
+
+    if (!readJointsMeasurements(_ecm))
+    {
+        yError() << "Error while reading joints measurements";
+    }
+
+    checkForJointsHwFault();
 }
 
-// reset
 void ControlBoard::Reset(const UpdateInfo& _info, EntityComponentManager& _ecm)
 {
     // TODO
@@ -149,7 +157,7 @@ void ControlBoard::Reset(const UpdateInfo& _info, EntityComponentManager& _ecm)
 
 // Private methods
 
-bool ControlBoard::setJointProperties(const EntityComponentManager& _ecm)
+bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
 {
     yarp::os::Bottle jointsFromConfig = m_pluginParameters.findGroup("jointNames");
 
@@ -177,7 +185,6 @@ bool ControlBoard::setJointProperties(const EntityComponentManager& _ecm)
         for (size_t i = 0; i < jointsFromConfigNum; i++)
         {
             auto jointFromConfigName = jointsFromConfig.get(i + 1).asString();
-            std::cerr << "Searching for joint: " << jointFromConfigName << "\n";
 
             auto jointEntity = model.JointByName(_ecm, jointFromConfigName);
             if (!jointEntity)
@@ -187,6 +194,13 @@ bool ControlBoard::setJointProperties(const EntityComponentManager& _ecm)
                 return false;
             }
 
+            // Enable position, velocity and wrench check
+            auto gzJoint = Joint(jointEntity);
+            gzJoint.EnablePositionCheck(_ecm, true);
+            gzJoint.EnableVelocityCheck(_ecm, true);
+            gzJoint.EnableTransmittedWrenchCheck(_ecm, true);
+
+            // Initialize JointProperties object
             JointProperties jointProperties{};
             jointProperties.name = jointFromConfigName;
             jointProperties.interactionMode = yarp::dev::InteractionModeEnum::VOCAB_IM_STIFF;
@@ -200,6 +214,110 @@ bool ControlBoard::setJointProperties(const EntityComponentManager& _ecm)
             m_controlBoardData.joints.push_back(jointProperties);
             yInfo() << "Joint " << jointFromConfigName << " added to the control board data.";
         }
+    }
+
+    return true;
+}
+
+bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager& _ecm)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
+
+    auto model = Model(m_modelEntity);
+    Joint gzJoint;
+    for (auto& joint : m_controlBoardData.joints)
+    {
+        try
+        {
+            gzJoint = Joint(model.JointByName(_ecm, joint.name));
+        } catch (const std::exception& e)
+        {
+
+            yError() << "Error while trying to access joint " << joint.name;
+            return false;
+        }
+
+        if (gzJoint.Position(_ecm).has_value())
+        {
+            // TODO manage unit conversions
+            joint.position = gzJoint.Position(_ecm).value().at(0);
+        } else
+        {
+            yError() << "Error while reading position for joint " << joint.name;
+            return false;
+        }
+
+        if (gzJoint.Velocity(_ecm).has_value())
+        {
+            // TODO manage unit conversions
+            joint.velocity = gzJoint.Velocity(_ecm).value().at(0);
+        } else
+        {
+            yError() << "Error while reading velocity for joint " << joint.name;
+            return false;
+        }
+
+        if (gzJoint.TransmittedWrench(_ecm).has_value())
+        {
+            // TODO get the scalar torque/force value
+            joint.torque = gzJoint.TransmittedWrench(_ecm).value().at(0).torque().x();
+        } else
+        {
+            yError() << "Error while reading torque for joint " << joint.name;
+            return false;
+        }
+    }
+    return true;
+}
+
+void ControlBoard::checkForJointsHwFault()
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
+
+    for (auto& joint : m_controlBoardData.joints)
+    {
+        if (joint.controlMode != VOCAB_CM_HW_FAULT && std::abs(joint.torque) > joint.maxTorqueAbs)
+        {
+            joint.controlMode = VOCAB_CM_HW_FAULT;
+            yError() << "An hardware fault occurred on joint " << joint.name
+                     << " torque too big! ( " << joint.torque << " )";
+        }
+    }
+}
+
+bool ControlBoard::updateReferences(gz::sim::EntityComponentManager& _ecm)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
+
+    double forceRefence{};
+    Joint gzJoint;
+    for (auto& joint : m_controlBoardData.joints)
+    {
+        switch (joint.controlMode)
+        {
+        case VOCAB_CM_TORQUE:
+            forceRefence = joint.refTorque;
+            break;
+        case VOCAB_CM_IDLE:
+        case VOCAB_CM_HW_FAULT:
+            forceRefence = 0.0;
+            break;
+        default:
+            yWarning() << "Joint " << joint.name << " control mode " << joint.controlMode
+                       << " is currently not implemented";
+            return false;
+        }
+
+        try
+        {
+            gzJoint = Joint(Model(m_modelEntity).JointByName(_ecm, joint.name));
+        } catch (const std::exception& e)
+        {
+            yError() << "Error while trying to access joint " << joint.name;
+            return false;
+        }
+
+        gzJoint.SetForce(_ecm, std::vector<double>{forceRefence});
     }
 
     return true;

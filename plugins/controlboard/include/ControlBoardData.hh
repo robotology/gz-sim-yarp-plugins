@@ -24,6 +24,7 @@ struct JointProperties
     double position; // Joint position [deg]
     double positionLimitMin;
     double positionLimitMax;
+    double velocity; // Joint velocity [deg/s]
     double velocityLimitMin;
     double velocityLimitMax;
 };
