@@ -7,6 +7,7 @@
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Property.h>
 
+#include <cmath>
 #include <iostream>
 #include <mutex>
 
@@ -487,6 +488,10 @@ bool ControlBoardDriver::setRefTorque(int j, double t)
                         + " out of range";
         return false;
     }
+    if (!ControlBoardDriver::checkRefTorqueIsValid(t))
+    {
+        return false;
+    }
 
     m_controlBoardData->joints.at(j).refTorque = t;
 
@@ -531,6 +536,17 @@ bool ControlBoardDriver::setRefTorques(const int n_joint, const int* joints, con
         {
             return false;
         }
+    }
+
+    return true;
+}
+
+bool ControlBoardDriver::checkRefTorqueIsValid(double refTorque)
+{
+    if (std::isnan(refTorque) || std::isinf(refTorque))
+    {
+        yError() << "Reference torque is not valid.";
+        return false;
     }
 
     return true;

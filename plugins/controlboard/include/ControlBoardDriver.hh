@@ -191,6 +191,8 @@ public:
 private:
     std::string m_controlBoardScopedName;
     ControlBoardData* m_controlBoardData;
+
+    bool checkRefTorqueIsValid(double refTorque);
 };
 
 } // namespace gzyarp
