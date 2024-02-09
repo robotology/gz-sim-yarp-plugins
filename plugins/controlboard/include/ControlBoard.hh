@@ -50,6 +50,7 @@ private:
     yarp::os::Property m_pluginParameters;
 
     bool setJointProperties(gz::sim::EntityComponentManager& _ecm);
+    void updateSimTime(const gz::sim::v7::UpdateInfo& _info);
     bool readJointsMeasurements(const gz::sim::EntityComponentManager& _ecm);
     void checkForJointsHwFault();
     bool updateReferences(gz::sim::EntityComponentManager& _ecm);

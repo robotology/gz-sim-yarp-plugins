@@ -8,6 +8,7 @@
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/Util.hh>
+#include <gz/sim/components/JointForceCmd.hh>
 
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IInteractionMode.h>
@@ -140,14 +141,14 @@ void ControlBoard::PreUpdate(const UpdateInfo& _info, EntityComponentManager& _e
 
 void ControlBoard::PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm)
 {
-    // TODO Update timestamp
+    updateSimTime(_info);
 
     if (!readJointsMeasurements(_ecm))
     {
         yError() << "Error while reading joints measurements";
     }
 
-    checkForJointsHwFault();
+    // checkForJointsHwFault();
 }
 
 void ControlBoard::Reset(const UpdateInfo& _info, EntityComponentManager& _ecm)
@@ -219,6 +220,13 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
     return true;
 }
 
+void ControlBoard::updateSimTime(const gz::sim::v7::UpdateInfo& _info)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
+
+    m_controlBoardData.simTime.update(_info.simTime.count() / 1e9);
+}
+
 bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager& _ecm)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
@@ -232,7 +240,6 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
             gzJoint = Joint(model.JointByName(_ecm, joint.name));
         } catch (const std::exception& e)
         {
-
             yError() << "Error while trying to access joint " << joint.name;
             return false;
         }
@@ -249,7 +256,6 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
 
         if (gzJoint.Velocity(_ecm).has_value())
         {
-            // TODO manage unit conversions
             joint.velocity = gzJoint.Velocity(_ecm).value().at(0);
         } else
         {
@@ -259,7 +265,6 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
 
         if (gzJoint.TransmittedWrench(_ecm).has_value())
         {
-            // TODO get the scalar torque/force value
             joint.torque = gzJoint.TransmittedWrench(_ecm).value().at(0).torque().x();
         } else
         {
@@ -289,18 +294,18 @@ bool ControlBoard::updateReferences(gz::sim::EntityComponentManager& _ecm)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
 
-    double forceRefence{};
+    double forceReference{};
     Joint gzJoint;
     for (auto& joint : m_controlBoardData.joints)
     {
         switch (joint.controlMode)
         {
         case VOCAB_CM_TORQUE:
-            forceRefence = joint.refTorque;
+            forceReference = joint.refTorque;
             break;
         case VOCAB_CM_IDLE:
         case VOCAB_CM_HW_FAULT:
-            forceRefence = 0.0;
+            forceReference = 0.0;
             break;
         default:
             yWarning() << "Joint " << joint.name << " control mode " << joint.controlMode
@@ -317,7 +322,9 @@ bool ControlBoard::updateReferences(gz::sim::EntityComponentManager& _ecm)
             return false;
         }
 
-        gzJoint.SetForce(_ecm, std::vector<double>{forceRefence});
+        std::vector<double> forceVec{forceReference};
+
+        gzJoint.SetForce(_ecm, forceVec);
     }
 
     return true;
