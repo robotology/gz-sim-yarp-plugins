@@ -335,8 +335,6 @@ bool ControlBoardDriver::setLimits(int axis, double min, double max)
 
 bool ControlBoardDriver::getLimits(int axis, double* min, double* max)
 {
-    std::cerr << "getLimits called with axis " << std::to_string(axis) << std::endl;
-
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
     if (!min)
@@ -357,7 +355,6 @@ bool ControlBoardDriver::getLimits(int axis, double* min, double* max)
 
     *min = m_controlBoardData->joints.at(axis).positionLimitMin;
     *max = m_controlBoardData->joints.at(axis).positionLimitMax;
-    std::cerr << "min: " << std::to_string(*min) << " max: " << std::to_string(*max) << std::endl;
 
     return true;
 }
@@ -380,8 +377,6 @@ bool ControlBoardDriver::setVelLimits(int axis, double min, double max)
 
 bool ControlBoardDriver::getVelLimits(int axis, double* min, double* max)
 {
-    std::cerr << "getVelLimits called" << std::endl;
-
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
     if (!min)
@@ -411,19 +406,16 @@ bool ControlBoardDriver::getVelLimits(int axis, double* min, double* max)
 bool ControlBoardDriver::getRemoteVariable(std::string key, yarp::os::Bottle& val)
 {
     // TODO
-    std::cerr << "getRemoteVariable called: " << key << std::endl;
     return true;
 }
 bool ControlBoardDriver::setRemoteVariable(std::string key, const yarp::os::Bottle& val)
 {
     // TODO
-    std::cerr << "setRemoteVariable called: " << key << std::endl;
     return true;
 }
 bool ControlBoardDriver::getRemoteVariablesList(yarp::os::Bottle* listOfKeys)
 {
     // TODO
-    std::cerr << "getRemoteVariablesList called" << std::endl;
     return true;
 }
 
@@ -713,13 +705,11 @@ bool ControlBoardDriver::setRefAccelerations(const double* accs)
 bool ControlBoardDriver::getRefSpeed(int j, double* ref)
 {
     // TODO
-    std::cerr << "getRefSpeed called" << std::endl;
     return true;
 }
 bool ControlBoardDriver::getRefSpeeds(double* spds)
 {
     // TODO
-    std::cerr << "getRefSpeed called" << std::endl;
     return true;
 }
 bool ControlBoardDriver::getRefAcceleration(int j, double* acc)
