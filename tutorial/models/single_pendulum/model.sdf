@@ -90,16 +90,14 @@
         controlboard functionalities via YARP ports -->
         <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
             <yarpConfigurationFile>
-                /home/acroci/repos/gz-sim-yarp-plugins/tutorial/models/single_pendulum/conf/gazebo_controlboard.ini</yarpConfigurationFile>
-            <!--
-            <yarpConfigurationFile>model://single_pendulum/conf/gazebo_controlboard.ini</yarpConfigurationFile> -->
+                conf/gazebo_controlboard.ini
+            </yarpConfigurationFile>
             <initialConfiguration>0.0 0.0</initialConfiguration>
         </plugin>
         <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
             <yarpRobotInterfaceConfigurationFile>
-                /home/acroci/repos/gz-sim-yarp-plugins/tutorial/models/single_pendulum/conf/single_pendulum_nws.xml</yarpRobotInterfaceConfigurationFile>
-            <!--
-            <yarpRobotInterfaceConfigurationFile>model://single_pendulum/conf/single_pendulum_nws.xml</yarpRobotInterfaceConfigurationFile> -->
+                conf/single_pendulum_nws.xml
+            </yarpRobotInterfaceConfigurationFile>
         </plugin>
     </model>
 

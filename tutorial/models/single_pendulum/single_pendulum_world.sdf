@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0"?>
 
 <sdf version="1.7">
   <world name="turorial_controlboard">
@@ -63,9 +63,9 @@
         </visual>
       </link>
     </model>
-    
+
     <include>
-      <uri>model://single_pendulum</uri>
+      <uri>model.sdf</uri>
     </include>
 
   </world>
