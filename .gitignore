@@ -34,5 +34,8 @@
 # VSCode
 .vscode/
 
+# Clangd
+.cache/
+
 # Build
 **/build*/
