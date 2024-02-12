@@ -3,13 +3,20 @@
 #include "../include/ControlBoardData.hh"
 #include "../include/ControlBoardDataSingleton.hh"
 
+#include <cmath>
+#include <exception>
+#include <mutex>
+#include <string>
+
+#include <yarp/dev/IAxisInfo.h>
+#include <yarp/dev/IControlMode.h>
+#include <yarp/dev/IInteractionMode.h>
+#include <yarp/dev/ITorqueControl.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Property.h>
-
-#include <cmath>
-#include <iostream>
-#include <mutex>
+#include <yarp/os/Searchable.h>
+#include <yarp/os/Vocab.h>
 
 namespace yarp
 {

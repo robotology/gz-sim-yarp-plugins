@@ -1,22 +1,34 @@
 #include "../include/ControlBoard.hh"
 
 #include "../../../libraries/singleton-devices/Handler.hh"
+#include "../include/ControlBoardDataSingleton.hh"
 #include "../include/ControlBoardDriver.hh"
 
+#include <cstdlib>
+#include <exception>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
+
 #include <gz/plugin/Register.hh>
+#include <gz/sim/Entity.hh>
 #include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Model.hh>
+#include <gz/sim/System.hh>
+#include <gz/sim/Types.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/components/JointForceCmd.hh>
+#include <sdf/Element.hh>
 
+#include <yarp/dev/Drivers.h>
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IInteractionMode.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
-
-#include <cstdlib>
 
 using namespace gz;
 using namespace sim;

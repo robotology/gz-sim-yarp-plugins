@@ -13,6 +13,15 @@ If you want to contribute to this project, we kindly ask you to conform to the c
 
 To enforce our coding style we are using the [clang-format](https://clang.llvm.org/docs/ClangFormat.html) code formatting tool, through the [.clang-format](.clang-format) file. The majority of IDEs and editors automatically detect this file and apply the formatting automatically (e.g. when saving). For example, for Visual Studio Code see [the official documentation](https://code.visualstudio.com/docs/cpp/cpp-ide#_code-formatting).
 
+We try to follow the **include-what-you-use** (aka IWYU) model, that can be summarised as: _each source file should `#include` headers that declare the symbols it references, and no others._
+
+This means:
+
+- files should not rely on transitive includes, only headers they include directly
+- `#include` directives describe direct dependencies between files, and it’s possible to reason about them locally
+
+Additional information on the [official website](https://include-what-you-use.org/).
+
 ## Patches and features contribution
 
 The contribution follows the classical GitHub stages:

@@ -1,7 +1,8 @@
 #pragma once
 
 #include "ControlBoardData.hh"
-#include "ControlBoardDataSingleton.hh"
+
+#include <string>
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAxisInfo.h>
@@ -15,6 +16,8 @@
 #include <yarp/dev/IRemoteVariables.h>
 #include <yarp/dev/ITorqueControl.h>
 #include <yarp/dev/IVelocityControl.h>
+#include <yarp/dev/PidEnums.h>
+#include <yarp/os/Searchable.h>
 
 namespace yarp
 {

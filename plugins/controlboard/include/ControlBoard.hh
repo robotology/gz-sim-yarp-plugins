@@ -1,12 +1,20 @@
 #pragma once
 
-#include "ControlBoardDataSingleton.hh"
+#include "ControlBoardData.hh"
 
+#include <memory>
+#include <string>
+
+#include <gz/sim/Entity.hh>
 #include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/System.hh>
+#include <gz/sim/Types.hh>
+#include <sdf/Element.hh>
 
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Network.h>
+#include <yarp/os/Property.h>
 
 namespace gzyarp
 {

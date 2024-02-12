@@ -1,10 +1,10 @@
 #pragma once
 
-#include <map>
 #include <mutex>
 #include <string>
 #include <vector>
 
+#include <yarp/conf/numeric.h>
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IInteractionMode.h>
 #include <yarp/os/Stamp.h>

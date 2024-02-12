@@ -1,5 +1,11 @@
 #include "../include/ControlBoardDataSingleton.hh"
 
+#include "../include/ControlBoardData.hh"
+
+#include <mutex>
+#include <string>
+#include <utility>
+
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
