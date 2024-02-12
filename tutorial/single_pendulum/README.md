@@ -17,7 +17,7 @@
 
   The Gazebo GUI will open and the single pendulum should be already spawned in the scene.
 
-  ![Gazebo Sim GUI](gz_gui.png)
+  ![Gazebo Sim GUI](media/gz_gui.png)
 
 - 3rd terminal:
 
@@ -30,10 +30,10 @@
   
   Click Ok.
 
-  ![yarpmotorgui_select_part](yarpmotorgui_select_part.png)
+  ![yarpmotorgui_select_part](media/yarpmotorgui_select_part.png)
 
 Finally start the simulation in Gazebo (click on the Play button on the bottom left). The pendulum will start to swing freely since the default control mode is **Idle**.
 
 Click on Idle and select **Torque**. A slider will appear on which it is possible to manually set the reference torque [Nm].
 
-![yarpmotorgui_torque](yarpmotorgui_torque.png)
+![yarpmotorgui_torque](media/yarpmotorgui_torque.png)
