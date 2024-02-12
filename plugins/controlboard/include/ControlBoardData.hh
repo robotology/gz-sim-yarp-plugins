@@ -15,6 +15,7 @@ struct JointProperties
     std::string name;
     yarp::dev::InteractionModeEnum interactionMode;
     yarp::conf::vocab32_t controlMode;
+    // TODO(xela95): Update unit of measurements once we support prismatic joints
     double refTorque; // Desired reference torques for torque control mode [Nm]
     double torque; // Measured torques [Nm]
     double maxTorqueAbs; // Maximum torque absolute value [Nm]
