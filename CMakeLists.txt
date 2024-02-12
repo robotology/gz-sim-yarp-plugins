@@ -19,6 +19,19 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}"
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
 
+# Generate the compile_commands.json file
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Tweak linker flags in Linux
+if(UNIX AND NOT APPLE)
+    if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        get_filename_component(LINKER_BIN ${CMAKE_LINKER} NAME)
+            if("${LINKER_BIN}" STREQUAL "ld")
+                set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--unresolved-symbols=report-all")
+            endif()
+    endif()
+endif()
+
 # Enable RPATH support for installed binaries and libraries
 include(AddInstallRPATHSupport)
 add_install_rpath_support(BIN_DIRS "${CMAKE_INSTALL_FULL_BINDIR}"
