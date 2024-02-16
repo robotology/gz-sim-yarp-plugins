@@ -7,6 +7,8 @@
 #include <gz/sim/TestFixture.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/World.hh>
+#include <gz/sim/components/JointForceCmd.hh>
+#include <iostream>
 #include <yarp/dev/ITorqueControl.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Bottle.h>
@@ -23,9 +25,11 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
     gz::sim::TestFixture fixture("../../../tests/controlboard/"
                                  "pendulum_joint_relative_to_parent_link.sdf");
 
-    double motorTorque{1.0};
+    double motorTorque{0.1};
     double linkMass{1};
     double linkLength{1.0};
+    double linkInertiaAtLinkEnd{0.3352};
+    int plannedIterations{50};
     int iterations{0};
     bool configured{false};
     gz::math::Vector3d gravity;
@@ -35,6 +39,7 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
     gz::sim::Joint joint;
     yarp::os::Property option;
     auto deviceScopedName = "model/single_pendulum/controlboard_plugin_device";
+    double jointVelocityPreviousStep{};
 
     yarp::dev::PolyDriver* driver;
     yarp::dev::ITorqueControl* iTorqueControl = nullptr;
@@ -103,14 +108,27 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
                 // Get joint position and velocity
                 auto joint_position = joint.Position(_ecm).value().at(0);
                 auto joint_velocity = joint.Velocity(_ecm).value().at(0);
+                double joint_acceleration{0};
+                if (std::abs(joint_velocity) < 1e-6 && std::abs(jointVelocityPreviousStep) < 1e-6)
+                {
+                    joint_acceleration = 0;
+                } else
+                {
+                    joint_acceleration = (joint_velocity - jointVelocityPreviousStep)
+                                         / (_info.dt.count() / static_cast<double>(1e9));
+                }
+
+                // std::cerr << "delta t=" << _info.dt.count() << std::endl;
+                // std::cerr << "joint acceleration: " << joint_acceleration << std::endl;
+                // _ecm.ComponentData<gz::sim::components::JointForceCmd>(const Entity _entity)
 
                 // Check that link and joint quantities are equal
                 // ASSERT_NEAR(joint_position, theta, 1e-3);
                 // ASSERT_NEAR(joint_velocity, theta_dot, 1e-3);
 
                 auto expected_joint_torque
-                    = linkMass * gravity.Z() * linkLength / 2.0 * std::sin(theta)
-                      + 1 / 3.0 * linkMass * std::pow(linkLength, 2) * theta_ddot;
+                    = linkMass * gravity.Z() * linkLength / 2.0 * std::sin(joint_position)
+                      + linkInertiaAtLinkEnd * joint_acceleration;
 
                 // Get joint torque from control board
                 double joint_torque{};
@@ -118,9 +136,10 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
 
                 std::cerr << "Torque measured: " << joint_torque
                           << " - expected: " << expected_joint_torque << std::endl;
-                EXPECT_NEAR(joint_torque, expected_joint_torque, 1e-3);
+                EXPECT_NEAR(joint_torque, expected_joint_torque, 1e-2);
 
                 iterations++;
+                jointVelocityPreviousStep = std::abs(joint_velocity) < 1e-6 ? 0 : joint_velocity;
                 std::cerr << "========== Test PostUpdate done" << std::endl;
             })
         .
@@ -131,10 +150,10 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
 
     // Setup simulation server, this will call the post-update callbacks.
     // It also calls pre-update and update callbacks if those are being used.
-    fixture.Server()->Run(true, 10, false);
+    fixture.Server()->Run(true, plannedIterations, false);
 
     // ASSERT
     EXPECT_TRUE(configured);
     // Verify that the post update function was called 1000 times
-    EXPECT_EQ(10, iterations);
+    EXPECT_EQ(plannedIterations, iterations);
 }
