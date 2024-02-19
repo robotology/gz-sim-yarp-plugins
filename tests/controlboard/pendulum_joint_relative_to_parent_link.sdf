@@ -2,7 +2,7 @@
 
 <sdf version="1.7">
     <world name="turorial_controlboard">
-
+        <!-- <gravity>0 0 0</gravity> -->
         <light type="directional" name="sun">
             <cast_shadows>true</cast_shadows>
             <pose>0 0 10 0 0 0</pose>
@@ -46,6 +46,10 @@
 
         <model name="single_pendulum">
             <!-- <pose>0 0 0.2 0 0 0</pose> -->
+            <joint name="fixed_base" type="fixed">
+                <parent>world</parent>
+                <child>base_link</child>
+            </joint>
             <link name='base_link'>
                 <inertial>
                     <pose>0 0 0 0 0 0</pose>
@@ -78,7 +82,7 @@
             </link>
             <joint name='upper_joint' type='revolute'>
                 <!-- Joint axis pose relative to base link -->
-                <pose relative_to='base_link'>0.15 0 2 -3.14159 0 0</pose>
+                <pose relative_to='base_link'>0.15 0 2 -3.14159265359 0 0</pose>
                 <parent>base_link</parent>
                 <child>upper_link</child>
                 <axis>
