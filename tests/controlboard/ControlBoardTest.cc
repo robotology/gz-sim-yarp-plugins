@@ -9,6 +9,7 @@
 #include <gz/sim/World.hh>
 #include <gz/sim/components/JointForceCmd.hh>
 #include <iostream>
+#include <yarp/dev/IControlMode.h>
 #include <yarp/dev/ITorqueControl.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Bottle.h>
@@ -25,17 +26,18 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
     gz::sim::TestFixture fixture("../../../tests/controlboard/"
                                  "pendulum_joint_relative_to_parent_link.sdf");
 
-    double motorTorque{0.1};
+    double motorTorque{0.5};
     double linkMass{1};
     double linkLength{1.0};
     double linkInertiaAtLinkEnd{0.3352};
-    int plannedIterations{50};
+    int plannedIterations{1000};
     int iterations{0};
     bool configured{false};
     gz::math::Vector3d gravity;
     gz::sim::Entity modelEntity;
     gz::sim::Model model;
     gz::sim::Link link;
+    gz::sim::Link parentLink;
     gz::sim::Joint joint;
     yarp::os::Property option;
     auto deviceScopedName = "model/single_pendulum/controlboard_plugin_device";
@@ -43,6 +45,7 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
 
     yarp::dev::PolyDriver* driver;
     yarp::dev::ITorqueControl* iTorqueControl = nullptr;
+    yarp::dev::IControlMode* iControlMode = nullptr;
 
     fixture
         .
@@ -66,6 +69,8 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
             ASSERT_TRUE(driver != nullptr);
             iTorqueControl = nullptr;
             ASSERT_TRUE(driver->view(iTorqueControl));
+            iControlMode = nullptr;
+            ASSERT_TRUE(driver->view(iControlMode));
 
             // Get link
             auto linkEntity = model.LinkByName(_ecm, "upper_link");
@@ -75,6 +80,13 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
             link.EnableVelocityChecks(_ecm, true);
             link.EnableAccelerationChecks(_ecm, true);
 
+            // Get parent link
+            auto parentLinkEntity = model.LinkByName(_ecm, "base_link");
+            EXPECT_NE(gz::sim::kNullEntity, parentLinkEntity);
+            parentLink = gz::sim::Link(parentLinkEntity);
+            parentLink.EnableVelocityChecks(_ecm, true);
+            parentLink.EnableAccelerationChecks(_ecm, true);
+
             // Get joint
             auto jointEntity = model.JointByName(_ecm, "upper_joint");
             EXPECT_NE(gz::sim::kNullEntity, jointEntity);
@@ -83,6 +95,9 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
             joint.EnableVelocityCheck(_ecm, true);
             joint.EnableTransmittedWrenchCheck(_ecm, true);
 
+            // Set joint in torque control mode
+            iControlMode->setControlMode(0, VOCAB_CM_TORQUE);
+
             configured = true;
             std::cerr << "========== test configured" << std::endl;
         })
@@ -90,33 +105,46 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
             std::cerr << "========== Test PreUpdate" << std::endl;
 
             // Set joint torque
-            joint.SetForce(_ecm, std::vector<double>{motorTorque});
+            // joint.SetForce(_ecm, std::vector<double>{motorTorque});
+            iTorqueControl->setRefTorque(0, motorTorque);
             std::cerr << "========== Test PreUpdate done" << std::endl;
         })
         .OnPostUpdate(
             [&](const gz::sim::UpdateInfo& _info, const gz::sim::EntityComponentManager& _ecm) {
                 std::cerr << "========== Test PostUpdate" << std::endl;
-
+                std::cerr << "iteration: " << iterations << std::endl;
                 // Use post-update callback to get values at the end of every
                 // iteration
 
-                // Get link angular position, velocity and acceleration
-                auto theta = link.WorldPose(_ecm).value().Roll();
-                auto theta_dot = link.WorldAngularVelocity(_ecm).value().X();
-                auto theta_ddot = link.WorldAngularAcceleration(_ecm).value().X();
-
                 // Get joint position and velocity
-                auto joint_position = joint.Position(_ecm).value().at(0);
-                auto joint_velocity = joint.Velocity(_ecm).value().at(0);
-                double joint_acceleration{0};
-                if (std::abs(joint_velocity) < 1e-6 && std::abs(jointVelocityPreviousStep) < 1e-6)
+                auto jointPosition = joint.Position(_ecm).value().at(0);
+                auto jointVelocity = joint.Velocity(_ecm).value().at(0);
+
+                double jointAcceleration{0};
+                if (std::abs(jointVelocity) < 1e-6 && std::abs(jointVelocityPreviousStep) < 1e-6)
                 {
-                    joint_acceleration = 0;
+                    jointAcceleration = 0;
                 } else
                 {
-                    joint_acceleration = (joint_velocity - jointVelocityPreviousStep)
-                                         / (_info.dt.count() / static_cast<double>(1e9));
+                    jointAcceleration = (jointVelocity - jointVelocityPreviousStep)
+                                        / (_info.dt.count() / static_cast<double>(1e9));
                 }
+                std::cerr << "joint position: " << jointPosition
+                          << ", joint velocity: " << jointVelocity
+                          << ", joint acc: " << jointAcceleration << std::endl;
+
+                // Get link kinematic quantities
+                auto parentLinkPose = parentLink.WorldPose(_ecm).value();
+                // Compute link pose in body frame
+                auto linkPoseBody = parentLinkPose.CoordPoseSolve(link.WorldPose(_ecm).value());
+                // std::cerr << "H_JL: x=" << linkPoseBody.Pos().X()
+                //           << ", y=" << linkPoseBody.Pos().Y() << ", z=" << linkPoseBody.Pos().Z()
+                //           << std::endl;
+                auto theta = linkPoseBody.Roll();
+                auto thetaDot = link.WorldAngularVelocity(_ecm).value().X();
+                auto thetaDDot = link.WorldAngularAcceleration(_ecm).value().X();
+                std::cerr << "theta: " << theta << ", theta_dot: " << thetaDot
+                          << ", theta_ddot: " << thetaDDot << std::endl;
 
                 // std::cerr << "delta t=" << _info.dt.count() << std::endl;
                 // std::cerr << "joint acceleration: " << joint_acceleration << std::endl;
@@ -124,22 +152,22 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
 
                 // Check that link and joint quantities are equal
                 // ASSERT_NEAR(joint_position, theta, 1e-3);
-                // ASSERT_NEAR(joint_velocity, theta_dot, 1e-3);
+                ASSERT_NEAR(jointVelocity, thetaDot, 1e-3);
 
-                auto expected_joint_torque
-                    = linkMass * gravity.Z() * linkLength / 2.0 * std::sin(joint_position)
-                      + linkInertiaAtLinkEnd * joint_acceleration;
+                auto expectedJointTorque
+                    = linkMass * gravity.Z() * linkLength / 2.0 * std::sin(jointPosition)
+                      + linkInertiaAtLinkEnd * jointAcceleration;
 
                 // Get joint torque from control board
-                double joint_torque{};
-                iTorqueControl->getTorque(0, &joint_torque);
+                double jointTorque{};
+                iTorqueControl->getTorque(0, &jointTorque);
 
-                std::cerr << "Torque measured: " << joint_torque
-                          << " - expected: " << expected_joint_torque << std::endl;
-                EXPECT_NEAR(joint_torque, expected_joint_torque, 1e-2);
+                std::cerr << "Torque measured: " << jointTorque
+                          << " - expected: " << expectedJointTorque << std::endl;
+                EXPECT_NEAR(jointTorque, expectedJointTorque, 1e-2);
 
                 iterations++;
-                jointVelocityPreviousStep = std::abs(joint_velocity) < 1e-6 ? 0 : joint_velocity;
+                jointVelocityPreviousStep = std::abs(jointVelocity) < 1e-6 ? 0 : jointVelocity;
                 std::cerr << "========== Test PostUpdate done" << std::endl;
             })
         .
