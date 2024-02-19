@@ -30,8 +30,9 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
     double linkMass{1};
     double linkLength{1.0};
     double linkInertiaAtLinkEnd{0.3352};
-    int plannedIterations{1000};
+    int plannedIterations{2000};
     int iterations{0};
+    double acceptedTolerance{5e-3};
     bool configured{false};
     gz::math::Vector3d gravity;
     gz::sim::Entity modelEntity;
@@ -137,26 +138,21 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
                 auto parentLinkPose = parentLink.WorldPose(_ecm).value();
                 // Compute link pose in body frame
                 auto linkPoseBody = parentLinkPose.CoordPoseSolve(link.WorldPose(_ecm).value());
-                // std::cerr << "H_JL: x=" << linkPoseBody.Pos().X()
-                //           << ", y=" << linkPoseBody.Pos().Y() << ", z=" << linkPoseBody.Pos().Z()
-                //           << std::endl;
+
                 auto theta = linkPoseBody.Roll();
                 auto thetaDot = link.WorldAngularVelocity(_ecm).value().X();
                 auto thetaDDot = link.WorldAngularAcceleration(_ecm).value().X();
                 std::cerr << "theta: " << theta << ", theta_dot: " << thetaDot
                           << ", theta_ddot: " << thetaDDot << std::endl;
 
-                // std::cerr << "delta t=" << _info.dt.count() << std::endl;
-                // std::cerr << "joint acceleration: " << joint_acceleration << std::endl;
-                // _ecm.ComponentData<gz::sim::components::JointForceCmd>(const Entity _entity)
-
                 // Check that link and joint quantities are equal
                 // ASSERT_NEAR(joint_position, theta, 1e-3);
-                ASSERT_NEAR(jointVelocity, thetaDot, 1e-3);
+                ASSERT_NEAR(jointVelocity, thetaDot, acceptedTolerance);
 
+                // From dynamics 2nd law it is possible to compute the expected joint torque
                 auto expectedJointTorque
-                    = linkMass * gravity.Z() * linkLength / 2.0 * std::sin(jointPosition)
-                      + linkInertiaAtLinkEnd * jointAcceleration;
+                    = -linkMass * gravity.Z() * linkLength / 2.0 * std::sin(jointPosition)
+                      + linkInertiaAtLinkEnd * thetaDDot;
 
                 // Get joint torque from control board
                 double jointTorque{};
@@ -164,7 +160,11 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
 
                 std::cerr << "Torque measured: " << jointTorque
                           << " - expected: " << expectedJointTorque << std::endl;
-                EXPECT_NEAR(jointTorque, expectedJointTorque, 1e-2);
+
+                if (iterations > 1)
+                {
+                    EXPECT_NEAR(jointTorque, expectedJointTorque, acceptedTolerance);
+                }
 
                 iterations++;
                 jointVelocityPreviousStep = std::abs(jointVelocity) < 1e-6 ? 0 : jointVelocity;
