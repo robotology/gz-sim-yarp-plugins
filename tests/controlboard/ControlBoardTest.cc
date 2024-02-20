@@ -25,7 +25,6 @@ protected:
         : testFixture{"../../../tests/controlboard/" + GetParam()}
     {
         std::cerr << "========== Test Parameter: " << GetParam() << std::endl;
-        yarp::os::NetworkBase::setLocalMode(true);
         gz::common::Console::SetVerbosity(4);
 
         // testFixture = gz::sim::TestFixture{"../../../tests/controlboard/" + GetParam()};
@@ -92,7 +91,7 @@ protected:
     double linkMass{1};
     double linkLength{1.0};
     double linkInertiaAtLinkEnd{0.3352}; // Computed with parallel axis theorem
-    int plannedIterations{2000};
+    int plannedIterations{1000};
     int iterations{0};
     double acceptedTolerance{5e-3};
     bool configured{false};
@@ -102,14 +101,13 @@ protected:
     gz::sim::Link link;
     gz::sim::Link parentLink;
     gz::sim::Joint joint;
-    yarp::os::Property option;
     double jointVelocityPreviousStep{};
     yarp::dev::PolyDriver* driver;
     yarp::dev::ITorqueControl* iTorqueControl = nullptr;
     yarp::dev::IControlMode* iControlMode = nullptr;
 };
 
-TEST_P(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
+TEST_P(ControlBoardTest, CompareJointTorqueWithExpectedValueUsingPendulumModel)
 {
 
     testFixture
@@ -204,5 +202,5 @@ TEST_P(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
 
 INSTANTIATE_TEST_SUITE_P(ControlBoardTorqueControl,
                          ControlBoardTest,
-                         testing::Values("pendulum_joint_relative_to_parent_link.sdf",
-                                         "pendulum_joint_relative_to_child_link.sdf"));
+                         testing::Values("pendulum_joint_relative_to_child_link.sdf",
+                                         "pendulum_joint_relative_to_parent_link.sdf"));

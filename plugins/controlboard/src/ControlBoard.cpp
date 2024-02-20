@@ -57,7 +57,8 @@ ControlBoard::~ControlBoard()
     {
         m_controlBoardDriver.close();
     }
-    // ControlBoardDataSingleton::getControlBoardHandler()->removeControlBoard();
+    ControlBoardDataSingleton::getControlBoardHandler()->removeControlBoard(
+        m_controlBoardData.modelScopedName);
 }
 
 void ControlBoard::Configure(const Entity& _entity,
