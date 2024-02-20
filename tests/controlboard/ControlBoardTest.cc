@@ -9,6 +9,7 @@
 #include <gz/sim/World.hh>
 #include <gz/sim/components/JointForceCmd.hh>
 #include <iostream>
+#include <string>
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/ITorqueControl.h>
 #include <yarp/dev/PolyDriver.h>
@@ -16,16 +17,72 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Network.h>
 
-TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
+class ControlBoardTest : public ::testing::Test // public testing::TestWithParam<std::string>
 {
-    // ARRANGE
+protected:
+    void SetUp() override
+    {
+        yarp::os::NetworkBase::setLocalMode(true);
+        gz::common::Console::SetVerbosity(4);
 
-    yarp::os::NetworkBase::setLocalMode(true);
-    gz::common::Console::SetVerbosity(4);
+        testFixture.
+            // Use configure callback to get values at startup
+            OnConfigure([&](const gz::sim::Entity& _worldEntity,
+                            const std::shared_ptr<const sdf::Element>& /*_sdf*/,
+                            gz::sim::EntityComponentManager& _ecm,
+                            gz::sim::EventManager& /*_eventMgr*/) {
+                std::cerr << "========== configuring test" << std::endl;
+                // Get world and gravity
+                gz::sim::World world(_worldEntity);
+                gravity = world.Gravity(_ecm).value();
 
-    gz::sim::TestFixture fixture("../../../tests/controlboard/"
-                                 "pendulum_joint_relative_to_parent_link.sdf");
+                // Get model
+                auto modelEntity = world.ModelByName(_ecm, "single_pendulum");
+                modelEntity = world.ModelByName(_ecm, "single_pendulum");
+                EXPECT_NE(gz::sim::kNullEntity, modelEntity);
+                model = gz::sim::Model(modelEntity);
 
+                driver = gzyarp::Handler::getHandler()->getDevice(deviceScopedName);
+                ASSERT_TRUE(driver != nullptr);
+                iTorqueControl = nullptr;
+                ASSERT_TRUE(driver->view(iTorqueControl));
+                iControlMode = nullptr;
+                ASSERT_TRUE(driver->view(iControlMode));
+
+                // Get link
+                auto linkEntity = model.LinkByName(_ecm, "upper_link");
+                EXPECT_NE(gz::sim::kNullEntity, linkEntity);
+                link = gz::sim::Link(linkEntity);
+                // TODO get mass from SDF
+                link.EnableVelocityChecks(_ecm, true);
+                link.EnableAccelerationChecks(_ecm, true);
+
+                // Get parent link
+                auto parentLinkEntity = model.LinkByName(_ecm, "base_link");
+                EXPECT_NE(gz::sim::kNullEntity, parentLinkEntity);
+                parentLink = gz::sim::Link(parentLinkEntity);
+                parentLink.EnableVelocityChecks(_ecm, true);
+                parentLink.EnableAccelerationChecks(_ecm, true);
+
+                // Get joint
+                auto jointEntity = model.JointByName(_ecm, "upper_joint");
+                EXPECT_NE(gz::sim::kNullEntity, jointEntity);
+                joint = gz::sim::Joint(jointEntity);
+                joint.EnablePositionCheck(_ecm, true);
+                joint.EnableVelocityCheck(_ecm, true);
+                joint.EnableTransmittedWrenchCheck(_ecm, true);
+
+                // Set joint in torque control mode
+                iControlMode->setControlMode(0, VOCAB_CM_TORQUE);
+
+                configured = true;
+                std::cerr << "========== test configured" << std::endl;
+            });
+    }
+
+    gz::sim::TestFixture testFixture{"../../../tests/controlboard/"
+                                     "pendulum_joint_relative_to_parent_link.sdf"};
+    std::string deviceScopedName = "model/single_pendulum/controlboard_plugin_device";
     double motorTorque{0.5};
     double linkMass{1};
     double linkLength{1.0};
@@ -41,67 +98,16 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
     gz::sim::Link parentLink;
     gz::sim::Joint joint;
     yarp::os::Property option;
-    auto deviceScopedName = "model/single_pendulum/controlboard_plugin_device";
     double jointVelocityPreviousStep{};
-
     yarp::dev::PolyDriver* driver;
     yarp::dev::ITorqueControl* iTorqueControl = nullptr;
     yarp::dev::IControlMode* iControlMode = nullptr;
+};
 
-    fixture
-        .
-        // Use configure callback to get values at startup
-        OnConfigure([&](const gz::sim::Entity& _worldEntity,
-                        const std::shared_ptr<const sdf::Element>& /*_sdf*/,
-                        gz::sim::EntityComponentManager& _ecm,
-                        gz::sim::EventManager& /*_eventMgr*/) {
-            std::cerr << "========== configuring test" << std::endl;
-            // Get world and gravity
-            gz::sim::World world(_worldEntity);
-            gravity = world.Gravity(_ecm).value();
+TEST_F(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
+{
 
-            // Get model
-            auto modelEntity = world.ModelByName(_ecm, "single_pendulum");
-            modelEntity = world.ModelByName(_ecm, "single_pendulum");
-            EXPECT_NE(gz::sim::kNullEntity, modelEntity);
-            model = gz::sim::Model(modelEntity);
-
-            driver = gzyarp::Handler::getHandler()->getDevice(deviceScopedName);
-            ASSERT_TRUE(driver != nullptr);
-            iTorqueControl = nullptr;
-            ASSERT_TRUE(driver->view(iTorqueControl));
-            iControlMode = nullptr;
-            ASSERT_TRUE(driver->view(iControlMode));
-
-            // Get link
-            auto linkEntity = model.LinkByName(_ecm, "upper_link");
-            EXPECT_NE(gz::sim::kNullEntity, linkEntity);
-            link = gz::sim::Link(linkEntity);
-            // TODO get mass from SDF
-            link.EnableVelocityChecks(_ecm, true);
-            link.EnableAccelerationChecks(_ecm, true);
-
-            // Get parent link
-            auto parentLinkEntity = model.LinkByName(_ecm, "base_link");
-            EXPECT_NE(gz::sim::kNullEntity, parentLinkEntity);
-            parentLink = gz::sim::Link(parentLinkEntity);
-            parentLink.EnableVelocityChecks(_ecm, true);
-            parentLink.EnableAccelerationChecks(_ecm, true);
-
-            // Get joint
-            auto jointEntity = model.JointByName(_ecm, "upper_joint");
-            EXPECT_NE(gz::sim::kNullEntity, jointEntity);
-            joint = gz::sim::Joint(jointEntity);
-            joint.EnablePositionCheck(_ecm, true);
-            joint.EnableVelocityCheck(_ecm, true);
-            joint.EnableTransmittedWrenchCheck(_ecm, true);
-
-            // Set joint in torque control mode
-            iControlMode->setControlMode(0, VOCAB_CM_TORQUE);
-
-            configured = true;
-            std::cerr << "========== test configured" << std::endl;
-        })
+    testFixture
         .OnPreUpdate([&](const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm) {
             std::cerr << "========== Test PreUpdate" << std::endl;
 
@@ -183,7 +189,7 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
 
     // Setup simulation server, this will call the post-update callbacks.
     // It also calls pre-update and update callbacks if those are being used.
-    fixture.Server()->Run(true, plannedIterations, false);
+    testFixture.Server()->Run(true, plannedIterations, false);
 
     // ASSERT
     EXPECT_TRUE(configured);
