@@ -17,13 +17,18 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Network.h>
 
-class ControlBoardTest : public ::testing::Test // public testing::TestWithParam<std::string>
+class ControlBoardTest : public testing::TestWithParam<std::string>
 {
 protected:
-    void SetUp() override
+    // void SetUp() override
+    ControlBoardTest()
+        : testFixture{"../../../tests/controlboard/" + GetParam()}
     {
+        std::cerr << "========== Test Parameter: " << GetParam() << std::endl;
         yarp::os::NetworkBase::setLocalMode(true);
         gz::common::Console::SetVerbosity(4);
+
+        // testFixture = gz::sim::TestFixture{"../../../tests/controlboard/" + GetParam()};
 
         testFixture.
             // Use configure callback to get values at startup
@@ -80,8 +85,8 @@ protected:
             });
     }
 
-    gz::sim::TestFixture testFixture{"../../../tests/controlboard/"
-                                     "pendulum_joint_relative_to_parent_link.sdf"};
+    // Get SDF model name from test parameter
+    gz::sim::TestFixture testFixture;
     std::string deviceScopedName = "model/single_pendulum/controlboard_plugin_device";
     double motorTorque{0.5};
     double linkMass{1};
@@ -104,7 +109,7 @@ protected:
     yarp::dev::IControlMode* iControlMode = nullptr;
 };
 
-TEST_F(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
+TEST_P(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
 {
 
     testFixture
@@ -196,3 +201,8 @@ TEST_F(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
     // Verify that the post update function was called 1000 times
     EXPECT_EQ(plannedIterations, iterations);
 }
+
+INSTANTIATE_TEST_SUITE_P(ControlBoardTorqueControl,
+                         ControlBoardTest,
+                         testing::Values("pendulum_joint_relative_to_parent_link.sdf",
+                                         "pendulum_joint_relative_to_child_link.sdf"));
