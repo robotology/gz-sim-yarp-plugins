@@ -29,7 +29,7 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
     double motorTorque{0.5};
     double linkMass{1};
     double linkLength{1.0};
-    double linkInertiaAtLinkEnd{0.3352};
+    double linkInertiaAtLinkEnd{0.3352}; // Computed with parallel axis theorem
     int plannedIterations{2000};
     int iterations{0};
     double acceptedTolerance{5e-3};
@@ -118,6 +118,8 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
                 // iteration
 
                 // Get joint position and velocity
+                auto jointAxis = joint.Axis(_ecm).value().at(0).Xyz();
+                auto jointWrench = joint.TransmittedWrench(_ecm).value().at(0).torque();
                 auto jointPosition = joint.Position(_ecm).value().at(0);
                 auto jointVelocity = joint.Velocity(_ecm).value().at(0);
 
@@ -130,9 +132,12 @@ TEST(ControlBoardTest, GetTorqueWithPendulumJointRelativeToParentLink)
                     jointAcceleration = (jointVelocity - jointVelocityPreviousStep)
                                         / (_info.dt.count() / static_cast<double>(1e9));
                 }
-                std::cerr << "joint position: " << jointPosition
+                std::cerr << "joint axis: " << jointAxis[0] << ", " << jointAxis[1] << ", "
+                          << jointAxis[2] << ", position: " << jointPosition
                           << ", joint velocity: " << jointVelocity
-                          << ", joint acc: " << jointAcceleration << std::endl;
+                          << ", joint acc: " << jointAcceleration
+                          << ", joint torque: " << jointWrench.x() << ", " << jointWrench.y()
+                          << ", " << jointWrench.z() << std::endl;
 
                 // Get link kinematic quantities
                 auto parentLinkPose = parentLink.WorldPose(_ecm).value();
