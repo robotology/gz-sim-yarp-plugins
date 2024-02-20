@@ -2,7 +2,7 @@
 
 <sdf version="1.7">
     <world name="turorial_controlboard">
-
+        <!-- <gravity>0 0 0</gravity> -->
         <light type="directional" name="sun">
             <cast_shadows>true</cast_shadows>
             <pose>0 0 10 0 0 0</pose>
@@ -46,6 +46,10 @@
 
         <model name="single_pendulum">
             <!-- <pose>0 0 0.2 0 0 0</pose> -->
+            <joint name="fixed_base" type="fixed">
+                <parent>world</parent>
+                <child>base_link</child>
+            </joint>
             <link name='base_link'>
                 <inertial>
                     <pose>0 0 0 0 0 0</pose>
@@ -77,22 +81,23 @@
                 </visual>
             </link>
             <link name='upper_link'>
-                <pose>0 0 0 0 0 0</pose>
+                <pose>0.15 0 1.5 -3.14159265359 0 0</pose>
+                <!-- <pose>0.15 0.5 2 -1.57 0 0</pose> -->
                 <self_collide>0</self_collide>
                 <inertial>
-                    <pose>0 0 0.5 0 0 0</pose>
+                    <pose>0 0 0 0 0 0</pose>
                     <mass>1</mass>
                     <inertia>
-                        <ixx>1</ixx>
+                        <ixx>0.0852</ixx>
                         <ixy>0</ixy>
                         <ixz>0</ixz>
-                        <iyy>1</iyy>
+                        <iyy>0.0852</iyy>
                         <iyz>0</iyz>
-                        <izz>1</izz>
+                        <izz>0.0037</izz>
                     </inertia>
                 </inertial>
                 <collision name='upper_link_collision'>
-                    <pose>0 0 0.5 0 0 0</pose>
+                    <pose>0 0 0 0 0 0</pose>
                     <geometry>
                         <box>
                             <size>0.15 0.15 1.0</size>
@@ -100,7 +105,7 @@
                     </geometry>
                 </collision>
                 <visual name='upper_link_visual'>
-                    <pose>0 0 0.5 0 0 0</pose>
+                    <pose>0 0 0 0 0 0</pose>
                     <geometry>
                         <box>
                             <size>0.15 0.15 1.0</size>
@@ -108,13 +113,16 @@
                     </geometry>
                 </visual>
             </link>
+            <frame name='arbitrary_frame' attached_to='__model__'>
+                <pose>0 0 0 0 0 1.570796</pose>
+            </frame>
             <joint name='upper_joint' type='revolute'>
                 <!-- Joint axis pose relative to child link -->
-                <pose>0.15 0 2 -1.5708 0 0</pose>
+                <pose relative_to='arbitrary_frame'>0 -0.15 2.0 0 0 0</pose>
                 <parent>base_link</parent>
                 <child>upper_link</child>
                 <axis>
-                    <xyz>1 0 0</xyz>
+                    <xyz>0 -1 0</xyz>
                     <limit>
                         <!-- <lower>-5</lower> -->
                         <!-- <upper>5</upper> -->
