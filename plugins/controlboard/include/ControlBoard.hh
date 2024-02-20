@@ -5,9 +5,11 @@
 #include <memory>
 #include <string>
 
+#include <gz/msgs/joint_wrench.pb.h>
 #include <gz/sim/Entity.hh>
 #include <gz/sim/EntityComponentManager.hh>
 #include <gz/sim/EventManager.hh>
+#include <gz/sim/Joint.hh>
 #include <gz/sim/System.hh>
 #include <gz/sim/Types.hh>
 #include <sdf/Element.hh>
@@ -62,6 +64,9 @@ private:
     bool readJointsMeasurements(const gz::sim::EntityComponentManager& _ecm);
     void checkForJointsHwFault();
     bool updateReferences(gz::sim::EntityComponentManager& _ecm);
+    double getJointTorqueFromTransmittedWrench(const gz::sim::Joint& gzJoint,
+                                               const gz::msgs::Wrench& wrench,
+                                               const gz::sim::EntityComponentManager& ecm) const;
 };
 
 } // namespace gzyarp

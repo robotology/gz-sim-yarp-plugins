@@ -6,6 +6,8 @@
 
 #include <cstdlib>
 #include <exception>
+#include <gz/math/Vector3.hh>
+#include <gz/msgs/details/wrench.pb.h>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -36,6 +38,7 @@ using namespace systems;
 
 namespace gzyarp
 {
+using gz::msgs::Wrench;
 
 ControlBoard::ControlBoard()
     : m_deviceRegistered(false)
@@ -54,7 +57,8 @@ ControlBoard::~ControlBoard()
     {
         m_controlBoardDriver.close();
     }
-    // ControlBoardDataSingleton::getControlBoardHandler()->removeControlBoard();
+    ControlBoardDataSingleton::getControlBoardHandler()->removeControlBoard(
+        m_controlBoardData.modelScopedName);
 }
 
 void ControlBoard::Configure(const Entity& _entity,
@@ -277,7 +281,11 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
 
         if (gzJoint.TransmittedWrench(_ecm).has_value())
         {
-            joint.torque = gzJoint.TransmittedWrench(_ecm).value().at(0).torque().x();
+            // joint.torque = gzJoint.TransmittedWrench(_ecm).value().at(0).torque().x();
+            joint.torque
+                = getJointTorqueFromTransmittedWrench(gzJoint,
+                                                      gzJoint.TransmittedWrench(_ecm).value().at(0),
+                                                      _ecm);
         } else
         {
             yError() << "Error while reading torque for joint " << joint.name;
@@ -285,6 +293,23 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
         }
     }
     return true;
+}
+
+double
+ControlBoard::getJointTorqueFromTransmittedWrench(const Joint& gzJoint,
+                                                  const Wrench& wrench,
+                                                  const gz::sim::EntityComponentManager& ecm) const
+{
+
+    auto axis = gzJoint.Axis(ecm).value().at(0).Xyz();
+    // TODO manage different types of joints
+
+    // Revolute Joint
+    // Motion subspace s = [0_3; axis]
+    auto wrench_torque
+        = gz::math::Vector3d(wrench.torque().x(), wrench.torque().y(), wrench.torque().z());
+    double torque = wrench_torque.Dot(axis);
+    return torque;
 }
 
 void ControlBoard::checkForJointsHwFault()
