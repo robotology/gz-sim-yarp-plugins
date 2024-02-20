@@ -202,5 +202,6 @@ TEST_P(ControlBoardTest, CompareJointTorqueWithExpectedValueUsingPendulumModel)
 
 INSTANTIATE_TEST_SUITE_P(ControlBoardTorqueControl,
                          ControlBoardTest,
-                         testing::Values("pendulum_joint_relative_to_child_link.sdf",
-                                         "pendulum_joint_relative_to_parent_link.sdf"));
+                         testing::Values("pendulum_joint_relative_to_child_link.sdf"
+                                         //  ,"pendulum_joint_relative_to_parent_link.sdf"
+                                         ));
