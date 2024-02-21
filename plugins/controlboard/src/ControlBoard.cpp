@@ -220,13 +220,6 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
             // Initialize JointProperties object
             JointProperties jointProperties{};
             jointProperties.name = jointFromConfigName;
-            jointProperties.interactionMode = yarp::dev::InteractionModeEnum::VOCAB_IM_STIFF;
-            jointProperties.controlMode = VOCAB_CM_IDLE;
-            jointProperties.refTorque = 0.0;
-            jointProperties.torque = 0.0;
-            jointProperties.maxTorqueAbs = 0.0;
-            jointProperties.zeroPosition = 0.0;
-            jointProperties.position = 0.0;
 
             m_controlBoardData.joints.push_back(jointProperties);
             yInfo() << "Joint " << jointFromConfigName << " added to the control board data.";
