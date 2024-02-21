@@ -656,6 +656,131 @@ bool ControlBoardDriver::getTorqueRanges(double* min, double* max)
     return true;
 }
 
+// IPositionDirect
+
+bool ControlBoardDriver::setPosition(int j, double ref)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while setting position: joint index " + std::to_string(j)
+                        + " out of range";
+        return false;
+    }
+
+    if (m_controlBoardData->joints.at(j).controlMode != VOCAB_CM_POSITION_DIRECT)
+    {
+        yError() << "Error while setting position: joint " + std::to_string(j)
+                        + " is not in position direct mode";
+        return false;
+    }
+
+    m_controlBoardData->joints.at(j).refPosition = ref;
+
+    return true;
+}
+
+bool ControlBoardDriver::setPositions(const int n_joint, const int* joints, const double* refs)
+{
+    if (!joints)
+    {
+        yError() << "Error while setting positions: joints array is null";
+        return false;
+    }
+    if (!refs)
+    {
+        yError() << "Error while setting positions: refs array is null";
+        return false;
+    }
+
+    for (int i = 0; i < n_joint; i++)
+    {
+        if (!ControlBoardDriver::setPosition(joints[i], refs[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ControlBoardDriver::setPositions(const double* refs)
+{
+    if (!refs)
+    {
+        yError("Error while setting positions: refs array is null");
+        return false;
+    }
+
+    for (int i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::setPosition(i, refs[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ControlBoardDriver::getRefPosition(const int joint, double* ref)
+{
+    if (joint < 0 || joint >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while getting reference position: joint index " + std::to_string(joint)
+                        + " out of range";
+        return false;
+    }
+
+    *ref = m_controlBoardData->joints.at(joint).refPosition;
+
+    return true;
+}
+
+bool ControlBoardDriver::getRefPositions(double* refs)
+{
+    if (!refs)
+    {
+        yError() << "Error while getting reference positions: refs array is null";
+        return false;
+    }
+
+    for (int i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::getRefPosition(i, &refs[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ControlBoardDriver::getRefPositions(const int n_joint, const int* joints, double* refs)
+{
+    if (!joints)
+    {
+        yError() << "Error while getting reference positions: joints array is null";
+        return false;
+    }
+    if (!refs)
+    {
+        yError() << "Error while getting reference positions: refs array is null";
+        return false;
+    }
+
+    for (int i = 0; i < n_joint; i++)
+    {
+        if (!ControlBoardDriver::getRefPosition(joints[i], &refs[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 // IPositionControl
 
 bool ControlBoardDriver::positionMove(int j, double ref)

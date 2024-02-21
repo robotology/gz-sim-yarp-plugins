@@ -22,6 +22,7 @@ struct JointProperties
     double zeroPosition; // The zero position is the position of the GAZEBO joint that will be read
                          // as the starting one i.e.
                          // getEncoder(j)=m_zeroPosition+gazebo.getEncoder(j);
+    double refPosition;
     double position; // Joint position [deg]
     double positionLimitMin;
     double positionLimitMax;
