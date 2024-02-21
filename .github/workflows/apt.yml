@@ -111,6 +111,7 @@ jobs:
       if: contains(matrix.build_type, 'Debug')
       uses: threeal/gcovr-action@main
       with:
+        comment: false
         excludes: |
           build/*
           install/*
