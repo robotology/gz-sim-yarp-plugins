@@ -14,6 +14,7 @@
 #include <gz/sim/Types.hh>
 #include <sdf/Element.hh>
 
+#include <yarp/dev/ControlBoardPid.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Property.h>
@@ -59,6 +60,12 @@ private:
     yarp::os::Network m_yarpNetwork;
     yarp::os::Property m_pluginParameters;
 
+    enum UnitsTypeEnum
+    {
+        METRIC = 0,
+        SI = 1
+    };
+
     bool setJointProperties(gz::sim::EntityComponentManager& _ecm);
     void updateSimTime(const gz::sim::v7::UpdateInfo& _info);
     bool readJointsMeasurements(const gz::sim::EntityComponentManager& _ecm);
@@ -67,6 +74,19 @@ private:
     double getJointTorqueFromTransmittedWrench(const gz::sim::Joint& gzJoint,
                                                const gz::msgs::Wrench& wrench,
                                                const gz::sim::EntityComponentManager& ecm) const;
+    bool initializePIDsForPositionControl();
+    bool tryGetGroup(const yarp::os::Bottle& in,
+                     yarp::os::Bottle& out,
+                     const std::string& key,
+                     const std::string& txt,
+                     int size);
+    bool setYarpPIDsParam(const yarp::os::Bottle& pidParamGroup,
+                          const std::string& paramName,
+                          std::vector<yarp::dev::Pid>& yarpPIDs,
+                          size_t numberOfJoints);
+    void setJointPositionPIDs(UnitsTypeEnum cUnits, const std::vector<yarp::dev::Pid>& yarpPIDs);
+    double convertUserGainToGazeboGain(int joint, double value);
+    double convertGazeboGainToUserGain(int joint, double value);
 };
 
 } // namespace gzyarp

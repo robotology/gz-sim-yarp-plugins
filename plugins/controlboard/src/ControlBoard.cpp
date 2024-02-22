@@ -1,9 +1,11 @@
 #include "../include/ControlBoard.hh"
 
+#include "../../../libraries/common/Common.hh"
 #include "../../../libraries/singleton-devices/Handler.hh"
 #include "../include/ControlBoardDataSingleton.hh"
 #include "../include/ControlBoardDriver.hh"
 
+#include <cstddef>
 #include <cstdlib>
 #include <exception>
 #include <gz/math/Vector3.hh>
@@ -28,6 +30,7 @@
 #include <yarp/dev/Drivers.h>
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IInteractionMode.h>
+#include <yarp/dev/PidEnums.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
@@ -35,6 +38,7 @@
 using namespace gz;
 using namespace sim;
 using namespace systems;
+using yarp::os::Bottle;
 
 namespace gzyarp
 {
@@ -224,6 +228,12 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
             m_controlBoardData.joints.push_back(jointProperties);
             yInfo() << "Joint " << jointFromConfigName << " added to the control board data.";
         }
+
+        if (!initializePIDsForPositionControl())
+        {
+            yError() << "Error while initializing PIDs";
+            return false;
+        }
     }
 
     return true;
@@ -358,6 +368,201 @@ bool ControlBoard::updateReferences(gz::sim::EntityComponentManager& _ecm)
     }
 
     return true;
+}
+
+bool ControlBoard::initializePIDsForPositionControl()
+{
+    if (!m_pluginParameters.check("POSITION_CONTROL"))
+    {
+        yError() << "Group POSITION_CONTROL not found in plugin configuration";
+        return false;
+    }
+    Bottle pidGroup = m_pluginParameters.findGroup("POSITION_CONTROL");
+
+    size_t numberOfJoints = m_controlBoardData.joints.size();
+    yarp::os::Property prop;
+    Bottle pidParamGroup;
+    UnitsTypeEnum cUnits = METRIC;
+
+    // control units block
+    pidParamGroup = pidGroup.findGroup("controlUnits");
+    if (pidParamGroup.isNull())
+    {
+        yError() << "POSITION_CONTROL: 'controlUnits' param missing. Cannot "
+                    "continue";
+        return false;
+    }
+    if (pidParamGroup.get(1).asString() == "metric_units")
+    {
+        cUnits = METRIC;
+    } else if (pidParamGroup.get(1).asString() == "si_units")
+    {
+        cUnits = SI;
+    } else
+    {
+        yError() << "invalid controlUnits value";
+        return false;
+    }
+
+    // control law block
+    pidParamGroup = pidGroup.findGroup("controlLaw");
+    if (pidParamGroup.isNull())
+    {
+        yError() << "POSITION_CONTROL: 'controlLaw' parameter missing";
+        return false;
+    }
+    if (pidParamGroup.get(1).asString() == "joint_pid_gazebo_v1")
+    {
+        for (size_t i = 0; i < numberOfJoints; i++)
+            m_controlBoardData.joints[i].positionControlLaw = "joint_pid_gazebo_v1";
+    } else
+    {
+        yError() << "invalid controlLaw value";
+        return false;
+    }
+
+    std::vector<yarp::dev::Pid> yarpPIDs(numberOfJoints);
+
+    std::vector<std::pair<std::string, std::string>> parameters
+        = {{"kp", "Pid kp parameter"},
+           {"kd", "Pid kd parameter"},
+           {"ki", "Pid ki parameter"},
+           {"maxInt", "Pid maxInt parameter"},
+           {"maxOutput", "Pid maxOutput parameter"},
+           {"shift", "Pid shift parameter"},
+           {"ko", "Pid ko parameter"},
+           {"stictionUp", "Pid stictionUp"},
+           {"stictionDwn", "Pid stictionDwn"}};
+
+    for (const auto& param : parameters)
+    {
+        if (!tryGetGroup(pidGroup, pidParamGroup, param.first, param.second, numberOfJoints + 1))
+        // +1 to include the group name
+        {
+            return false;
+        }
+        setYarpPIDsParam(pidParamGroup, param.first, yarpPIDs, numberOfJoints);
+    }
+
+    setJointPositionPIDs(cUnits, yarpPIDs);
+
+    return true;
+}
+
+bool ControlBoard::tryGetGroup(
+    const Bottle& in, Bottle& out, const std::string& key, const std::string& txt, int size)
+{
+    Bottle& tmp = in.findGroup(key, txt);
+    if (tmp.isNull())
+    {
+        yError() << key << " not found";
+        return false;
+    }
+    if (tmp.size() != size)
+    {
+        yError() << "Incorrect number of entries for group: " << key;
+        return false;
+    }
+
+    out = tmp;
+    return true;
+}
+
+bool ControlBoard::setYarpPIDsParam(const Bottle& pidParamGroup,
+                                    const std::string& paramName,
+                                    std::vector<yarp::dev::Pid>& yarpPIDs,
+                                    size_t numberOfJoints)
+{
+
+    std::unordered_map<std::string, int> pidParamNameMap = {{"kp", 0},
+                                                            {"kd", 1},
+                                                            {"ki", 2},
+                                                            {"maxInt", 3},
+                                                            {"maxOutput", 4},
+                                                            {"shift", 5},
+                                                            {"ko", 6},
+                                                            {"stictionUp", 7},
+                                                            {"stictionDwn", 8}};
+
+    for (size_t i = 0; i < numberOfJoints; i++)
+    {
+        switch (pidParamNameMap[paramName])
+        {
+        case 0:
+            yarpPIDs[i].kp = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 1:
+            yarpPIDs[i].kd = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 2:
+            yarpPIDs[i].ki = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 3:
+            yarpPIDs[i].max_int = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 4:
+            yarpPIDs[i].max_output = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 5:
+            yarpPIDs[i].scale = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 6:
+            yarpPIDs[i].offset = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 7:
+            yarpPIDs[i].stiction_up_val = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 8:
+            yarpPIDs[i].stiction_down_val = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        default:
+            yError() << "Invalid parameter name";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void ControlBoard::setJointPositionPIDs(UnitsTypeEnum cUnits,
+                                        const std::vector<yarp::dev::Pid>& yarpPIDs)
+{
+    for (size_t i = 0; i < m_controlBoardData.joints.size(); i++)
+    {
+        auto& jointPositionPID
+            = m_controlBoardData.joints[i].pidControllers[yarp::dev::VOCAB_PIDTYPE_POSITION];
+        if (cUnits == UnitsTypeEnum::METRIC)
+        {
+            jointPositionPID.SetPGain(convertUserGainToGazeboGain(i, yarpPIDs[i].kp)
+                                      / pow(2, yarpPIDs[i].scale));
+            jointPositionPID.SetIGain(convertUserGainToGazeboGain(i, yarpPIDs[i].ki)
+                                      / pow(2, yarpPIDs[i].scale));
+            jointPositionPID.SetDGain(convertUserGainToGazeboGain(i, yarpPIDs[i].kd)
+                                      / pow(2, yarpPIDs[i].scale));
+        } else if (cUnits == UnitsTypeEnum::SI)
+        {
+            jointPositionPID.SetPGain(yarpPIDs[i].kp / pow(2, yarpPIDs[i].scale));
+            jointPositionPID.SetIGain(yarpPIDs[i].ki / pow(2, yarpPIDs[i].scale));
+            jointPositionPID.SetDGain(yarpPIDs[i].kd / pow(2, yarpPIDs[i].scale));
+        }
+
+        jointPositionPID.SetIMax(yarpPIDs[i].max_int);
+        jointPositionPID.SetIMin(-yarpPIDs[i].max_int);
+        jointPositionPID.SetCmdMax(yarpPIDs[i].max_output);
+        jointPositionPID.SetCmdMin(-yarpPIDs[i].max_output);
+    }
+}
+
+double ControlBoard::convertUserGainToGazeboGain(int joint, double value)
+{
+    // TODO discriminate between joint types
+    return gzyarp::convertRadiansToDegrees(value);
+}
+
+double ControlBoard::convertGazeboGainToUserGain(int joint, double value)
+{
+    // TODO discriminate between joint types
+    return gzyarp::convertDegreesToRadians(value);
 }
 
 } // namespace gzyarp

@@ -48,6 +48,7 @@ struct JointProperties
     double velocityLimitMax{std::numeric_limits<double>::max()};
     std::unordered_map<yarp::dev::PidControlTypeEnum, gz::math::PID, PidControlTypeEnumHashFunction>
         pidControllers;
+    std::string positionControlLaw; // TODO: verify usefulness of this field
 };
 
 class ControlBoardData
