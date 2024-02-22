@@ -265,8 +265,7 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
 
         if (gzJoint.Position(_ecm).has_value())
         {
-            // TODO manage unit conversions
-            joint.position = gzJoint.Position(_ecm).value().at(0);
+            joint.position = convertGazeboToUser(joint, gzJoint.Position(_ecm).value().at(0));
         } else
         {
             yError() << "Error while reading position for joint " << joint.name;
@@ -275,7 +274,7 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
 
         if (gzJoint.Velocity(_ecm).has_value())
         {
-            joint.velocity = gzJoint.Velocity(_ecm).value().at(0);
+            joint.velocity = convertGazeboToUser(joint, gzJoint.Velocity(_ecm).value().at(0));
         } else
         {
             yError() << "Error while reading velocity for joint " << joint.name;
