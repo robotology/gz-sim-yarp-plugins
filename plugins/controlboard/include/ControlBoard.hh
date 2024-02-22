@@ -60,7 +60,7 @@ private:
     yarp::os::Network m_yarpNetwork;
     yarp::os::Property m_pluginParameters;
 
-    enum UnitsTypeEnum
+    enum class UnitsTypeEnum
     {
         METRIC = 0,
         SI = 1

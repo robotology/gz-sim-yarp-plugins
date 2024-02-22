@@ -382,7 +382,7 @@ bool ControlBoard::initializePIDsForPositionControl()
     size_t numberOfJoints = m_controlBoardData.joints.size();
     yarp::os::Property prop;
     Bottle pidParamGroup;
-    UnitsTypeEnum cUnits = METRIC;
+    auto cUnits = UnitsTypeEnum::METRIC;
 
     // control units block
     pidParamGroup = pidGroup.findGroup("controlUnits");
@@ -394,10 +394,10 @@ bool ControlBoard::initializePIDsForPositionControl()
     }
     if (pidParamGroup.get(1).asString() == "metric_units")
     {
-        cUnits = METRIC;
+        cUnits = UnitsTypeEnum::METRIC;
     } else if (pidParamGroup.get(1).asString() == "si_units")
     {
-        cUnits = SI;
+        cUnits = UnitsTypeEnum::SI;
     } else
     {
         yError() << "invalid controlUnits value";
