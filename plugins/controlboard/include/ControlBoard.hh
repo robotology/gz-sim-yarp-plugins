@@ -70,7 +70,7 @@ private:
     void updateSimTime(const gz::sim::v7::UpdateInfo& _info);
     bool readJointsMeasurements(const gz::sim::EntityComponentManager& _ecm);
     void checkForJointsHwFault();
-    bool updateReferences(gz::sim::EntityComponentManager& _ecm);
+    bool updateReferences(const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm);
     double getJointTorqueFromTransmittedWrench(const gz::sim::Joint& gzJoint,
                                                const gz::msgs::Wrench& wrench,
                                                const gz::sim::EntityComponentManager& ecm) const;
@@ -85,8 +85,10 @@ private:
                           std::vector<yarp::dev::Pid>& yarpPIDs,
                           size_t numberOfJoints);
     void setJointPositionPIDs(UnitsTypeEnum cUnits, const std::vector<yarp::dev::Pid>& yarpPIDs);
-    double convertUserGainToGazeboGain(int joint, double value);
-    double convertGazeboGainToUserGain(int joint, double value);
+    double convertUserGainToGazeboGain(JointProperties& joint, double value);
+    double convertGazeboGainToUserGain(JointProperties& joint, double value);
+    double convertGazeboToUser(JointProperties& joint, double value);
+    double convertUserToGazebo(JointProperties& joint, double value);
 };
 
 } // namespace gzyarp

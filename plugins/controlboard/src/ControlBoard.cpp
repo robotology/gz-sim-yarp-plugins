@@ -153,7 +153,7 @@ void ControlBoard::Configure(const Entity& _entity,
 
 void ControlBoard::PreUpdate(const UpdateInfo& _info, EntityComponentManager& _ecm)
 {
-    if (!updateReferences(_ecm))
+    if (!updateReferences(_info, _ecm))
     {
         yError() << "Error while updating control references";
     }
@@ -330,12 +330,13 @@ void ControlBoard::checkForJointsHwFault()
     }
 }
 
-bool ControlBoard::updateReferences(gz::sim::EntityComponentManager& _ecm)
+bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentManager& _ecm)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
 
     double forceReference{};
     Joint gzJoint;
+
     for (auto& joint : m_controlBoardData.joints)
     {
         switch (joint.controlMode)
@@ -343,6 +344,14 @@ bool ControlBoard::updateReferences(gz::sim::EntityComponentManager& _ecm)
         case VOCAB_CM_TORQUE:
             forceReference = joint.refTorque;
             break;
+        case VOCAB_CM_POSITION_DIRECT: {
+            // TODO manage motor positions instead of joint positions when implemented
+            auto& pid = joint.pidControllers[yarp::dev::VOCAB_PIDTYPE_POSITION];
+            forceReference = pid.Update(convertUserToGazebo(joint, joint.position)
+                                            - convertUserToGazebo(joint, joint.refPosition),
+                                        _info.dt);
+            break;
+        }
         case VOCAB_CM_IDLE:
         case VOCAB_CM_HW_FAULT:
             forceReference = 0.0;
@@ -351,7 +360,9 @@ bool ControlBoard::updateReferences(gz::sim::EntityComponentManager& _ecm)
             yWarning() << "Joint " << joint.name << " control mode " << joint.controlMode
                        << " is currently not implemented";
             return false;
-        }
+        };
+
+        // TODO check if joint is within limits
 
         try
         {
@@ -531,13 +542,15 @@ void ControlBoard::setJointPositionPIDs(UnitsTypeEnum cUnits,
     {
         auto& jointPositionPID
             = m_controlBoardData.joints[i].pidControllers[yarp::dev::VOCAB_PIDTYPE_POSITION];
+
         if (cUnits == UnitsTypeEnum::METRIC)
         {
-            jointPositionPID.SetPGain(convertUserGainToGazeboGain(i, yarpPIDs[i].kp)
+            auto& joint = m_controlBoardData.joints.at(i);
+            jointPositionPID.SetPGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].kp)
                                       / pow(2, yarpPIDs[i].scale));
-            jointPositionPID.SetIGain(convertUserGainToGazeboGain(i, yarpPIDs[i].ki)
+            jointPositionPID.SetIGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].ki)
                                       / pow(2, yarpPIDs[i].scale));
-            jointPositionPID.SetDGain(convertUserGainToGazeboGain(i, yarpPIDs[i].kd)
+            jointPositionPID.SetDGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].kd)
                                       / pow(2, yarpPIDs[i].scale));
         } else if (cUnits == UnitsTypeEnum::SI)
         {
@@ -553,16 +566,28 @@ void ControlBoard::setJointPositionPIDs(UnitsTypeEnum cUnits,
     }
 }
 
-double ControlBoard::convertUserGainToGazeboGain(int joint, double value)
+double ControlBoard::convertUserGainToGazeboGain(JointProperties& joint, double value)
 {
     // TODO discriminate between joint types
     return gzyarp::convertDegreeGainToRadianGains(value);
 }
 
-double ControlBoard::convertGazeboGainToUserGain(int joint, double value)
+double ControlBoard::convertGazeboGainToUserGain(JointProperties& joint, double value)
 {
     // TODO discriminate between joint types
     return gzyarp::convertRadianGainToDegreeGains(value);
+}
+
+double ControlBoard::convertGazeboToUser(JointProperties& joint, double value)
+{
+    // TODO discriminate between joint types
+    return convertRadiansToDegrees(value);
+}
+
+double ControlBoard::convertUserToGazebo(JointProperties& joint, double value)
+{
+    // TODO discriminate between joint types
+    return convertDegreesToRadians(value);
 }
 
 } // namespace gzyarp
