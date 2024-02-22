@@ -556,13 +556,13 @@ void ControlBoard::setJointPositionPIDs(UnitsTypeEnum cUnits,
 double ControlBoard::convertUserGainToGazeboGain(int joint, double value)
 {
     // TODO discriminate between joint types
-    return gzyarp::convertRadiansToDegrees(value);
+    return gzyarp::convertDegreeGainToRadianGains(value);
 }
 
 double ControlBoard::convertGazeboGainToUserGain(int joint, double value)
 {
     // TODO discriminate between joint types
-    return gzyarp::convertDegreesToRadians(value);
+    return gzyarp::convertRadianGainToDegreeGains(value);
 }
 
 } // namespace gzyarp
