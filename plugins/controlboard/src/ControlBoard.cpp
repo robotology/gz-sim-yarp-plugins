@@ -10,6 +10,7 @@
 #include <exception>
 #include <gz/math/Vector3.hh>
 #include <gz/msgs/details/wrench.pb.h>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -229,12 +230,19 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
             yInfo() << "Joint " << jointFromConfigName << " added to the control board data.";
         }
 
+        if (!setJointPositionLimits(_ecm))
+        {
+            yError() << "Error while setting joint position limits";
+            return false;
+        }
+
         if (!initializePIDsForPositionControl())
         {
             yError() << "Error while initializing PIDs";
             return false;
         }
-    }
+
+    } // lock_guard
 
     return true;
 }
@@ -390,7 +398,6 @@ bool ControlBoard::initializePIDsForPositionControl()
     Bottle pidGroup = m_pluginParameters.findGroup("POSITION_CONTROL");
 
     size_t numberOfJoints = m_controlBoardData.joints.size();
-    yarp::os::Property prop;
     Bottle pidParamGroup;
     auto cUnits = UnitsTypeEnum::METRIC;
 
@@ -587,6 +594,35 @@ double ControlBoard::convertUserToGazebo(JointProperties& joint, double value)
 {
     // TODO discriminate between joint types
     return convertDegreesToRadians(value);
+}
+
+bool ControlBoard::setJointPositionLimits(const gz::sim::EntityComponentManager& ecm)
+{
+    if (!m_pluginParameters.check("LIMITS"))
+    {
+        yError() << "Group LIMITS not found in plugin configuration";
+        return false;
+    }
+
+    Bottle limitsGroup = m_pluginParameters.findGroup("LIMITS");
+    size_t numberOfJoints = m_controlBoardData.joints.size();
+    Bottle limitMinGroup, limitMaxGroup;
+
+    for (auto& joint : m_controlBoardData.joints)
+    {
+        // TODO: access gazebo joint position limits and use them to check if software limits
+        // ([LIMITS] group) are consistent. In case they are not defined set them as sw limits.
+        if (!(tryGetGroup(limitsGroup, limitMinGroup, "jntPosMin", "", numberOfJoints + 1)
+              && tryGetGroup(limitsGroup, limitMaxGroup, "jntPosMax", "", numberOfJoints + 1)))
+        {
+            yError() << "Error while reading joint position limits from plugin parameters";
+            return false;
+        }
+        joint.positionLimitMin = limitMinGroup.get(1).asFloat64();
+        joint.positionLimitMax = limitMaxGroup.get(1).asFloat64();
+    }
+
+    return true;
 }
 
 } // namespace gzyarp

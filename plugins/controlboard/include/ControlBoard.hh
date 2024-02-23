@@ -89,6 +89,7 @@ private:
     double convertGazeboGainToUserGain(JointProperties& joint, double value);
     double convertGazeboToUser(JointProperties& joint, double value);
     double convertUserToGazebo(JointProperties& joint, double value);
+    bool setJointPositionLimits(const gz::sim::EntityComponentManager& ecm);
 };
 
 } // namespace gzyarp
