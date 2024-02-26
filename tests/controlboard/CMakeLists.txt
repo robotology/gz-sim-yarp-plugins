@@ -34,5 +34,5 @@ list(APPEND _env_vars "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-c
 
 set_tests_properties(ControlBoardTorqueControlTest PROPERTIES
   ENVIRONMENT "${_env_vars}")
-set_tests_properties(ControlBoardTorqueControlTest PROPERTIES
+set_tests_properties(ControlBoardPositionDirectControlTest PROPERTIES
   ENVIRONMENT "${_env_vars}")

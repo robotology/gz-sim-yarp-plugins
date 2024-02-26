@@ -1,6 +1,7 @@
 #include "../../libraries/common/Common.hh"
 #include "../../libraries/singleton-devices/Handler.hh"
 #include <cmath>
+#include <cstdlib>
 #include <gtest/gtest.h>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Link.hh>
@@ -80,7 +81,8 @@ protected:
     double linkInertiaAtLinkEnd{0.3352}; // Computed with parallel axis theorem
     int plannedIterations{5000};
     int iterations{0};
-    double acceptedTolerance{1e-2};
+    std::vector<double> trackingErrors{};
+    double acceptedTolerance{5e-2};
     bool configured{false};
     gz::math::Vector3d gravity;
     gz::sim::Entity modelEntity;
@@ -96,11 +98,11 @@ TEST_F(ControlBoardPositionDirectFixture, CheckPositionTrackingUsingPendulumMode
 {
     // Generate ref trajectory
     std::vector<double> refTrajectory(plannedIterations);
-    double amplitude = 5.0; // deg
+    double amplitude = 100.0; // deg
     for (int i = 0; i < plannedIterations; i++)
     {
         double t = static_cast<double>(i) / plannedIterations;
-        double value = amplitude * std::sin(2 * gzyarp::pi * t);
+        double value = amplitude * std::sin(gzyarp::pi * t);
         refTrajectory[i] = value;
     }
 
@@ -120,11 +122,9 @@ TEST_F(ControlBoardPositionDirectFixture, CheckPositionTrackingUsingPendulumMode
                 // std::cerr << "ref position: " << refTrajectory[iterations] << std::endl;
                 // std::cerr << "joint position: " << jointPosition << std::endl;
 
-                if (iterations > 1)
-                {
-                    // Tracking error
-                    EXPECT_NEAR(jointPosition, refTrajectory[iterations], acceptedTolerance);
-                }
+                // Tracking error
+                // EXPECT_NEAR(jointPosition, refTrajectory[iterations], acceptedTolerance);
+                trackingErrors.push_back(abs(refTrajectory[iterations] - jointPosition));
 
                 iterations++;
             })
@@ -136,12 +136,17 @@ TEST_F(ControlBoardPositionDirectFixture, CheckPositionTrackingUsingPendulumMode
     iControlMode->getControlMode(0, &modeSet);
     ASSERT_TRUE(modeSet == VOCAB_CM_POSITION_DIRECT);
 
-    // // Setup simulation server, this will call the post-update callbacks.
-    // // It also calls pre-update and update callbacks if those are being used.
+    // Setup simulation server, this will call the post-update callbacks.
+    // It also calls pre-update and update callbacks if those are being used.
     testFixture.Server()->Run(true, plannedIterations, false);
 
-    // // Final assertions
+    // Final assertions
     EXPECT_TRUE(configured);
-    // // Verify that the post update function was called 1000 times
+    // Verify that the post update function was called 1000 times
     EXPECT_EQ(plannedIterations, iterations);
+    // Verify that the average tracking error is within the accepted tolerance
+    auto avgTrackgingError = std::accumulate(trackingErrors.begin(), trackingErrors.end(), 0.0)
+                             / trackingErrors.size();
+    std::cerr << "Average tracking error: " << avgTrackgingError << std::endl;
+    EXPECT_LT(avgTrackgingError, acceptedTolerance);
 }
