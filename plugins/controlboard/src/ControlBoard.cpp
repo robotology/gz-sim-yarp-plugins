@@ -399,7 +399,7 @@ bool ControlBoard::initializePIDsForPositionControl()
 
     size_t numberOfJoints = m_controlBoardData.joints.size();
     Bottle pidParamGroup;
-    auto cUnits = UnitsTypeEnum::METRIC;
+    auto cUnits = AngleUnitEnum::DEG;
 
     // control units block
     pidParamGroup = pidGroup.findGroup("controlUnits");
@@ -411,10 +411,10 @@ bool ControlBoard::initializePIDsForPositionControl()
     }
     if (pidParamGroup.get(1).asString() == "metric_units")
     {
-        cUnits = UnitsTypeEnum::METRIC;
+        cUnits = AngleUnitEnum::DEG;
     } else if (pidParamGroup.get(1).asString() == "si_units")
     {
-        cUnits = UnitsTypeEnum::SI;
+        cUnits = AngleUnitEnum::RAD;
     } else
     {
         yError() << "invalid controlUnits value";
@@ -541,7 +541,7 @@ bool ControlBoard::setYarpPIDsParam(const Bottle& pidParamGroup,
     return true;
 }
 
-void ControlBoard::setJointPositionPIDs(UnitsTypeEnum cUnits,
+void ControlBoard::setJointPositionPIDs(AngleUnitEnum cUnits,
                                         const std::vector<yarp::dev::Pid>& yarpPIDs)
 {
     for (size_t i = 0; i < m_controlBoardData.joints.size(); i++)
@@ -549,7 +549,7 @@ void ControlBoard::setJointPositionPIDs(UnitsTypeEnum cUnits,
         auto& jointPositionPID
             = m_controlBoardData.joints[i].pidControllers[yarp::dev::VOCAB_PIDTYPE_POSITION];
 
-        if (cUnits == UnitsTypeEnum::METRIC)
+        if (cUnits == AngleUnitEnum::DEG)
         {
             auto& joint = m_controlBoardData.joints.at(i);
             jointPositionPID.SetPGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].kp)
@@ -558,7 +558,7 @@ void ControlBoard::setJointPositionPIDs(UnitsTypeEnum cUnits,
                                       / pow(2, yarpPIDs[i].scale));
             jointPositionPID.SetDGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].kd)
                                       / pow(2, yarpPIDs[i].scale));
-        } else if (cUnits == UnitsTypeEnum::SI)
+        } else if (cUnits == AngleUnitEnum::RAD)
         {
             jointPositionPID.SetPGain(yarpPIDs[i].kp / pow(2, yarpPIDs[i].scale));
             jointPositionPID.SetIGain(yarpPIDs[i].ki / pow(2, yarpPIDs[i].scale));

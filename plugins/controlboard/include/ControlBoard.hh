@@ -60,10 +60,10 @@ private:
     yarp::os::Network m_yarpNetwork;
     yarp::os::Property m_pluginParameters;
 
-    enum class UnitsTypeEnum
+    enum class AngleUnitEnum
     {
-        METRIC = 0,
-        SI = 1
+        DEG = 0,
+        RAD = 1
     };
 
     bool setJointProperties(gz::sim::EntityComponentManager& _ecm);
@@ -84,7 +84,7 @@ private:
                           const std::string& paramName,
                           std::vector<yarp::dev::Pid>& yarpPIDs,
                           size_t numberOfJoints);
-    void setJointPositionPIDs(UnitsTypeEnum cUnits, const std::vector<yarp::dev::Pid>& yarpPIDs);
+    void setJointPositionPIDs(AngleUnitEnum cUnits, const std::vector<yarp::dev::Pid>& yarpPIDs);
     double convertUserGainToGazeboGain(JointProperties& joint, double value);
     double convertGazeboGainToUserGain(JointProperties& joint, double value);
     double convertGazeboToUser(JointProperties& joint, double value);
