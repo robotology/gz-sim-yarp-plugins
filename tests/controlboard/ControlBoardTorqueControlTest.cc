@@ -17,11 +17,11 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Network.h>
 
-class ControlBoardTest : public testing::TestWithParam<std::string>
+class ControlBoardTorqueControlFixture : public testing::TestWithParam<std::string>
 {
 protected:
     // void SetUp() override
-    ControlBoardTest()
+    ControlBoardTorqueControlFixture()
         : testFixture{"../../../tests/controlboard/" + GetParam()}
     {
         std::cerr << "========== Test Parameter: " << GetParam() << std::endl;
@@ -107,7 +107,7 @@ protected:
     yarp::dev::IControlMode* iControlMode = nullptr;
 };
 
-TEST_P(ControlBoardTest, CompareJointTorqueWithExpectedValueUsingPendulumModel)
+TEST_P(ControlBoardTorqueControlFixture, CompareJointTorqueWithExpectedValueUsingPendulumModel)
 {
 
     testFixture
@@ -201,7 +201,7 @@ TEST_P(ControlBoardTest, CompareJointTorqueWithExpectedValueUsingPendulumModel)
 }
 
 INSTANTIATE_TEST_SUITE_P(ControlBoardTorqueControl,
-                         ControlBoardTest,
+                         ControlBoardTorqueControlFixture,
                          testing::Values("pendulum_joint_relative_to_child_link.sdf"
                                          //  ,"pendulum_joint_relative_to_parent_link.sdf"
                                          ));

@@ -13,6 +13,7 @@
 #include <yarp/dev/IInteractionMode.h>
 #include <yarp/dev/IPidControl.h>
 #include <yarp/dev/IPositionControl.h>
+#include <yarp/dev/IPositionDirect.h>
 #include <yarp/dev/IRemoteVariables.h>
 #include <yarp/dev/ITorqueControl.h>
 #include <yarp/dev/IVelocityControl.h>
@@ -36,6 +37,7 @@ class ControlBoardDriver : public DeviceDriver,
                            public IControlLimits,
                            public IRemoteVariables,
                            public ITorqueControl,
+                           public IPositionDirect,
                            public IPositionControl,
                            public IVelocityControl,
                            public ICurrentControl,
@@ -115,6 +117,15 @@ public:
     bool getTorqueRange(int j, double* min, double* max) override;
     bool getTorqueRanges(double* min, double* max) override;
 
+    // IPositionDirect
+
+    bool setPosition(int j, double ref) override;
+    bool setPositions(const int n_joint, const int* joints, const double* refs) override;
+    bool setPositions(const double* refs) override;
+    bool getRefPosition(const int joint, double* ref) override;
+    bool getRefPositions(double* refs) override;
+    bool getRefPositions(const int n_joint, const int* joints, double* refs) override;
+
     // IPositionControl
 
     bool positionMove(int j, double ref) override;
@@ -193,7 +204,7 @@ public:
 
 private:
     std::string m_controlBoardScopedName;
-    ControlBoardData* m_controlBoardData;
+    ::gzyarp::ControlBoardData* m_controlBoardData;
 
     bool checkRefTorqueIsValid(double refTorque);
 };

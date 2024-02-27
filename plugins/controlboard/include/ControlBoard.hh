@@ -14,6 +14,7 @@
 #include <gz/sim/Types.hh>
 #include <sdf/Element.hh>
 
+#include <yarp/dev/ControlBoardPid.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Property.h>
@@ -59,14 +60,36 @@ private:
     yarp::os::Network m_yarpNetwork;
     yarp::os::Property m_pluginParameters;
 
+    enum class AngleUnitEnum
+    {
+        DEG = 0,
+        RAD = 1
+    };
+
     bool setJointProperties(gz::sim::EntityComponentManager& _ecm);
     void updateSimTime(const gz::sim::v7::UpdateInfo& _info);
     bool readJointsMeasurements(const gz::sim::EntityComponentManager& _ecm);
     void checkForJointsHwFault();
-    bool updateReferences(gz::sim::EntityComponentManager& _ecm);
+    bool updateReferences(const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm);
     double getJointTorqueFromTransmittedWrench(const gz::sim::Joint& gzJoint,
                                                const gz::msgs::Wrench& wrench,
                                                const gz::sim::EntityComponentManager& ecm) const;
+    bool initializePIDsForPositionControl();
+    bool tryGetGroup(const yarp::os::Bottle& in,
+                     yarp::os::Bottle& out,
+                     const std::string& key,
+                     const std::string& txt,
+                     int size);
+    bool setYarpPIDsParam(const yarp::os::Bottle& pidParamGroup,
+                          const std::string& paramName,
+                          std::vector<yarp::dev::Pid>& yarpPIDs,
+                          size_t numberOfJoints);
+    void setJointPositionPIDs(AngleUnitEnum cUnits, const std::vector<yarp::dev::Pid>& yarpPIDs);
+    double convertUserGainToGazeboGain(JointProperties& joint, double value);
+    double convertGazeboGainToUserGain(JointProperties& joint, double value);
+    double convertGazeboToUser(JointProperties& joint, double value);
+    double convertUserToGazebo(JointProperties& joint, double value);
+    bool setJointPositionLimits(const gz::sim::EntityComponentManager& ecm);
 };
 
 } // namespace gzyarp

@@ -1,13 +1,16 @@
 #include "../include/ControlBoard.hh"
 
+#include "../../../libraries/common/Common.hh"
 #include "../../../libraries/singleton-devices/Handler.hh"
 #include "../include/ControlBoardDataSingleton.hh"
 #include "../include/ControlBoardDriver.hh"
 
+#include <cstddef>
 #include <cstdlib>
 #include <exception>
 #include <gz/math/Vector3.hh>
 #include <gz/msgs/details/wrench.pb.h>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -28,6 +31,7 @@
 #include <yarp/dev/Drivers.h>
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IInteractionMode.h>
+#include <yarp/dev/PidEnums.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
@@ -35,6 +39,7 @@
 using namespace gz;
 using namespace sim;
 using namespace systems;
+using yarp::os::Bottle;
 
 namespace gzyarp
 {
@@ -149,7 +154,7 @@ void ControlBoard::Configure(const Entity& _entity,
 
 void ControlBoard::PreUpdate(const UpdateInfo& _info, EntityComponentManager& _ecm)
 {
-    if (!updateReferences(_ecm))
+    if (!updateReferences(_info, _ecm))
     {
         yError() << "Error while updating control references";
     }
@@ -220,18 +225,24 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
             // Initialize JointProperties object
             JointProperties jointProperties{};
             jointProperties.name = jointFromConfigName;
-            jointProperties.interactionMode = yarp::dev::InteractionModeEnum::VOCAB_IM_STIFF;
-            jointProperties.controlMode = VOCAB_CM_IDLE;
-            jointProperties.refTorque = 0.0;
-            jointProperties.torque = 0.0;
-            jointProperties.maxTorqueAbs = 0.0;
-            jointProperties.zeroPosition = 0.0;
-            jointProperties.position = 0.0;
 
             m_controlBoardData.joints.push_back(jointProperties);
             yInfo() << "Joint " << jointFromConfigName << " added to the control board data.";
         }
-    }
+
+        if (!setJointPositionLimits(_ecm))
+        {
+            yError() << "Error while setting joint position limits";
+            return false;
+        }
+
+        if (!initializePIDsForPositionControl())
+        {
+            yError() << "Error while initializing PIDs";
+            return false;
+        }
+
+    } // lock_guard
 
     return true;
 }
@@ -262,8 +273,7 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
 
         if (gzJoint.Position(_ecm).has_value())
         {
-            // TODO manage unit conversions
-            joint.position = gzJoint.Position(_ecm).value().at(0);
+            joint.position = convertGazeboToUser(joint, gzJoint.Position(_ecm).value().at(0));
         } else
         {
             yError() << "Error while reading position for joint " << joint.name;
@@ -272,7 +282,7 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
 
         if (gzJoint.Velocity(_ecm).has_value())
         {
-            joint.velocity = gzJoint.Velocity(_ecm).value().at(0);
+            joint.velocity = convertGazeboToUser(joint, gzJoint.Velocity(_ecm).value().at(0));
         } else
         {
             yError() << "Error while reading velocity for joint " << joint.name;
@@ -327,12 +337,13 @@ void ControlBoard::checkForJointsHwFault()
     }
 }
 
-bool ControlBoard::updateReferences(gz::sim::EntityComponentManager& _ecm)
+bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentManager& _ecm)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
 
     double forceReference{};
     Joint gzJoint;
+
     for (auto& joint : m_controlBoardData.joints)
     {
         switch (joint.controlMode)
@@ -340,6 +351,14 @@ bool ControlBoard::updateReferences(gz::sim::EntityComponentManager& _ecm)
         case VOCAB_CM_TORQUE:
             forceReference = joint.refTorque;
             break;
+        case VOCAB_CM_POSITION_DIRECT: {
+            // TODO manage motor positions instead of joint positions when implemented
+            auto& pid = joint.pidControllers[yarp::dev::VOCAB_PIDTYPE_POSITION];
+            forceReference = pid.Update(convertUserToGazebo(joint, joint.position)
+                                            - convertUserToGazebo(joint, joint.refPosition),
+                                        _info.dt);
+            break;
+        }
         case VOCAB_CM_IDLE:
         case VOCAB_CM_HW_FAULT:
             forceReference = 0.0;
@@ -348,7 +367,9 @@ bool ControlBoard::updateReferences(gz::sim::EntityComponentManager& _ecm)
             yWarning() << "Joint " << joint.name << " control mode " << joint.controlMode
                        << " is currently not implemented";
             return false;
-        }
+        };
+
+        // TODO check if joint is within limits
 
         try
         {
@@ -362,6 +383,243 @@ bool ControlBoard::updateReferences(gz::sim::EntityComponentManager& _ecm)
         std::vector<double> forceVec{forceReference};
 
         gzJoint.SetForce(_ecm, forceVec);
+    }
+
+    return true;
+}
+
+bool ControlBoard::initializePIDsForPositionControl()
+{
+    if (!m_pluginParameters.check("POSITION_CONTROL"))
+    {
+        yError() << "Group POSITION_CONTROL not found in plugin configuration";
+        return false;
+    }
+    Bottle pidGroup = m_pluginParameters.findGroup("POSITION_CONTROL");
+
+    size_t numberOfJoints = m_controlBoardData.joints.size();
+    Bottle pidParamGroup;
+    auto cUnits = AngleUnitEnum::DEG;
+
+    // control units block
+    pidParamGroup = pidGroup.findGroup("controlUnits");
+    if (pidParamGroup.isNull())
+    {
+        yError() << "POSITION_CONTROL: 'controlUnits' param missing. Cannot "
+                    "continue";
+        return false;
+    }
+    if (pidParamGroup.get(1).asString() == "metric_units")
+    {
+        cUnits = AngleUnitEnum::DEG;
+    } else if (pidParamGroup.get(1).asString() == "si_units")
+    {
+        cUnits = AngleUnitEnum::RAD;
+    } else
+    {
+        yError() << "invalid controlUnits value";
+        return false;
+    }
+
+    // control law block
+    pidParamGroup = pidGroup.findGroup("controlLaw");
+    if (pidParamGroup.isNull())
+    {
+        yError() << "POSITION_CONTROL: 'controlLaw' parameter missing";
+        return false;
+    }
+    if (pidParamGroup.get(1).asString() == "joint_pid_gazebo_v1")
+    {
+        for (size_t i = 0; i < numberOfJoints; i++)
+            m_controlBoardData.joints[i].positionControlLaw = "joint_pid_gazebo_v1";
+    } else
+    {
+        yError() << "invalid controlLaw value";
+        return false;
+    }
+
+    std::vector<yarp::dev::Pid> yarpPIDs(numberOfJoints);
+
+    std::vector<std::pair<std::string, std::string>> parameters
+        = {{"kp", "Pid kp parameter"},
+           {"kd", "Pid kd parameter"},
+           {"ki", "Pid ki parameter"},
+           {"maxInt", "Pid maxInt parameter"},
+           {"maxOutput", "Pid maxOutput parameter"},
+           {"shift", "Pid shift parameter"},
+           {"ko", "Pid ko parameter"},
+           {"stictionUp", "Pid stictionUp"},
+           {"stictionDwn", "Pid stictionDwn"}};
+
+    for (const auto& param : parameters)
+    {
+        if (!tryGetGroup(pidGroup, pidParamGroup, param.first, param.second, numberOfJoints + 1))
+        // +1 to include the group name
+        {
+            return false;
+        }
+        setYarpPIDsParam(pidParamGroup, param.first, yarpPIDs, numberOfJoints);
+    }
+
+    setJointPositionPIDs(cUnits, yarpPIDs);
+
+    return true;
+}
+
+bool ControlBoard::tryGetGroup(
+    const Bottle& in, Bottle& out, const std::string& key, const std::string& txt, int size)
+{
+    Bottle& tmp = in.findGroup(key, txt);
+    if (tmp.isNull())
+    {
+        yError() << key << " not found";
+        return false;
+    }
+    if (tmp.size() != size)
+    {
+        yError() << "Incorrect number of entries for group: " << key;
+        return false;
+    }
+
+    out = tmp;
+    return true;
+}
+
+bool ControlBoard::setYarpPIDsParam(const Bottle& pidParamGroup,
+                                    const std::string& paramName,
+                                    std::vector<yarp::dev::Pid>& yarpPIDs,
+                                    size_t numberOfJoints)
+{
+
+    std::unordered_map<std::string, int> pidParamNameMap = {{"kp", 0},
+                                                            {"kd", 1},
+                                                            {"ki", 2},
+                                                            {"maxInt", 3},
+                                                            {"maxOutput", 4},
+                                                            {"shift", 5},
+                                                            {"ko", 6},
+                                                            {"stictionUp", 7},
+                                                            {"stictionDwn", 8}};
+
+    for (size_t i = 0; i < numberOfJoints; i++)
+    {
+        switch (pidParamNameMap[paramName])
+        {
+        case 0:
+            yarpPIDs[i].kp = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 1:
+            yarpPIDs[i].kd = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 2:
+            yarpPIDs[i].ki = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 3:
+            yarpPIDs[i].max_int = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 4:
+            yarpPIDs[i].max_output = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 5:
+            yarpPIDs[i].scale = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 6:
+            yarpPIDs[i].offset = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 7:
+            yarpPIDs[i].stiction_up_val = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        case 8:
+            yarpPIDs[i].stiction_down_val = pidParamGroup.get(i + 1).asFloat64();
+            break;
+        default:
+            yError() << "Invalid parameter name";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void ControlBoard::setJointPositionPIDs(AngleUnitEnum cUnits,
+                                        const std::vector<yarp::dev::Pid>& yarpPIDs)
+{
+    for (size_t i = 0; i < m_controlBoardData.joints.size(); i++)
+    {
+        auto& jointPositionPID
+            = m_controlBoardData.joints[i].pidControllers[yarp::dev::VOCAB_PIDTYPE_POSITION];
+
+        if (cUnits == AngleUnitEnum::DEG)
+        {
+            auto& joint = m_controlBoardData.joints.at(i);
+            jointPositionPID.SetPGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].kp)
+                                      / pow(2, yarpPIDs[i].scale));
+            jointPositionPID.SetIGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].ki)
+                                      / pow(2, yarpPIDs[i].scale));
+            jointPositionPID.SetDGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].kd)
+                                      / pow(2, yarpPIDs[i].scale));
+        } else if (cUnits == AngleUnitEnum::RAD)
+        {
+            jointPositionPID.SetPGain(yarpPIDs[i].kp / pow(2, yarpPIDs[i].scale));
+            jointPositionPID.SetIGain(yarpPIDs[i].ki / pow(2, yarpPIDs[i].scale));
+            jointPositionPID.SetDGain(yarpPIDs[i].kd / pow(2, yarpPIDs[i].scale));
+        }
+
+        jointPositionPID.SetIMax(yarpPIDs[i].max_int);
+        jointPositionPID.SetIMin(-yarpPIDs[i].max_int);
+        jointPositionPID.SetCmdMax(yarpPIDs[i].max_output);
+        jointPositionPID.SetCmdMin(-yarpPIDs[i].max_output);
+    }
+}
+
+double ControlBoard::convertUserGainToGazeboGain(JointProperties& joint, double value)
+{
+    // TODO discriminate between joint types
+    return gzyarp::convertDegreeGainToRadianGains(value);
+}
+
+double ControlBoard::convertGazeboGainToUserGain(JointProperties& joint, double value)
+{
+    // TODO discriminate between joint types
+    return gzyarp::convertRadianGainToDegreeGains(value);
+}
+
+double ControlBoard::convertGazeboToUser(JointProperties& joint, double value)
+{
+    // TODO discriminate between joint types
+    return convertRadiansToDegrees(value);
+}
+
+double ControlBoard::convertUserToGazebo(JointProperties& joint, double value)
+{
+    // TODO discriminate between joint types
+    return convertDegreesToRadians(value);
+}
+
+bool ControlBoard::setJointPositionLimits(const gz::sim::EntityComponentManager& ecm)
+{
+    if (!m_pluginParameters.check("LIMITS"))
+    {
+        yError() << "Group LIMITS not found in plugin configuration";
+        return false;
+    }
+
+    Bottle limitsGroup = m_pluginParameters.findGroup("LIMITS");
+    size_t numberOfJoints = m_controlBoardData.joints.size();
+    Bottle limitMinGroup, limitMaxGroup;
+
+    for (auto& joint : m_controlBoardData.joints)
+    {
+        // TODO: access gazebo joint position limits and use them to check if software limits
+        // ([LIMITS] group) are consistent. In case they are not defined set them as sw limits.
+        if (!(tryGetGroup(limitsGroup, limitMinGroup, "jntPosMin", "", numberOfJoints + 1)
+              && tryGetGroup(limitsGroup, limitMaxGroup, "jntPosMax", "", numberOfJoints + 1)))
+        {
+            yError() << "Error while reading joint position limits from plugin parameters";
+            return false;
+        }
+        joint.positionLimitMin = limitMinGroup.get(1).asFloat64();
+        joint.positionLimitMax = limitMaxGroup.get(1).asFloat64();
     }
 
     return true;
