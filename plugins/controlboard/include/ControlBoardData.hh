@@ -1,6 +1,9 @@
 #pragma once
 
+#include "ControlBoardTrajectory.hh"
+
 #include <limits>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <unordered_map>
@@ -49,6 +52,7 @@ struct JointProperties
     std::unordered_map<yarp::dev::PidControlTypeEnum, gz::math::PID, PidControlTypeEnumHashFunction>
         pidControllers;
     std::string positionControlLaw; // TODO: verify usefulness of this field
+    std::unique_ptr<yarp::dev::gzyarp::TrajectoryGenerator> trajectoryGenerator;
 };
 
 class ControlBoardData

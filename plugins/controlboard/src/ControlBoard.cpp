@@ -14,6 +14,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <gz/plugin/Register.hh>
@@ -203,7 +204,7 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
         yInfo() << "Found " + std::to_string(jointEntititesCount)
                        + " joints from the model description.";
 
-        m_controlBoardData.joints.clear();
+        m_controlBoardData.joints.resize(jointsFromConfigNum);
         for (size_t i = 0; i < jointsFromConfigNum; i++)
         {
             auto jointFromConfigName = jointsFromConfig.get(i + 1).asString();
@@ -223,16 +224,20 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
             gzJoint.EnableTransmittedWrenchCheck(_ecm, true);
 
             // Initialize JointProperties object
-            JointProperties jointProperties{};
-            jointProperties.name = jointFromConfigName;
+            m_controlBoardData.joints[i].name = jointFromConfigName;
 
-            m_controlBoardData.joints.push_back(jointProperties);
             yInfo() << "Joint " << jointFromConfigName << " added to the control board data.";
         }
 
         if (!setJointPositionLimits(_ecm))
         {
             yError() << "Error while setting joint position limits";
+            return false;
+        }
+
+        if (!setTrajectoryGenerators())
+        {
+            yError() << "Error while setting trajectory generators";
             return false;
         }
 
@@ -620,6 +625,45 @@ bool ControlBoard::setJointPositionLimits(const gz::sim::EntityComponentManager&
         }
         joint.positionLimitMin = limitMinGroup.get(1).asFloat64();
         joint.positionLimitMax = limitMaxGroup.get(1).asFloat64();
+    }
+
+    return true;
+}
+
+bool ControlBoard::setTrajectoryGenerators()
+{
+
+    auto trajectoryGeneratorsGroup = m_pluginParameters.findGroup("TRAJECTORY_GENERATORS");
+
+    if (trajectoryGeneratorsGroup.isNull())
+    {
+        yError() << "Group TRAJECTORY_GENERATORS not found in plugin configuration. Defaults to "
+                    "minimum jerk trajectory.";
+        return false;
+    }
+
+    auto trajectoryTypeGroup = trajectoryGeneratorsGroup.findGroup("trajectoryType");
+    if (trajectoryTypeGroup.isNull())
+    {
+        yError() << "Group trajectoryType not found in TRAJECTORY_GENERATORS group. Defaults to "
+                    "minimum jerk trajectory";
+        return false;
+    }
+
+    std::unordered_map<std::string, yarp::dev::gzyarp::TrajectoryType> trajectoryTypeMap
+        = {{"TRAJECTORY_TYPE_CONST_SPEED",
+            yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_CONST_SPEED},
+           {"TRAJECTORY_TYPE_MIN_JERK",
+            yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_MIN_JERK},
+           {"TRAJECTORY_TYPE_TRAP_SPEED",
+            yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_TRAP_SPEED}};
+
+    auto trajectoryType = trajectoryTypeMap[trajectoryTypeGroup.get(1).asString()];
+
+    for (auto& joint : m_controlBoardData.joints)
+    {
+        joint.trajectoryGenerator
+            = yarp::dev::gzyarp::TrajectoryGeneratorFactory::create(trajectoryType);
     }
 
     return true;

@@ -90,6 +90,7 @@ private:
     double convertGazeboToUser(JointProperties& joint, double value);
     double convertUserToGazebo(JointProperties& joint, double value);
     bool setJointPositionLimits(const gz::sim::EntityComponentManager& ecm);
+    bool setTrajectoryGenerators();
 };
 
 } // namespace gzyarp
