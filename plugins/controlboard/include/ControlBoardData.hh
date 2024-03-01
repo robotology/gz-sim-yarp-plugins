@@ -2,6 +2,7 @@
 
 #include "ControlBoardTrajectory.hh"
 
+#include <chrono>
 #include <limits>
 #include <memory>
 #include <mutex>
@@ -53,6 +54,10 @@ struct JointProperties
         pidControllers;
     std::string positionControlLaw; // TODO: verify usefulness of this field
     std::unique_ptr<yarp::dev::gzyarp::TrajectoryGenerator> trajectoryGenerator;
+    double trajectoryGenerationRefPosition{0.0};
+    double trajectoryGenerationRefSpeed{0.0};
+    double trajectoryGenerationRefAcceleration{0.0};
+    bool isMotionDone{true};
 };
 
 class ControlBoardData
@@ -62,6 +67,9 @@ public:
     std::string modelScopedName;
     std::vector<JointProperties> joints;
     yarp::os::Stamp simTime;
+
+    // TODO (xela95): read this value from configuration file
+    std::chrono::milliseconds controlUpdatePeriod = std::chrono::milliseconds(1);
 };
 
 } // namespace gzyarp
