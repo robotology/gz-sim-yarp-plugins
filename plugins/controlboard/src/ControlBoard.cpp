@@ -14,6 +14,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <gz/plugin/Register.hh>
@@ -148,12 +149,19 @@ void ControlBoard::Configure(const Entity& _entity,
         return;
     }
 
+    resetPositionsAndTrajectoryGenerators(_ecm);
+
     yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
     m_deviceRegistered = true;
 }
 
 void ControlBoard::PreUpdate(const UpdateInfo& _info, EntityComponentManager& _ecm)
 {
+    if (!updateTrajectories(_info, _ecm))
+    {
+        yError() << "Error while updating trajectories";
+    }
+
     if (!updateReferences(_info, _ecm))
     {
         yError() << "Error while updating control references";
@@ -174,7 +182,7 @@ void ControlBoard::PostUpdate(const UpdateInfo& _info, const EntityComponentMana
 
 void ControlBoard::Reset(const UpdateInfo& _info, EntityComponentManager& _ecm)
 {
-    // TODO
+    resetPositionsAndTrajectoryGenerators(_ecm);
 }
 
 // Private methods
@@ -203,7 +211,7 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
         yInfo() << "Found " + std::to_string(jointEntititesCount)
                        + " joints from the model description.";
 
-        m_controlBoardData.joints.clear();
+        m_controlBoardData.joints.resize(jointsFromConfigNum);
         for (size_t i = 0; i < jointsFromConfigNum; i++)
         {
             auto jointFromConfigName = jointsFromConfig.get(i + 1).asString();
@@ -223,16 +231,20 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
             gzJoint.EnableTransmittedWrenchCheck(_ecm, true);
 
             // Initialize JointProperties object
-            JointProperties jointProperties{};
-            jointProperties.name = jointFromConfigName;
+            m_controlBoardData.joints[i].name = jointFromConfigName;
 
-            m_controlBoardData.joints.push_back(jointProperties);
             yInfo() << "Joint " << jointFromConfigName << " added to the control board data.";
         }
 
-        if (!setJointPositionLimits(_ecm))
+        if (!initializeJointPositionLimits(_ecm))
         {
             yError() << "Error while setting joint position limits";
+            return false;
+        }
+
+        if (!initializeTrajectoryGenerators())
+        {
+            yError() << "Error while setting trajectory generators";
             return false;
         }
 
@@ -337,6 +349,34 @@ void ControlBoard::checkForJointsHwFault()
     }
 }
 
+bool ControlBoard::updateTrajectories(const UpdateInfo& _info, EntityComponentManager& _ecm)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
+
+    // TODO: execute the following at control update time
+
+    for (auto& joint : m_controlBoardData.joints)
+    {
+        switch (joint.controlMode)
+        {
+        case VOCAB_CM_POSITION:
+            joint.refPosition = joint.trajectoryGenerator->computeTrajectory();
+            joint.isMotionDone = joint.trajectoryGenerator->isMotionDone();
+            break;
+        case VOCAB_CM_MIXED:
+            // TODO when implementing mixed control mode
+            yError() << "Control mode MIXED not implemented yet";
+            break;
+        case VOCAB_CM_VELOCITY:
+            // TODO when implementing velocity control mode
+            yError() << "Control mode VELOCITY not implemented yet";
+            break;
+        }
+    }
+
+    return true;
+}
+
 bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentManager& _ecm)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
@@ -351,6 +391,7 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
         case VOCAB_CM_TORQUE:
             forceReference = joint.refTorque;
             break;
+        case VOCAB_CM_POSITION:
         case VOCAB_CM_POSITION_DIRECT: {
             // TODO manage motor positions instead of joint positions when implemented
             auto& pid = joint.pidControllers[yarp::dev::VOCAB_PIDTYPE_POSITION];
@@ -596,7 +637,7 @@ double ControlBoard::convertUserToGazebo(JointProperties& joint, double value)
     return convertDegreesToRadians(value);
 }
 
-bool ControlBoard::setJointPositionLimits(const gz::sim::EntityComponentManager& ecm)
+bool ControlBoard::initializeJointPositionLimits(const gz::sim::EntityComponentManager& ecm)
 {
     if (!m_pluginParameters.check("LIMITS"))
     {
@@ -623,6 +664,235 @@ bool ControlBoard::setJointPositionLimits(const gz::sim::EntityComponentManager&
     }
 
     return true;
+}
+
+bool ControlBoard::initializeTrajectoryGenerators()
+{
+    // Read from configuration
+    auto trajectoryGeneratorsGroup = m_pluginParameters.findGroup("TRAJECTORY_GENERATION");
+    bool missingConfiguration = false;
+    if (trajectoryGeneratorsGroup.isNull())
+    {
+        yWarning() << "Group TRAJECTORY_GENERATION not found in plugin configuration. Defaults to "
+                      "minimum jerk trajectory.";
+        missingConfiguration = true;
+    }
+
+    auto trajectoryTypeGroup = trajectoryGeneratorsGroup.findGroup("trajectory_type");
+    if (!missingConfiguration && trajectoryTypeGroup.isNull())
+    {
+        yWarning() << "Group trajectoryType not found in TRAJECTORY_GENERATION group. Defaults to "
+                      "minimum jerk trajectory";
+        missingConfiguration = true;
+    }
+
+    yarp::dev::gzyarp::TrajectoryType trajectoryType;
+
+    if (missingConfiguration)
+    {
+        trajectoryType = yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_MIN_JERK;
+
+    } else
+    {
+        std::unordered_map<std::string, yarp::dev::gzyarp::TrajectoryType> trajectoryTypeMap
+            = {{"constant_speed", yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_CONST_SPEED},
+               {"minimum_jerk", yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_MIN_JERK},
+               {"trapezoidal_speed",
+                yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_TRAP_SPEED}};
+
+        try
+        {
+            trajectoryType = trajectoryTypeMap.at(trajectoryTypeGroup.get(1).asString());
+            yInfo() << "Trajectory generator type set to " << trajectoryTypeGroup.get(1).asString();
+        } catch (const std::out_of_range& e)
+        {
+            yError() << "Invalid trajectory type " << trajectoryTypeGroup.get(1).asString()
+                     << " specified in trajectoryType parameter. Defaults to minimum jerk "
+                        "trajectory";
+        }
+    }
+
+    for (auto& joint : m_controlBoardData.joints)
+    {
+        joint.trajectoryGenerator
+            = yarp::dev::gzyarp::TrajectoryGeneratorFactory::create(trajectoryType);
+    }
+
+    if (!initializeTrajectoryGeneratorReferences(trajectoryGeneratorsGroup))
+    {
+        yError() << "Error while initializing trajectory generator references";
+        return false;
+    }
+
+    return true;
+}
+
+bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGeneratorsGroup)
+{
+    bool useDefaultSpeedRef{false}, useDefaultAccelerationRef{false};
+    Bottle refSpeedGroup, refAccelerationGroup;
+
+    if (!trajectoryGeneratorsGroup.isNull())
+    {
+        // Read from configuration
+        if (!tryGetGroup(trajectoryGeneratorsGroup,
+                         refSpeedGroup,
+                         "refSpeed",
+                         "",
+                         m_controlBoardData.joints.size() + 1))
+        {
+            yWarning() << "Parameter refSpeed not found in TRAJECTORY_GENERATION group. Defaults "
+                          "will be applied";
+            useDefaultSpeedRef = true;
+        }
+
+        if (!tryGetGroup(trajectoryGeneratorsGroup,
+                         refAccelerationGroup,
+                         "refAcceleration",
+                         "",
+                         m_controlBoardData.joints.size() + 1))
+        {
+            yWarning() << "Parameter refAcceleration not found in TRAJECTORY_GENERATION group. "
+                          "Defaults will be applied";
+            useDefaultAccelerationRef = true;
+        }
+    } else
+    {
+        // Use defaults
+        yWarning() << "Group TRAJECTORY_GENERATION not found in plugin configuration. Defaults "
+                      "trajectory generation reference speed and accelerations will be applied";
+        useDefaultSpeedRef = true;
+        useDefaultAccelerationRef = true;
+    }
+
+    // Set trajectory generation reference speed and acceleration
+    // TODO: manage different joint types
+    for (size_t i = 0; i < m_controlBoardData.joints.size(); ++i)
+    {
+        auto& joint = m_controlBoardData.joints[i];
+        if (useDefaultSpeedRef)
+        {
+            joint.trajectoryGenerationRefSpeed = 10.0; // [deg/s]
+        } else
+        {
+            joint.trajectoryGenerationRefSpeed = refSpeedGroup.get(i + 1).asFloat64();
+        }
+
+        if (useDefaultAccelerationRef)
+        {
+            joint.trajectoryGenerationRefAcceleration = 10.0; // [deg/s^2]
+        } else
+        {
+            joint.trajectoryGenerationRefAcceleration = refAccelerationGroup.get(i + 1).asFloat64();
+        }
+
+        // Clip trajectory generation reference velocities according to max joint limit
+        if (joint.trajectoryGenerationRefSpeed > joint.velocityLimitMax)
+        {
+            joint.trajectoryGenerationRefSpeed = joint.velocityLimitMax;
+        }
+
+        yDebug() << "Joint " << joint.name
+                 << " trajectory generation reference speed: " << joint.trajectoryGenerationRefSpeed
+                 << " [deg/s]";
+        yDebug() << "Joint " << joint.name << " trajectory generation reference acceleration: "
+                 << joint.trajectoryGenerationRefAcceleration << " [deg/s^2]";
+    }
+
+    return true;
+}
+
+bool ControlBoard::parseInitialConfiguration(std::vector<double>& initialConfigurations)
+{
+
+    if (!m_pluginParameters.check("initialConfiguration"))
+    {
+        return false;
+    }
+
+    std::stringstream ss(m_pluginParameters.find("initialConfiguration").toString());
+
+    double tmp{};
+    size_t counter = 0;
+
+    while (ss >> tmp)
+    {
+        if (counter >= m_controlBoardData.joints.size())
+        {
+            yWarning() << "Too many elements in initial configuration, stopping at element "
+                       << (counter + 1);
+            break;
+        }
+
+        initialConfigurations[counter++] = tmp;
+    }
+
+    return true;
+}
+
+void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponentManager& ecm)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
+
+    std::vector<double> initialConfigurations(m_controlBoardData.joints.size());
+    if (parseInitialConfiguration(initialConfigurations))
+    {
+        yInfo() << "Initial configuration found, initializing trajectory generator with it";
+
+        for (size_t i = 0; i < m_controlBoardData.joints.size(); i++)
+        {
+            auto& joint = m_controlBoardData.joints.at(i);
+            auto gzPos = initialConfigurations[i];
+            auto userPos = convertGazeboToUser(joint, gzPos);
+            // Reset joint properties
+            joint.trajectoryGenerationRefPosition = userPos;
+            joint.refPosition = userPos;
+            joint.position = userPos;
+            // Reset position of gazebo joint
+            // TODO(xela-95): store joint entity in JointProperties
+            Joint(Model(m_modelEntity).JointByName(ecm, joint.name))
+                .ResetPosition(ecm, std::vector<double>{gzPos});
+            auto limitMin = joint.positionLimitMin;
+            auto limitMax = joint.positionLimitMax;
+            joint.trajectoryGenerator->setLimits(limitMin, limitMax);
+            joint.trajectoryGenerator->initTrajectory(joint.position,
+                                                      joint.position,
+                                                      joint.trajectoryGenerationRefSpeed,
+                                                      joint.trajectoryGenerationRefAcceleration,
+                                                      m_controlBoardData.controlUpdatePeriod);
+        }
+
+    } else
+    {
+        yWarning() << "No initial configuration found, initializing trajectory generator with "
+                      "current values";
+
+        for (size_t i = 0; i < m_controlBoardData.joints.size(); i++)
+        {
+            auto& joint = m_controlBoardData.joints.at(i);
+            auto gzJoint = Joint(Model(m_modelEntity).JointByName(ecm, joint.name));
+            auto gzPos = gzJoint.Position(ecm).value().at(0);
+            auto userPos = convertGazeboToUser(joint, gzPos);
+            // Reset joint properties
+            joint.trajectoryGenerationRefPosition = userPos;
+            joint.refPosition = userPos;
+            joint.position = userPos;
+            auto limitMin = joint.positionLimitMin;
+            auto limitMax = joint.positionLimitMax;
+            joint.trajectoryGenerator->setLimits(limitMin, limitMax);
+            joint.trajectoryGenerator->initTrajectory(joint.position,
+                                                      joint.position,
+                                                      joint.trajectoryGenerationRefSpeed,
+                                                      joint.trajectoryGenerationRefAcceleration,
+                                                      m_controlBoardData.controlUpdatePeriod);
+        }
+    }
+
+    // Reset control mode
+    for (auto& joint : m_controlBoardData.joints)
+    {
+        joint.controlMode = VOCAB_CM_POSITION;
+    }
 }
 
 } // namespace gzyarp

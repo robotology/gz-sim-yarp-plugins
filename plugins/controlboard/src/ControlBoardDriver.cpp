@@ -4,6 +4,7 @@
 #include "../include/ControlBoardDataSingleton.hh"
 
 #include <cmath>
+#include <cstddef>
 #include <exception>
 #include <mutex>
 #include <string>
@@ -785,141 +786,542 @@ bool ControlBoardDriver::getRefPositions(const int n_joint, const int* joints, d
 
 bool ControlBoardDriver::positionMove(int j, double ref)
 {
-    // TODO
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while setting reference position for trajectory generation: joint index "
+                        + std::to_string(j) + " out of range";
+        return false;
+    }
+
+    auto& joint = m_controlBoardData->joints.at(j);
+
+    joint.trajectoryGenerationRefPosition = ref;
+
+    // TODO: use getLimits when recursive mutexes are implemented
+
+    auto limitMin = m_controlBoardData->joints.at(j).positionLimitMin;
+    auto limitMax = m_controlBoardData->joints.at(j).positionLimitMax;
+
+    joint.trajectoryGenerator->setLimits(limitMin, limitMax);
+    joint.trajectoryGenerator->initTrajectory(joint.position,
+                                              joint.trajectoryGenerationRefPosition,
+                                              joint.trajectoryGenerationRefSpeed,
+                                              joint.trajectoryGenerationRefAcceleration,
+                                              m_controlBoardData->controlUpdatePeriod);
+
     return true;
 }
 
 bool ControlBoardDriver::positionMove(const double* refs)
 {
-    // TODO
+    if (!refs)
+    {
+        yError() << "Error while setting reference positions for trajectory generation: refs array "
+                    "is null";
+        return false;
+    }
+
+    for (size_t i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::positionMove(i, refs[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
+
 bool ControlBoardDriver::relativeMove(int j, double delta)
 {
-    // TODO
-    return true;
+    // Check on valid joint number done in setPosition
+    return setPosition(j, m_controlBoardData->joints.at(j).position + delta);
 }
+
 bool ControlBoardDriver::relativeMove(const double* deltas)
 {
-    // TODO
+    if (!deltas)
+    {
+        yError() << "Error while setting relative positions: deltas array is null";
+        return false;
+    }
+
+    for (size_t i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::relativeMove(i, deltas[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
+
 bool ControlBoardDriver::checkMotionDone(int j, bool* flag)
 {
-    // TODO
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while checking motion done: joint index out of range";
+        return false;
+    }
+
+    *flag = m_controlBoardData->joints.at(j).isMotionDone;
+
     return true;
 }
+
 bool ControlBoardDriver::checkMotionDone(bool* flag)
 {
-    // TODO
+    if (!flag)
+    {
+        yError() << "Error while checking motion done: flag is null";
+        return false;
+    }
+
+    for (size_t i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::checkMotionDone(i, &flag[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
+
 bool ControlBoardDriver::setRefSpeed(int j, double sp)
 {
-    // TODO
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while setting reference speed: joint index out of range";
+        return false;
+    }
+
+    m_controlBoardData->joints.at(j).trajectoryGenerationRefSpeed = sp;
+
     return true;
 }
+
 bool ControlBoardDriver::setRefSpeeds(const double* spds)
 {
-    // TODO
+    if (!spds)
+    {
+        yError() << "Error while setting reference speeds: spds array is null";
+        return false;
+    }
+
+    for (size_t i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::setRefSpeed(i, spds[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
+
 bool ControlBoardDriver::setRefAcceleration(int j, double acc)
 {
-    // TODO
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while setting reference acceleration: joint index out of range";
+        return false;
+    }
+
+    m_controlBoardData->joints.at(j).trajectoryGenerationRefAcceleration = acc;
+
     return true;
 }
+
 bool ControlBoardDriver::setRefAccelerations(const double* accs)
 {
-    // TODO
+    if (!accs)
+    {
+        yError() << "Error while setting reference accelerations: accs array is null";
+        return false;
+    }
+
+    for (size_t i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::setRefAcceleration(i, accs[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
+
 bool ControlBoardDriver::getRefSpeed(int j, double* ref)
 {
-    // TODO
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while getting reference speed: joint index out of range";
+        return false;
+    }
+
+    *ref = m_controlBoardData->joints.at(j).trajectoryGenerationRefSpeed;
+
     return true;
 }
+
 bool ControlBoardDriver::getRefSpeeds(double* spds)
 {
-    // TODO
+    if (!spds)
+    {
+        yError() << "Error while getting reference speeds: spds array is null";
+        return false;
+    }
+
+    for (size_t i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::getRefSpeed(i, &spds[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
+
 bool ControlBoardDriver::getRefAcceleration(int j, double* acc)
 {
-    // TODO
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while getting reference acceleration: joint index out of range";
+        return false;
+    }
+
+    *acc = m_controlBoardData->joints.at(j).trajectoryGenerationRefAcceleration;
+
     return true;
 }
+
 bool ControlBoardDriver::getRefAccelerations(double* accs)
 {
-    // TODO
+    if (!accs)
+    {
+        yError() << "Error while getting reference accelerations: accs array is null";
+        return false;
+    }
+
+    for (size_t i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::getRefAcceleration(i, &accs[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
+
 bool ControlBoardDriver::stop(int j)
 {
-    // TODO
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while stopping: joint index out of range";
+        return false;
+    }
+
+    switch (m_controlBoardData->joints.at(j).controlMode)
+    {
+    case VOCAB_CM_POSITION:
+        m_controlBoardData->joints.at(j).trajectoryGenerationRefPosition
+            = m_controlBoardData->joints.at(j).position;
+        m_controlBoardData->joints.at(j).trajectoryGenerator->abortTrajectory(
+            m_controlBoardData->joints.at(j).position);
+        break;
+    case VOCAB_CM_POSITION_DIRECT:
+        m_controlBoardData->joints.at(j).trajectoryGenerationRefPosition
+            = m_controlBoardData->joints.at(j).position;
+        m_controlBoardData->joints.at(j).refPosition = m_controlBoardData->joints.at(j).position;
+        break;
+    case VOCAB_CM_VELOCITY:
+        // TODO velocity control
+        yWarning() << "stop not implemented for velocity control mode";
+        break;
+    case VOCAB_CM_MIXED:
+        yWarning() << "stop not implemented for mixed control mode";
+        // TODO mixed control
+        break;
+    }
+
     return true;
 }
+
 bool ControlBoardDriver::stop()
 {
-    // TODO
+    for (size_t i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::stop(i))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
+
 bool ControlBoardDriver::positionMove(const int n_joint, const int* joints, const double* refs)
 {
-    // TODO
+    if (!joints)
+    {
+        yError() << "Error while setting reference positions for trajectory generation: joints "
+                    "array is null";
+        return false;
+    }
+    if (!refs)
+    {
+        yError() << "Error while setting reference positions for trajectory generation: refs array "
+                    "is null";
+        return false;
+    }
+
+    for (int i = 0; i < n_joint; i++)
+    {
+        if (!ControlBoardDriver::positionMove(joints[i], refs[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
+
 bool ControlBoardDriver::relativeMove(const int n_joint, const int* joints, const double* deltas)
 {
-    // TODO
+    if (!joints)
+    {
+        yError() << "Error while setting relative positions: joints array is null";
+        return false;
+    }
+    if (!deltas)
+    {
+        yError() << "Error while setting relative positions: deltas array is null";
+        return false;
+    }
+
+    for (int i = 0; i < n_joint; i++)
+    {
+        if (!ControlBoardDriver::relativeMove(joints[i], deltas[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
 bool ControlBoardDriver::checkMotionDone(const int n_joint, const int* joints, bool* flag)
 {
-    // TODO
+    if (!joints)
+    {
+        yError() << "Error while checking motion done: joints array is null";
+        return false;
+    }
+    if (!flag)
+    {
+        yError() << "Error while checking motion done: flag array is null";
+        return false;
+    }
+
+    for (int i = 0; i < n_joint; i++)
+    {
+        if (!ControlBoardDriver::checkMotionDone(joints[i], &flag[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
+
 bool ControlBoardDriver::setRefSpeeds(const int n_joint, const int* joints, const double* spds)
 {
-    // TODO
+    if (!joints)
+    {
+        yError() << "Error while setting reference speeds: joints array is null";
+        return false;
+    }
+    if (!spds)
+    {
+        yError() << "Error while setting reference speeds: spds array is null";
+        return false;
+    }
+
+    for (int i = 0; i < n_joint; i++)
+    {
+        if (!ControlBoardDriver::setRefSpeed(joints[i], spds[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
 bool ControlBoardDriver::setRefAccelerations(const int n_joint,
                                              const int* joints,
                                              const double* accs)
 {
-    // TODO
+    if (!joints)
+    {
+        yError() << "Error while setting reference accelerations: joints array is null";
+        return false;
+    }
+    if (!accs)
+    {
+        yError() << "Error while setting reference accelerations: accs array is null";
+        return false;
+    }
+
+    for (int i = 0; i < n_joint; i++)
+    {
+        if (!ControlBoardDriver::setRefAcceleration(joints[i], accs[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
+
 bool ControlBoardDriver::getRefSpeeds(const int n_joint, const int* joints, double* spds)
 {
-    // TODO
+    if (!joints)
+    {
+        yError() << "Error while getting reference speeds: joints array is null";
+        return false;
+    }
+    if (!spds)
+    {
+        yError() << "Error while getting reference speeds: spds array is null";
+        return false;
+    }
+
+    for (int i = 0; i < n_joint; i++)
+    {
+        if (!ControlBoardDriver::getRefSpeed(joints[i], &spds[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
+
 bool ControlBoardDriver::getRefAccelerations(const int n_joint, const int* joints, double* accs)
 {
-    // TODO
+    if (!joints)
+    {
+        yError() << "Error while getting reference accelerations: joints array is null";
+        return false;
+    }
+    if (!accs)
+    {
+        yError() << "Error while getting reference accelerations: accs array is null";
+        return false;
+    }
+
+    for (int i = 0; i < n_joint; i++)
+    {
+        if (!ControlBoardDriver::getRefAcceleration(joints[i], &accs[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
 bool ControlBoardDriver::stop(const int n_joint, const int* joints)
 {
-    // TODO
+    if (!joints)
+    {
+        yError() << "Error while stopping: joints array is null";
+        return false;
+    }
+
+    for (int i = 0; i < n_joint; i++)
+    {
+        if (!ControlBoardDriver::stop(joints[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
 
 bool ControlBoardDriver::getTargetPosition(const int joint, double* ref)
 {
-    // TODO
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (joint < 0 || joint >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while getting target position: joint index " + std::to_string(joint)
+                        + " out of range";
+        return false;
+    }
+
+    *ref = m_controlBoardData->joints.at(joint).trajectoryGenerationRefPosition;
+
     return true;
 }
+
 bool ControlBoardDriver::getTargetPositions(double* refs)
 {
-    // TODO
+    if (!refs)
+    {
+        yError() << "Error while getting target positions: refs array is null";
+        return false;
+    }
+
+    for (size_t i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::getTargetPosition(i, &refs[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
+
 bool ControlBoardDriver::getTargetPositions(const int n_joint, const int* joints, double* refs)
 {
-    // TODO
+    if (!joints)
+    {
+        yError() << "Error while getting target positions: joints array is null";
+        return false;
+    }
+    if (!refs)
+    {
+        yError() << "Error while getting target positions: refs array is null";
+        return false;
+    }
+
+    for (int i = 0; i < n_joint; i++)
+    {
+        if (!ControlBoardDriver::getTargetPosition(joints[i], &refs[i]))
+        {
+            return false;
+        }
+    }
+
     return true;
 }
 
