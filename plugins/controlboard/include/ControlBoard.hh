@@ -70,6 +70,8 @@ private:
     void updateSimTime(const gz::sim::v7::UpdateInfo& _info);
     bool readJointsMeasurements(const gz::sim::EntityComponentManager& _ecm);
     void checkForJointsHwFault();
+    bool
+    updateTrajectories(const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm);
     bool updateReferences(const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm);
     double getJointTorqueFromTransmittedWrench(const gz::sim::Joint& gzJoint,
                                                const gz::msgs::Wrench& wrench,

@@ -157,6 +157,11 @@ void ControlBoard::Configure(const Entity& _entity,
 
 void ControlBoard::PreUpdate(const UpdateInfo& _info, EntityComponentManager& _ecm)
 {
+    if (!updateTrajectories(_info, _ecm))
+    {
+        yError() << "Error while updating trajectories";
+    }
+
     if (!updateReferences(_info, _ecm))
     {
         yError() << "Error while updating control references";
@@ -344,6 +349,34 @@ void ControlBoard::checkForJointsHwFault()
     }
 }
 
+bool ControlBoard::updateTrajectories(const UpdateInfo& _info, EntityComponentManager& _ecm)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
+
+    // TODO: execute the following at control update time
+
+    for (auto& joint : m_controlBoardData.joints)
+    {
+        switch (joint.controlMode)
+        {
+        case VOCAB_CM_POSITION:
+            joint.refPosition = joint.trajectoryGenerator->computeTrajectory();
+            joint.isMotionDone = joint.trajectoryGenerator->isMotionDone();
+            break;
+        case VOCAB_CM_MIXED:
+            // TODO when implementing mixed control mode
+            yError() << "Control mode MIXED not implemented yet";
+            break;
+        case VOCAB_CM_VELOCITY:
+            // TODO when implementing velocity control mode
+            yError() << "Control mode VELOCITY not implemented yet";
+            break;
+        }
+    }
+
+    return true;
+}
+
 bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentManager& _ecm)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
@@ -358,6 +391,7 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
         case VOCAB_CM_TORQUE:
             forceReference = joint.refTorque;
             break;
+        case VOCAB_CM_POSITION:
         case VOCAB_CM_POSITION_DIRECT: {
             // TODO manage motor positions instead of joint positions when implemented
             auto& pid = joint.pidControllers[yarp::dev::VOCAB_PIDTYPE_POSITION];
