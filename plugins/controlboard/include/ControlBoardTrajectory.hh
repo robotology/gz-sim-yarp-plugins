@@ -2,6 +2,9 @@
 
 #include <gz/sim/Model.hh>
 
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
+
 #include <mutex>
 
 namespace yarp
@@ -11,7 +14,7 @@ namespace dev
 namespace gzyarp
 {
 
-enum TrajectoryType
+enum class TrajectoryType
 {
     TRAJECTORY_TYPE_CONST_SPEED = 0,
     TRAJECTORY_TYPE_MIN_JERK = 1,
@@ -53,7 +56,6 @@ class TrajectoryGenerator
 {
 protected:
     std::mutex m_mutex;
-    gz::sim::Model* m_robot;
     bool m_trajectory_complete;
     double m_x0;
     double m_xf;
@@ -63,7 +65,7 @@ protected:
     double m_controllerPeriod;
     double m_joint_min;
     double m_joint_max;
-    TrajectoryGenerator(gz::sim::Model* model);
+    TrajectoryGenerator();
 
 public:
     virtual ~TrajectoryGenerator();
@@ -84,7 +86,7 @@ public:
 class ConstSpeedTrajectoryGenerator : public TrajectoryGenerator
 {
 public:
-    ConstSpeedTrajectoryGenerator(gz::sim::Model* model);
+    ConstSpeedTrajectoryGenerator();
     virtual ~ConstSpeedTrajectoryGenerator();
 
 private:
@@ -107,7 +109,7 @@ public:
 class TrapezoidalSpeedTrajectoryGenerator : public TrajectoryGenerator
 {
 public:
-    TrapezoidalSpeedTrajectoryGenerator(gz::sim::Model* model);
+    TrapezoidalSpeedTrajectoryGenerator();
     virtual ~TrapezoidalSpeedTrajectoryGenerator();
 
 private:
@@ -135,7 +137,7 @@ public:
 class MinJerkTrajectoryGenerator : public TrajectoryGenerator
 {
 public:
-    MinJerkTrajectoryGenerator(gz::sim::Model* model);
+    MinJerkTrajectoryGenerator();
     virtual ~MinJerkTrajectoryGenerator();
 
 private:
@@ -167,6 +169,26 @@ public:
     double computeTrajectory();
     double computeTrajectoryStep();
     TrajectoryType getTrajectoryType();
+};
+
+class TrajectoryGeneratorFactory
+{
+public:
+    static std::unique_ptr<TrajectoryGenerator> create(TrajectoryType type)
+    {
+        switch (type)
+        {
+        case TrajectoryType::TRAJECTORY_TYPE_MIN_JERK:
+            return std::make_unique<MinJerkTrajectoryGenerator>();
+        case TrajectoryType::TRAJECTORY_TYPE_CONST_SPEED:
+            return std::make_unique<ConstSpeedTrajectoryGenerator>();
+        case TrajectoryType::TRAJECTORY_TYPE_TRAP_SPEED:
+            return std::make_unique<TrapezoidalSpeedTrajectoryGenerator>();
+        default:
+            yError() << "Trajectory type not supported";
+            return nullptr;
+        }
+    }
 };
 
 } // namespace gzyarp

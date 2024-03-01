@@ -98,9 +98,8 @@ double RampFilter::getCurrentValue()
 // TrajectoryGenerator
 //------------------------------------------------------------------------------------------------------------------
 
-TrajectoryGenerator::TrajectoryGenerator(gz::sim::Model* model)
-    : m_robot(model)
-    , m_trajectory_complete(true)
+TrajectoryGenerator::TrajectoryGenerator()
+    : m_trajectory_complete(true)
     , m_speed(0)
     , m_acceleration(0)
     , m_joint_min(0)
@@ -128,8 +127,7 @@ bool TrajectoryGenerator::setLimits(double min, double max)
 // MinJerkTrajectoryGenerator
 //------------------------------------------------------------------------------------------------------------------
 
-MinJerkTrajectoryGenerator::MinJerkTrajectoryGenerator(gz::sim::Model* model)
-    : TrajectoryGenerator(model)
+MinJerkTrajectoryGenerator::MinJerkTrajectoryGenerator()
 {
 }
 
@@ -364,15 +362,14 @@ double MinJerkTrajectoryGenerator::computeTrajectory()
 
 TrajectoryType MinJerkTrajectoryGenerator::getTrajectoryType()
 {
-    return TRAJECTORY_TYPE_MIN_JERK;
+    return TrajectoryType::TRAJECTORY_TYPE_MIN_JERK;
 }
 
 //------------------------------------------------------------------------------------------------------------------
 // ConstSpeedTrajectoryGenerator
 //------------------------------------------------------------------------------------------------------------------
 
-ConstSpeedTrajectoryGenerator::ConstSpeedTrajectoryGenerator(gz::sim::Model* model)
-    : TrajectoryGenerator(model)
+ConstSpeedTrajectoryGenerator::ConstSpeedTrajectoryGenerator()
 {
 }
 
@@ -473,16 +470,15 @@ double ConstSpeedTrajectoryGenerator::p_computeTrajectory()
 
 TrajectoryType ConstSpeedTrajectoryGenerator::getTrajectoryType()
 {
-    return TRAJECTORY_TYPE_CONST_SPEED;
+    return TrajectoryType::TRAJECTORY_TYPE_CONST_SPEED;
 }
 
 //------------------------------------------------------------------------------------------------------------------
 // TrapezoidalSpeedTrajectoryGenerator
 //------------------------------------------------------------------------------------------------------------------
 
-TrapezoidalSpeedTrajectoryGenerator::TrapezoidalSpeedTrajectoryGenerator(gz::sim::Model* model)
-    : TrajectoryGenerator(model)
-    , m_computed_reference_velocity(0.0)
+TrapezoidalSpeedTrajectoryGenerator::TrapezoidalSpeedTrajectoryGenerator()
+    : m_computed_reference_velocity(0.0)
 {
 }
 
@@ -606,7 +602,7 @@ double TrapezoidalSpeedTrajectoryGenerator::p_computeTrajectoryStep()
 
 TrajectoryType TrapezoidalSpeedTrajectoryGenerator::getTrajectoryType()
 {
-    return TRAJECTORY_TYPE_TRAP_SPEED;
+    return TrajectoryType::TRAJECTORY_TYPE_TRAP_SPEED;
 }
 
 } // namespace gzyarp
