@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <gz/sim/Model.hh>
 
 #include <yarp/os/Log.h>
@@ -62,7 +63,7 @@ protected:
     double m_speed;
     double m_acceleration;
     double m_computed_reference;
-    double m_controllerPeriod;
+    double m_controllerPeriodMilliseconds;
     double m_joint_min;
     double m_joint_max;
     TrajectoryGenerator();
@@ -73,7 +74,7 @@ public:
                                 double final_pos,
                                 double speed,
                                 double acceleration,
-                                double controller_period)
+                                std::chrono::milliseconds controller_period)
         = 0;
     virtual bool abortTrajectory(double limit) = 0;
     virtual double computeTrajectory() = 0;
@@ -99,7 +100,7 @@ public:
                         double final_pos,
                         double speed,
                         double acceleration,
-                        double controller_period);
+                        std::chrono::milliseconds controller_period);
     bool abortTrajectory(double limit);
     double computeTrajectory();
     double computeTrajectoryStep();
@@ -127,7 +128,7 @@ public:
                         double final_pos,
                         double speed,
                         double acceleration,
-                        double controller_period);
+                        std::chrono::milliseconds controller_period);
     bool abortTrajectory(double limit);
     double computeTrajectory();
     double computeTrajectoryStep();
@@ -164,7 +165,7 @@ public:
                         double final_pos,
                         double speed,
                         double acceleration,
-                        double controller_period);
+                        std::chrono::milliseconds controller_period);
     bool abortTrajectory(double limit);
     double computeTrajectory();
     double computeTrajectoryStep();

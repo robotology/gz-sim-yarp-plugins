@@ -202,11 +202,11 @@ bool MinJerkTrajectoryGenerator::initTrajectory(double current_pos,
                                                 double final_pos,
                                                 double speed,
                                                 double acceleration,
-                                                double controller_period)
+                                                std::chrono::milliseconds controller_period)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    m_controllerPeriod = controller_period * 1000;
+    m_controllerPeriodMilliseconds = controller_period.count();
     double speedf = fabs(speed);
     double dx0 = 0;
     m_computed_reference = current_pos;
@@ -230,7 +230,7 @@ bool MinJerkTrajectoryGenerator::initTrajectory(double current_pos,
     // double step = (m_trajectoryGenerationReferenceSpeed[j] / 1000.0) * m_robotRefreshPeriod *
     // _T_controller;
 
-    m_tf = (1000 * fabs(m_xf - m_x0) / speedf) / m_controllerPeriod;
+    m_tf = (1000 * fabs(m_xf - m_x0) / speedf) / m_controllerPeriodMilliseconds;
     m_dx0 = m_dx0 * m_tf;
 
     dx0 = m_dx0;
@@ -381,11 +381,11 @@ bool ConstSpeedTrajectoryGenerator::initTrajectory(double current_pos,
                                                    double final_pos,
                                                    double speed,
                                                    double acceleration,
-                                                   double controller_period)
+                                                   std::chrono::milliseconds controller_period)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    m_controllerPeriod = controller_period * 1000.0;
+    m_controllerPeriodMilliseconds = controller_period.count();
     m_x0 = current_pos;
     m_xf = final_pos;
     if (m_xf > m_joint_max)
@@ -418,10 +418,10 @@ double ConstSpeedTrajectoryGenerator::p_computeTrajectoryStep()
 
     if (m_xf > m_computed_reference)
     {
-        step = +(m_speed / 1000.0) * m_controllerPeriod; //* _T_controller;
+        step = +(m_speed / 1000.0) * m_controllerPeriodMilliseconds; //* _T_controller;
     } else
     {
-        step = -(m_speed / 1000.0) * m_controllerPeriod; //* _T_controller;
+        step = -(m_speed / 1000.0) * m_controllerPeriodMilliseconds; //* _T_controller;
     }
 
     if (error_abs < fabs(step))
@@ -449,7 +449,7 @@ double ConstSpeedTrajectoryGenerator::computeTrajectory()
 
 double ConstSpeedTrajectoryGenerator::p_computeTrajectory()
 {
-    double step = (m_speed / 1000.0) * m_controllerPeriod; //* _T_controller;
+    double step = (m_speed / 1000.0) * m_controllerPeriodMilliseconds; //* _T_controller;
     double error_abs = fabs(m_computed_reference - m_xf);
 
     if (error_abs)
@@ -490,7 +490,7 @@ bool TrapezoidalSpeedTrajectoryGenerator::initTrajectory(double current_pos,
                                                          double final_pos,
                                                          double speed,
                                                          double acceleration,
-                                                         double controller_period)
+                                                         std::chrono::milliseconds controller_period)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -536,7 +536,7 @@ bool TrapezoidalSpeedTrajectoryGenerator::initTrajectory(double current_pos,
     }
 
     m_computed_reference = current_pos;
-    m_controllerPeriod = controller_period * 1000.0; // milliseconds
+    m_controllerPeriodMilliseconds = controller_period.count();
     m_tick = 0;
     m_trajectory_complete = false;
 
@@ -571,7 +571,7 @@ double TrapezoidalSpeedTrajectoryGenerator::p_computeTrajectoryStep()
         return 0;
     }
 
-    double period = m_controllerPeriod / 1000.0; // in seconds
+    double period = m_controllerPeriodMilliseconds / 1000.0; // in seconds
     double instant = m_tick * period; // current time since start (in seconds)
     double step = 0;
 

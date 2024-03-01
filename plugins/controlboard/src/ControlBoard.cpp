@@ -149,6 +149,8 @@ void ControlBoard::Configure(const Entity& _entity,
         return;
     }
 
+    resetPositionsAndTrajectoryGenerators(_ecm);
+
     yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
     m_deviceRegistered = true;
 }
@@ -175,7 +177,7 @@ void ControlBoard::PostUpdate(const UpdateInfo& _info, const EntityComponentMana
 
 void ControlBoard::Reset(const UpdateInfo& _info, EntityComponentManager& _ecm)
 {
-    // TODO
+    resetPositionsAndTrajectoryGenerators(_ecm);
 }
 
 // Private methods
@@ -667,6 +669,99 @@ bool ControlBoard::setTrajectoryGenerators()
     }
 
     return true;
+}
+
+bool ControlBoard::parseInitialConfiguration(std::vector<double>& initialConfigurations)
+{
+
+    if (!m_pluginParameters.check("initialConfiguration"))
+    {
+        return false;
+    }
+
+    std::stringstream ss(m_pluginParameters.find("initialConfiguration").toString());
+
+    double tmp{};
+    size_t counter = 0;
+
+    while (ss >> tmp)
+    {
+        if (counter >= initialConfigurations.size())
+        {
+            yError() << "Too many elements in initial configuration, stopping at element "
+                     << (counter + 1);
+            break;
+        }
+
+        initialConfigurations[counter++] = tmp;
+    }
+
+    return true;
+}
+
+void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponentManager& ecm)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
+
+    std::vector<double> initialConfigurations(m_controlBoardData.joints.size());
+    if (parseInitialConfiguration(initialConfigurations))
+    {
+        yInfo() << "Initial configuration found, initializing trajectory generator with it";
+
+        for (size_t i = 0; i < m_controlBoardData.joints.size(); i++)
+        {
+            auto& joint = m_controlBoardData.joints.at(i);
+            auto gzPos = initialConfigurations[i];
+            auto userPos = convertGazeboToUser(joint, gzPos);
+            // Reset joint properties
+            joint.trajectoryGenerationRefPosition = userPos;
+            joint.refPosition = userPos;
+            joint.position = userPos;
+            // Reset position of gazebo joint
+            // TODO(xela-95): store joint entity in JointProperties
+            Joint(Model(m_modelEntity).JointByName(ecm, joint.name))
+                .ResetPosition(ecm, std::vector<double>{gzPos});
+            auto limitMin = joint.positionLimitMin;
+            auto limitMax = joint.positionLimitMax;
+            joint.trajectoryGenerator->setLimits(limitMin, limitMax);
+            joint.trajectoryGenerator->initTrajectory(joint.position,
+                                                      joint.position,
+                                                      joint.trajectoryGenerationRefSpeed,
+                                                      joint.trajectoryGenerationRefAcceleration,
+                                                      m_controlBoardData.controlUpdatePeriod);
+        }
+
+    } else
+    {
+        yWarning() << "No initial configuration found, initializing trajectory generator with "
+                      "current values";
+
+        for (size_t i = 0; i < m_controlBoardData.joints.size(); i++)
+        {
+            auto& joint = m_controlBoardData.joints.at(i);
+            auto gzJoint = Joint(Model(m_modelEntity).JointByName(ecm, joint.name));
+            auto gzPos = gzJoint.Position(ecm).value().at(0);
+            auto userPos = convertGazeboToUser(joint, gzPos);
+            // Reset joint properties
+            joint.trajectoryGenerationRefPosition = userPos;
+            joint.refPosition = userPos;
+            joint.position = userPos;
+            auto limitMin = joint.positionLimitMin;
+            auto limitMax = joint.positionLimitMax;
+            joint.trajectoryGenerator->setLimits(limitMin, limitMax);
+            joint.trajectoryGenerator->initTrajectory(joint.position,
+                                                      joint.position,
+                                                      joint.trajectoryGenerationRefSpeed,
+                                                      joint.trajectoryGenerationRefAcceleration,
+                                                      m_controlBoardData.controlUpdatePeriod);
+        }
+    }
+
+    // Reset control mode
+    for (auto& joint : m_controlBoardData.joints)
+    {
+        joint.controlMode = VOCAB_CM_POSITION;
+    }
 }
 
 } // namespace gzyarp
