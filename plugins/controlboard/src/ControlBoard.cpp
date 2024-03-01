@@ -678,7 +678,7 @@ bool ControlBoard::initializeTrajectoryGenerators()
         missingConfiguration = true;
     }
 
-    auto trajectoryTypeGroup = trajectoryGeneratorsGroup.findGroup("trajectoryType");
+    auto trajectoryTypeGroup = trajectoryGeneratorsGroup.findGroup("trajectory_type");
     if (!missingConfiguration && trajectoryTypeGroup.isNull())
     {
         yWarning() << "Group trajectoryType not found in TRAJECTORY_GENERATION group. Defaults to "
@@ -695,14 +695,21 @@ bool ControlBoard::initializeTrajectoryGenerators()
     } else
     {
         std::unordered_map<std::string, yarp::dev::gzyarp::TrajectoryType> trajectoryTypeMap
-            = {{"TRAJECTORY_TYPE_CONST_SPEED",
-                yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_CONST_SPEED},
-               {"TRAJECTORY_TYPE_MIN_JERK",
-                yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_MIN_JERK},
-               {"TRAJECTORY_TYPE_TRAP_SPEED",
+            = {{"constant_speed", yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_CONST_SPEED},
+               {"minimum_jerk", yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_MIN_JERK},
+               {"trapezoidal_speed",
                 yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_TRAP_SPEED}};
 
-        trajectoryType = trajectoryTypeMap[trajectoryTypeGroup.get(1).asString()];
+        try
+        {
+            trajectoryType = trajectoryTypeMap.at(trajectoryTypeGroup.get(1).asString());
+            yInfo() << "Trajectory generator type set to " << trajectoryTypeGroup.get(1).asString();
+        } catch (const std::out_of_range& e)
+        {
+            yError() << "Invalid trajectory type " << trajectoryTypeGroup.get(1).asString()
+                     << " specified in trajectoryType parameter. Defaults to minimum jerk "
+                        "trajectory";
+        }
     }
 
     for (auto& joint : m_controlBoardData.joints)
@@ -773,7 +780,7 @@ bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGen
 
         if (useDefaultAccelerationRef)
         {
-            joint.trajectoryGenerationRefAcceleration = 0.01; // [deg/s^2]
+            joint.trajectoryGenerationRefAcceleration = 10.0; // [deg/s^2]
         } else
         {
             joint.trajectoryGenerationRefAcceleration = refAccelerationGroup.get(i + 1).asFloat64();
