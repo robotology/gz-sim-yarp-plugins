@@ -236,13 +236,13 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
             yInfo() << "Joint " << jointFromConfigName << " added to the control board data.";
         }
 
-        if (!setJointPositionLimits(_ecm))
+        if (!initializeJointPositionLimits(_ecm))
         {
             yError() << "Error while setting joint position limits";
             return false;
         }
 
-        if (!setTrajectoryGenerators())
+        if (!initializeTrajectoryGenerators())
         {
             yError() << "Error while setting trajectory generators";
             return false;
@@ -637,7 +637,7 @@ double ControlBoard::convertUserToGazebo(JointProperties& joint, double value)
     return convertDegreesToRadians(value);
 }
 
-bool ControlBoard::setJointPositionLimits(const gz::sim::EntityComponentManager& ecm)
+bool ControlBoard::initializeJointPositionLimits(const gz::sim::EntityComponentManager& ecm)
 {
     if (!m_pluginParameters.check("LIMITS"))
     {
@@ -666,40 +666,130 @@ bool ControlBoard::setJointPositionLimits(const gz::sim::EntityComponentManager&
     return true;
 }
 
-bool ControlBoard::setTrajectoryGenerators()
+bool ControlBoard::initializeTrajectoryGenerators()
 {
-
-    auto trajectoryGeneratorsGroup = m_pluginParameters.findGroup("TRAJECTORY_GENERATORS");
-
+    // Read from configuration
+    auto trajectoryGeneratorsGroup = m_pluginParameters.findGroup("TRAJECTORY_GENERATION");
+    bool missingConfiguration = false;
     if (trajectoryGeneratorsGroup.isNull())
     {
-        yError() << "Group TRAJECTORY_GENERATORS not found in plugin configuration. Defaults to "
-                    "minimum jerk trajectory.";
-        return false;
+        yWarning() << "Group TRAJECTORY_GENERATION not found in plugin configuration. Defaults to "
+                      "minimum jerk trajectory.";
+        missingConfiguration = true;
     }
 
     auto trajectoryTypeGroup = trajectoryGeneratorsGroup.findGroup("trajectoryType");
-    if (trajectoryTypeGroup.isNull())
+    if (!missingConfiguration && trajectoryTypeGroup.isNull())
     {
-        yError() << "Group trajectoryType not found in TRAJECTORY_GENERATORS group. Defaults to "
-                    "minimum jerk trajectory";
-        return false;
+        yWarning() << "Group trajectoryType not found in TRAJECTORY_GENERATION group. Defaults to "
+                      "minimum jerk trajectory";
+        missingConfiguration = true;
     }
 
-    std::unordered_map<std::string, yarp::dev::gzyarp::TrajectoryType> trajectoryTypeMap
-        = {{"TRAJECTORY_TYPE_CONST_SPEED",
-            yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_CONST_SPEED},
-           {"TRAJECTORY_TYPE_MIN_JERK",
-            yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_MIN_JERK},
-           {"TRAJECTORY_TYPE_TRAP_SPEED",
-            yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_TRAP_SPEED}};
+    yarp::dev::gzyarp::TrajectoryType trajectoryType;
 
-    auto trajectoryType = trajectoryTypeMap[trajectoryTypeGroup.get(1).asString()];
+    if (missingConfiguration)
+    {
+        trajectoryType = yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_MIN_JERK;
+
+    } else
+    {
+        std::unordered_map<std::string, yarp::dev::gzyarp::TrajectoryType> trajectoryTypeMap
+            = {{"TRAJECTORY_TYPE_CONST_SPEED",
+                yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_CONST_SPEED},
+               {"TRAJECTORY_TYPE_MIN_JERK",
+                yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_MIN_JERK},
+               {"TRAJECTORY_TYPE_TRAP_SPEED",
+                yarp::dev::gzyarp::TrajectoryType::TRAJECTORY_TYPE_TRAP_SPEED}};
+
+        trajectoryType = trajectoryTypeMap[trajectoryTypeGroup.get(1).asString()];
+    }
 
     for (auto& joint : m_controlBoardData.joints)
     {
         joint.trajectoryGenerator
             = yarp::dev::gzyarp::TrajectoryGeneratorFactory::create(trajectoryType);
+    }
+
+    if (!initializeTrajectoryGeneratorReferences(trajectoryGeneratorsGroup))
+    {
+        yError() << "Error while initializing trajectory generator references";
+        return false;
+    }
+
+    return true;
+}
+
+bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGeneratorsGroup)
+{
+    bool useDefaultSpeedRef{false}, useDefaultAccelerationRef{false};
+    Bottle refSpeedGroup, refAccelerationGroup;
+
+    if (!trajectoryGeneratorsGroup.isNull())
+    {
+        // Read from configuration
+        if (!tryGetGroup(trajectoryGeneratorsGroup,
+                         refSpeedGroup,
+                         "refSpeed",
+                         "",
+                         m_controlBoardData.joints.size() + 1))
+        {
+            yWarning() << "Parameter refSpeed not found in TRAJECTORY_GENERATION group. Defaults "
+                          "will be applied";
+            useDefaultSpeedRef = true;
+        }
+
+        if (!tryGetGroup(trajectoryGeneratorsGroup,
+                         refAccelerationGroup,
+                         "refAcceleration",
+                         "",
+                         m_controlBoardData.joints.size() + 1))
+        {
+            yWarning() << "Parameter refAcceleration not found in TRAJECTORY_GENERATION group. "
+                          "Defaults will be applied";
+            useDefaultAccelerationRef = true;
+        }
+    } else
+    {
+        // Use defaults
+        yWarning() << "Group TRAJECTORY_GENERATION not found in plugin configuration. Defaults "
+                      "trajectory generation reference speed and accelerations will be applied";
+        useDefaultSpeedRef = true;
+        useDefaultAccelerationRef = true;
+    }
+
+    // Set trajectory generation reference speed and acceleration
+    // TODO: manage different joint types
+    for (size_t i = 0; i < m_controlBoardData.joints.size(); ++i)
+    {
+        auto& joint = m_controlBoardData.joints[i];
+        if (useDefaultSpeedRef)
+        {
+            joint.trajectoryGenerationRefSpeed = 10.0; // [deg/s]
+        } else
+        {
+            joint.trajectoryGenerationRefSpeed = refSpeedGroup.get(i + 1).asFloat64();
+        }
+
+        if (useDefaultAccelerationRef)
+        {
+            joint.trajectoryGenerationRefAcceleration = 0.01; // [deg/s^2]
+        } else
+        {
+            joint.trajectoryGenerationRefAcceleration = refAccelerationGroup.get(i + 1).asFloat64();
+        }
+
+        // Clip trajectory generation reference velocities according to max joint limit
+        if (joint.trajectoryGenerationRefSpeed > joint.velocityLimitMax)
+        {
+            joint.trajectoryGenerationRefSpeed = joint.velocityLimitMax;
+        }
+
+        yDebug() << "Joint " << joint.name
+                 << " trajectory generation reference speed: " << joint.trajectoryGenerationRefSpeed
+                 << " [deg/s]";
+        yDebug() << "Joint " << joint.name << " trajectory generation reference acceleration: "
+                 << joint.trajectoryGenerationRefAcceleration << " [deg/s^2]";
     }
 
     return true;
@@ -720,10 +810,10 @@ bool ControlBoard::parseInitialConfiguration(std::vector<double>& initialConfigu
 
     while (ss >> tmp)
     {
-        if (counter >= initialConfigurations.size())
+        if (counter >= m_controlBoardData.joints.size())
         {
-            yError() << "Too many elements in initial configuration, stopping at element "
-                     << (counter + 1);
+            yWarning() << "Too many elements in initial configuration, stopping at element "
+                       << (counter + 1);
             break;
         }
 
