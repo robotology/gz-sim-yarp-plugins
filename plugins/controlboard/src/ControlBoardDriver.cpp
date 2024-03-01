@@ -799,11 +799,10 @@ bool ControlBoardDriver::positionMove(int j, double ref)
 
     joint.trajectoryGenerationRefPosition = ref;
 
-    double limitMin, limitMax;
-    if (!ControlBoardDriver::getLimits(j, &limitMin, &limitMax))
-    {
-        return false;
-    }
+    // TODO: use getLimits when recursive mutexes are implemented
+
+    auto limitMin = m_controlBoardData->joints.at(j).positionLimitMin;
+    auto limitMax = m_controlBoardData->joints.at(j).positionLimitMax;
 
     joint.trajectoryGenerator->setLimits(limitMin, limitMax);
     joint.trajectoryGenerator->initTrajectory(joint.position,
