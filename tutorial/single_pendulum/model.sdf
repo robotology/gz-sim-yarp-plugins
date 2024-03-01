@@ -96,7 +96,7 @@
             <yarpConfigurationFile>
                 conf/gazebo_controlboard.ini
             </yarpConfigurationFile>
-            <initialConfiguration>0.0 0.0</initialConfiguration>
+            <initialConfiguration>0.0</initialConfiguration>
         </plugin>
         <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
             <yarpRobotInterfaceConfigurationFile>
