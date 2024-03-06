@@ -14,7 +14,7 @@ installing the dependencies with conda-forge on Linux, macOS or Windows, or apt 
 Create and activate an environment with the required dependencies:
 
 ~~~
-mamba create -c conda-forge -n gsypdev libgz-sim7 yarp cmake ninja pkg-config cmake compilers
+mamba create -c conda-forge -n gsypdev libgz-sim8 yarp cmake ninja pkg-config cmake compilers
 mamba activate gsypdev
 ~~~
 
@@ -51,13 +51,13 @@ sudo apt-get update
 sudo apt-get install lsb-release wget gnupg cmake pkg-config ninja-build build-essential
 ~~~
 
-Then install Gazebo Garden:
+Then install Gazebo Harmonic:
 
 ~~~
 sudo wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
 sudo apt-get update
-sudo apt-get install gz-garden
+sudo apt-get install gz-harmonic
 ~~~
 
 Then, you need to install [`ycm-cmake-modules`](https://github.com/robotology/ycm) and [`yarp`](https://github.com/robotology/yarp), for which no apt binaries are available. You can install them easily via the `robotology-superbuild`, or otherwise with the following commands:

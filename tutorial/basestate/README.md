@@ -1,6 +1,6 @@
-# Run basestate tutorial in Gazebo Garden
+# Run basestate tutorial in Gazebo
 
-## Run model in Gazebo Garden with YARP integration
+## Run model in Gazebo with YARP integration
 
 - 1st terminal:
 

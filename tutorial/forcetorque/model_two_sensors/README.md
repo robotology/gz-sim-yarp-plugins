@@ -1,6 +1,6 @@
-# Run forcetorque in Gazebo Garden
+# Run forcetorque in Gazebo
 
-## Run model with two FT sensors in Gazebo Garden
+## Run model with two FT sensors in Gazebo
 
 - 1st terminal:
     ~~~

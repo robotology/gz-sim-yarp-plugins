@@ -1,6 +1,6 @@
-# Run forcetorque in Gazebo Garden
+# Run forcetorque in Gazebo
 
-## Run model in Gazebo Garden with YARP integration
+## Run model in Gazebo with YARP integration
 
 - 1st terminal:
   ~~~
@@ -35,7 +35,7 @@ try forcing software rendering:
 export LIBGL_ALWAYS_SOFTWARE=1
 ~~~
 
-## Run model in Gazebo Garden without YARP integration
+## Run model in Gazebo without YARP integration
 Run the model:
 ```
 gz sim model.sdf

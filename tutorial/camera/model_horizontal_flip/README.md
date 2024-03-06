@@ -1,6 +1,6 @@
-# Run Camera Plugin in Gazebo Garden
+# Run Camera Plugin in Gazebo
 
-## Run model in Gazebo Garden with YARP integration
+## Run model in Gazebo with YARP integration
 
 - 1st terminal:
   ~~~
