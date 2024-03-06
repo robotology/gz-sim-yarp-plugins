@@ -40,7 +40,7 @@ jobs:
         wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
         sudo apt-get update
         # YARP dependencies
-        sudo apt-get install git build-essential cmake ninja-build libace-dev libeigen3-dev libopencv-dev 
+        sudo apt-get install git build-essential cmake ninja-build libace-dev libeigen3-dev libopencv-dev libtinyxml-dev
         sudo apt-get install gz-${{ matrix.gazebo_distro }}
 
     - name: Cache Source-based Dependencies
