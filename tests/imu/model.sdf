@@ -99,9 +99,6 @@
           <enable_metrics>true</enable_metrics>
         </sensor>
       </link>
-      <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
-        <yarpRobotInterfaceConfigurationFile>../../../tests/imu/IMU_nws.xml</yarpRobotInterfaceConfigurationFile>
-      </plugin>
     </model>
   </world>
 </sdf>
