@@ -871,12 +871,15 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
         {
             auto& joint = m_controlBoardData.joints.at(i);
             auto gzJoint = Joint(Model(m_modelEntity).JointByName(ecm, joint.name));
-            auto gzPos = gzJoint.Position(ecm).value().at(0);
-            auto userPos = convertGazeboToUser(joint, gzPos);
-            // Reset joint properties
-            joint.trajectoryGenerationRefPosition = userPos;
-            joint.refPosition = userPos;
-            joint.position = userPos;
+            if (gzJoint.Position(ecm).has_value() && gzJoint.Position(ecm).value().size() > 0)
+            {
+                auto gzPos = gzJoint.Position(ecm).value().at(0);
+                auto userPos = convertGazeboToUser(joint, gzPos);
+                // Reset joint properties
+                joint.trajectoryGenerationRefPosition = userPos;
+                joint.refPosition = userPos;
+                joint.position = userPos;
+            }
             auto limitMin = joint.positionLimitMin;
             auto limitMax = joint.positionLimitMax;
             joint.trajectoryGenerator->setLimits(limitMin, limitMax);
