@@ -118,10 +118,7 @@ jobs:
     
     - name: Upload coverage reports to Codecov
       if: contains(matrix.build_type, 'Debug')
-      uses: codecov/codecov-action@v3
-      with:
-        comment: false
-        annotations: false
+      uses: codecov/codecov-action@v4
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
