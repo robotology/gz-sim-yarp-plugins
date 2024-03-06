@@ -34,7 +34,10 @@ TEST(ImuTest, PluginTest)
     ASSERT_TRUE(driver.view(iorientation));
     ASSERT_TRUE(driver.view(iaccelerometer));
 
-    fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
+    fixture.Server()->Run(/*_blocking=*/true, iterations / 2, /*_paused=*/false);
+    // See https://github.com/robotology/gz-sim-yarp-plugins/pull/105#issuecomment-1976176726
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    fixture.Server()->Run(/*_blocking=*/true, iterations / 2, /*_paused=*/false);
 
     yarp::sig::Vector measureGyroscope(3);
     yarp::sig::Vector measureOrientation(3);
