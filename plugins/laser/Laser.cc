@@ -1,6 +1,6 @@
 #include "LaserDriver.cpp"
 
-#include <gz/msgs/details/laserscan.pb.h>
+#include <gz/msgs.hh>
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
@@ -12,6 +12,7 @@
 #include <gz/sim/components/ParentEntity.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/transport/Node.hh>
+
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 #include <yarp/os/LogStream.h>
