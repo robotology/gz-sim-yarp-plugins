@@ -1,8 +1,8 @@
-# Run clock tutorial in Gazebo Garden
+# Run clock tutorial in Gazebo
 
 The clock plugin sends on the `/clock` port the current simulation time in **nanoseconds**.
 
-## Run model in Gazebo Garden with YARP integration
+## Run model in Gazebo with YARP integration
 
 - 1st terminal:
 

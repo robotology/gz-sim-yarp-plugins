@@ -8,8 +8,8 @@ find_package(YARP REQUIRED COMPONENTS robotinterface os)
 gz_find_package(gz-plugin2 REQUIRED COMPONENTS register)
 set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 
-gz_find_package(gz-sim7 REQUIRED)
-set(GZ_SIM_VER ${gz-sim7_VERSION_MAJOR})
+gz_find_package(gz-sim8 REQUIRED)
+set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
 
 # Defines the CMAKE_INSTALL_LIBDIR, CMAKE_INSTALL_BINDIR and many other useful macros.
 # See https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html

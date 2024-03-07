@@ -259,7 +259,7 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
     return true;
 }
 
-void ControlBoard::updateSimTime(const gz::sim::v7::UpdateInfo& _info)
+void ControlBoard::updateSimTime(const UpdateInfo& _info)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
 

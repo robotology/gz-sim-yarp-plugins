@@ -1,40 +1,54 @@
+#include "../../libraries/singleton-devices/Handler.hh"
+
 #include <gtest/gtest.h>
 #include <gz/sim/TestFixture.hh>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Network.h>
 
-TEST(ImuTest, PluginTest)
+class ImuFixture : public testing::Test
 {
-    yarp::os::NetworkBase::setLocalMode(true);
+protected:
+    ImuFixture()
+        : testFixture{"../../../tests/imu/model.sdf"}
+    {
+        gz::common::Console::SetVerbosity(4);
 
-    // Maximum verbosity helps with debugging
-    gz::common::Console::SetVerbosity(4);
+        testFixture.OnConfigure([&](const gz::sim::Entity& _worldEntity,
+                                    const std::shared_ptr<const sdf::Element>& /*_sdf*/,
+                                    gz::sim::EntityComponentManager& _ecm,
+                                    gz::sim::EventManager& /*_eventMgr*/) {
+            driver = gzyarp::Handler::getHandler()->getDevice(deviceScopedName);
+            ASSERT_TRUE(driver != nullptr);
+            ASSERT_TRUE(driver->view(igyroscope));
+            ASSERT_TRUE(driver->view(iorientation));
+            ASSERT_TRUE(driver->view(iaccelerometer));
 
-    // Instantiate test fixture
-    gz::sim::TestFixture fixture("../../../tests/imu/model.sdf");
+            configured = true;
+        });
+    }
 
-    int iterations = 1000;
-    fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
-
-    yarp::os::Property option;
-    option.put("device", "multipleanalogsensorsclient");
-    option.put("remote", "/IMU");
-    option.put("timeout", 1.0);
-    option.put("local", "/ImuTest");
-    yarp::dev::PolyDriver driver;
-
-    ASSERT_TRUE(driver.open(option));
-
+    gz::sim::TestFixture testFixture;
+    std::string deviceScopedName = "model/sensor_box/link/link_1/sensor/imu_sensor/"
+                                   "imu_plugin_device";
+    yarp::dev::PolyDriver* driver;
     yarp::dev::IThreeAxisGyroscopes* igyroscope = nullptr;
     yarp::dev::IOrientationSensors* iorientation = nullptr;
     yarp::dev::IThreeAxisLinearAccelerometers* iaccelerometer = nullptr;
+    bool configured{false};
+};
 
-    ASSERT_TRUE(driver.view(igyroscope));
-    ASSERT_TRUE(driver.view(iorientation));
-    ASSERT_TRUE(driver.view(iaccelerometer));
+TEST_F(ImuFixture, ImuTest)
+{
+    int iterations = 1000;
 
-    fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
+    testFixture.Finalize();
+
+    testFixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    testFixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
+
+    // option.put("device", "multipleanalogsensorsclient");
 
     yarp::sig::Vector measureGyroscope(3);
     yarp::sig::Vector measureOrientation(3);
@@ -62,6 +76,7 @@ TEST(ImuTest, PluginTest)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
+    ASSERT_TRUE(configured);
     ASSERT_TRUE(readSuccessful);
 
     statusGyroscope = igyroscope->getThreeAxisGyroscopeStatus(0);

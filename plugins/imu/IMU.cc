@@ -1,4 +1,6 @@
 #include "IMUDriver.cpp"
+
+#include <gz/msgs/details/imu.pb.h>
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
@@ -10,7 +12,7 @@
 #include <gz/sim/components/ParentEntity.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/transport/Node.hh>
-#include <iostream>
+
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 #include <yarp/os/LogStream.h>
@@ -46,7 +48,6 @@ public:
         if (m_imuDriver.isValid())
             m_imuDriver.close();
         HandlerIMU::getHandler()->removeSensor(sensorScopedName);
-        yarp::os::Network::fini();
     }
 
     virtual void Configure(const Entity& _entity,
@@ -54,12 +55,6 @@ public:
                            EntityComponentManager& _ecm,
                            EventManager& /*_eventMgr*/) override
     {
-        yarp::os::Network::init();
-        if (!yarp::os::Network::checkNetwork())
-        {
-            yError() << "Yarp network does not seem to be available, is the yarpserver running?";
-            return;
-        }
 
         std::string netWrapper = "inertial";
         ::yarp::dev::Drivers::factory().add(
@@ -188,6 +183,7 @@ private:
     gz::transport::Node node;
     gz::msgs::IMU imuMsg;
     std::mutex imuMsgMutex;
+    yarp::os::Network m_yarpNetwork;
 };
 
 } // namespace gzyarp

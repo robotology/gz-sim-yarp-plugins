@@ -1,9 +1,13 @@
 add_executable(ImuTest ImuTest.cc)
 target_link_libraries(ImuTest
-  gtest_main
-  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
-  gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
-  ${YARP_LIBRARIES}
+  PRIVATE gtest_main
+  PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+  PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+  PRIVATE
+        YARP::YARP_dev
+        YARP::YARP_os
+        YARP::YARP_init
+        gz-sim-yarp-handler
 )
 add_test(NAME ImuTest
          COMMAND ImuTest)

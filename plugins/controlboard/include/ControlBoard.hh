@@ -67,7 +67,7 @@ private:
     };
 
     bool setJointProperties(gz::sim::EntityComponentManager& _ecm);
-    void updateSimTime(const gz::sim::v7::UpdateInfo& _info);
+    void updateSimTime(const gz::sim::UpdateInfo& _info);
     bool readJointsMeasurements(const gz::sim::EntityComponentManager& _ecm);
     void checkForJointsHwFault();
     bool
