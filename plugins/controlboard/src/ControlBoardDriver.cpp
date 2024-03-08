@@ -1,7 +1,7 @@
-#include "../include/ControlBoardDriver.hh"
+#include <ControlBoardDriver.hh>
 
-#include "../include/ControlBoardData.hh"
-#include "../include/ControlBoardDataSingleton.hh"
+#include <ControlBoardData.hh>
+#include <ControlBoardDataSingleton.hh>
 
 #include <cmath>
 #include <cstddef>

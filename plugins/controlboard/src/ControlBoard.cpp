@@ -1,15 +1,13 @@
-#include "../include/ControlBoard.hh"
+#include <ControlBoard.hh>
 
-#include "../../../libraries/common/Common.hh"
-#include "../../../libraries/singleton-devices/Handler.hh"
-#include "../include/ControlBoardDataSingleton.hh"
-#include "../include/ControlBoardDriver.hh"
+#include <Common.hh>
+#include <ControlBoardDataSingleton.hh>
+#include <ControlBoardDriver.hh>
+#include <Handler.hh>
 
 #include <cstddef>
 #include <cstdlib>
 #include <exception>
-#include <gz/math/Vector3.hh>
-#include <gz/msgs/details/wrench.pb.h>
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -17,6 +15,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <gz/math/Vector3.hh>
+#include <gz/msgs/details/wrench.pb.h>
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Entity.hh>
 #include <gz/sim/EntityComponentManager.hh>

@@ -1,4 +1,4 @@
-#include "../include/ControlBoardTrajectory.hh"
+#include <ControlBoardTrajectory.hh>
 
 #include <gz/physics/GetEntities.hh>
 #include <gz/sim/Model.hh>

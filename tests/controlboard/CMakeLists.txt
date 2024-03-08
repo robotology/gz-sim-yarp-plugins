@@ -16,6 +16,7 @@ foreach(TEST ${TESTS})
       YARP::YARP_dev
       YARP::YARP_os
       YARP::YARP_init
+      gz-sim-yarp-commons
       gz-sim-yarp-handler
   )
 

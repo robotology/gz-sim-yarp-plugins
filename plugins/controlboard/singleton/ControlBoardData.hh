@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ControlBoardTrajectory.hh"
+#include <ControlBoardTrajectory.hh>
 
 #include <chrono>
 #include <limits>

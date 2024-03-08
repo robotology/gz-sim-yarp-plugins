@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ControlBoardData.hh"
+#include <ControlBoardData.hh>
 
 #include <string>
 

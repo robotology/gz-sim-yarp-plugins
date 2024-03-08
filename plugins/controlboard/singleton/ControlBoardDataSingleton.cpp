@@ -1,10 +1,9 @@
-#include "../include/ControlBoardDataSingleton.hh"
+#include <ControlBoardDataSingleton.hh>
 
-#include "../include/ControlBoardData.hh"
+#include <ControlBoardData.hh>
 
 #include <mutex>
 #include <string>
-#include <utility>
 
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
@@ -34,6 +33,8 @@ bool ControlBoardDataSingleton::setControlBoardData(ControlBoardData* _controlBo
 
     if (controlBoard != m_controlBoardMap.end())
     {
+        yDebug() << "Control board scoped name: " << _controlBoardPtr->modelScopedName
+                 << " already present.\n";
         ret = true;
     } else
     {
@@ -55,6 +56,7 @@ bool ControlBoardDataSingleton::setControlBoardData(ControlBoardData* _controlBo
         } else
         {
             ret = true;
+            yDebug() << "Added control board: " << _controlBoardPtr->modelScopedName;
         }
     }
     return ret;
@@ -86,6 +88,18 @@ void ControlBoardDataSingleton::removeControlBoard(const std::string& _controlBo
         yError() << "Control board was not found: " << _controlBoardScopedName;
     }
 }
+
+std::vector<std::string> ControlBoardDataSingleton::getControlBoardKeys() const
+{
+    std::vector<std::string> keys;
+    for (const auto& controlBoard : m_controlBoardMap)
+    {
+        keys.push_back(controlBoard.first);
+    }
+    return keys;
+}
+
+// Private methods
 
 ControlBoardDataSingleton::ControlBoardDataSingleton()
     : m_controlBoardMap()
