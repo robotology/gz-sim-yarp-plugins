@@ -33,11 +33,11 @@ bool ControlBoardDriver::open(yarp::os::Searchable& config)
     yarp::os::Property pluginParameters{};
     pluginParameters.fromString(config.toString().c_str());
 
-    m_controlBoardScopedName = pluginParameters.find(YarpControlBoardScopedName).asString();
+    m_controlBoardId = pluginParameters.find(YarpControlBoardScopedName).asString();
 
     m_controlBoardData
         = ::gzyarp::ControlBoardDataSingleton::getControlBoardHandler()->getControlBoardData(
-            m_controlBoardScopedName);
+            m_controlBoardId);
 
     return true;
 }

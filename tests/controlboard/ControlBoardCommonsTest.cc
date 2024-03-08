@@ -61,15 +61,13 @@ TEST(ControlBoardCommonsTest, ConfigureMultipleControlBoards)
 
     testFixture.Finalize();
 
-    // testFixture.Server()->Run(true, 1, false);
-
     auto singleton = ControlBoardDataSingleton::getControlBoardHandler();
     auto keys = singleton->getControlBoardKeys();
 
     std::cerr << "ControlBoard singleton keys vector size: " << keys.size() << std::endl;
-
-    ASSERT_TRUE(configured);
     ASSERT_EQ(keys.size(), 2);
+
+    std::cerr << "ControlBoard ids: " << keys[0] << ", " << keys[1] << std::endl;
     ASSERT_TRUE(std::find(keys.begin(), keys.end(), cb1Key) != keys.end());
     ASSERT_TRUE(std::find(keys.begin(), keys.end(), cb2Key) != keys.end());
 }

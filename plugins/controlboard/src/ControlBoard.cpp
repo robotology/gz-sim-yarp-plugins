@@ -64,7 +64,7 @@ ControlBoard::~ControlBoard()
         m_controlBoardDriver.close();
     }
     ControlBoardDataSingleton::getControlBoardHandler()->removeControlBoard(
-        m_controlBoardData.modelScopedName);
+        m_controlBoardData.controlBoardId);
 }
 
 void ControlBoard::Configure(const Entity& _entity,
@@ -109,7 +109,7 @@ void ControlBoard::Configure(const Entity& _entity,
 
     m_modelEntity = _entity;
 
-    m_controlBoardData.modelScopedName = m_robotScopedName;
+    m_controlBoardData.controlBoardId = m_deviceScopedName;
 
     m_pluginParameters.put(yarp::dev::gzyarp::YarpControlBoardScopedName.c_str(),
                            m_robotScopedName.c_str());
@@ -118,8 +118,7 @@ void ControlBoard::Configure(const Entity& _entity,
     ControlBoardDataSingleton::getControlBoardHandler()->setControlBoardData(&(m_controlBoardData));
 
     m_pluginParameters.put("device", "gazebo_controlboard");
-    m_pluginParameters.put("name", m_deviceScopedName);
-    m_pluginParameters.put("robotScopedName", m_robotScopedName);
+    m_pluginParameters.put("controlBoardId", m_deviceScopedName);
 
     if (_sdf->HasElement("initialConfiguration"))
     {

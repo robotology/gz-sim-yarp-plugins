@@ -29,20 +29,19 @@ bool ControlBoardDataSingleton::setControlBoardData(ControlBoardData* _controlBo
 {
     bool ret = false;
     ControlBoardMap::iterator controlBoard
-        = m_controlBoardMap.find(_controlBoardPtr->modelScopedName);
+        = m_controlBoardMap.find(_controlBoardPtr->controlBoardId);
 
     if (controlBoard != m_controlBoardMap.end())
     {
-        yDebug() << "Control board scoped name: " << _controlBoardPtr->modelScopedName
+        yDebug() << "Control board scoped name: " << _controlBoardPtr->controlBoardId
                  << " already present.\n";
         ret = true;
     } else
     {
         // controlBoard does not exists. Add to map
         if (!m_controlBoardMap
-                 .insert(
-                     std::pair<std::string, ControlBoardData*>(_controlBoardPtr->modelScopedName,
-                                                               _controlBoardPtr))
+                 .insert(std::pair<std::string, ControlBoardData*>(_controlBoardPtr->controlBoardId,
+                                                                   _controlBoardPtr))
                  .second)
         {
             yError() << "Error in gzyarp::ControlBoardDataSingleton while inserting a new control "
@@ -56,7 +55,7 @@ bool ControlBoardDataSingleton::setControlBoardData(ControlBoardData* _controlBo
         } else
         {
             ret = true;
-            yDebug() << "Added control board: " << _controlBoardPtr->modelScopedName;
+            yDebug() << "Added control board: " << _controlBoardPtr->controlBoardId;
         }
     }
     return ret;

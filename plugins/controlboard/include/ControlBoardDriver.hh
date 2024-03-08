@@ -27,7 +27,7 @@ namespace dev
 namespace gzyarp
 {
 
-const std::string YarpControlBoardScopedName = "robotScopedName";
+const std::string YarpControlBoardScopedName = "controlBoardId";
 
 class ControlBoardDriver : public DeviceDriver,
                            public IAxisInfo,
@@ -203,7 +203,7 @@ public:
     bool isPidEnabled(const PidControlTypeEnum& pidtype, int j, bool* enabled) override;
 
 private:
-    std::string m_controlBoardScopedName;
+    std::string m_controlBoardId;
     ::gzyarp::ControlBoardData* m_controlBoardData;
 
     bool checkRefTorqueIsValid(double refTorque);
