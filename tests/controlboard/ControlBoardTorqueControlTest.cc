@@ -1,6 +1,11 @@
-#include "../../libraries/singleton-devices/Handler.hh"
-#include <cmath>
+#include <Handler.hh>
+
 #include <gtest/gtest.h>
+
+#include <cmath>
+#include <iostream>
+#include <string>
+
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
@@ -8,14 +13,18 @@
 #include <gz/sim/Util.hh>
 #include <gz/sim/World.hh>
 #include <gz/sim/components/JointForceCmd.hh>
-#include <iostream>
-#include <string>
+
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/ITorqueControl.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Network.h>
+
+namespace gzyarp
+{
+namespace test
+{
 
 class ControlBoardTorqueControlFixture : public testing::TestWithParam<std::string>
 {
@@ -205,3 +214,6 @@ INSTANTIATE_TEST_SUITE_P(ControlBoardTorqueControl,
                          testing::Values("pendulum_joint_relative_to_child_link.sdf"
                                          //  ,"pendulum_joint_relative_to_parent_link.sdf"
                                          ));
+
+} // namespace test
+} // namespace gzyarp
