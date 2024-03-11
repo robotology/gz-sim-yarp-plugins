@@ -1,4 +1,5 @@
-#include "ForceTorqueDriver.cpp"
+#include <ForceTorqueDriver.cpp>
+
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Model.hh>
@@ -7,8 +8,8 @@
 #include <gz/sim/Util.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/transport/Node.hh>
-#include <iostream>
 #include <sdf/ForceTorque.hh>
+
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 #include <yarp/os/LogStream.h>
@@ -42,7 +43,7 @@ public:
 
         if (m_forceTorqueDriver.isValid())
             m_forceTorqueDriver.close();
-        HandlerForceTorque::getHandler()->removeSensor(sensorScopedName);
+        ForceTorqueDataSingleton::getHandler()->removeSensor(sensorScopedName);
         yarp::os::Network::fini();
     }
 
@@ -112,7 +113,7 @@ public:
         }
 
         // Insert the pointer in the singleton handler for retriving it in the yarp driver
-        HandlerForceTorque::getHandler()->setSensor(&(this->forceTorqueData));
+        ForceTorqueDataSingleton::getHandler()->setSensor(&(this->forceTorqueData));
 
         driver_properties.put("device", "gazebo_forcetorque");
         driver_properties.put("sensor_name", sensorName);

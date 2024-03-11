@@ -1,16 +1,17 @@
-#include "Handler.hh"
+#include <ForceTorqueDataSingleton.hh>
+
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
 namespace gzyarp
 {
 
-HandlerForceTorque* HandlerForceTorque::getHandler()
+ForceTorqueDataSingleton* ForceTorqueDataSingleton::getHandler()
 {
     std::lock_guard<std::mutex> lock(mutex());
     if (!s_handle)
     {
-        s_handle = new HandlerForceTorque();
+        s_handle = new ForceTorqueDataSingleton();
         if (!s_handle)
             yError() << "Error while calling gzyarp::HandlerForceTorque constructor";
     }
@@ -18,7 +19,7 @@ HandlerForceTorque* HandlerForceTorque::getHandler()
     return s_handle;
 }
 
-bool HandlerForceTorque::setSensor(ForceTorqueData* _sensorDataPtr)
+bool ForceTorqueDataSingleton::setSensor(ForceTorqueData* _sensorDataPtr)
 {
     bool ret = false;
     std::string sensorScopedName = _sensorDataPtr->sensorScopedName;
@@ -45,7 +46,7 @@ bool HandlerForceTorque::setSensor(ForceTorqueData* _sensorDataPtr)
     return ret;
 }
 
-ForceTorqueData* HandlerForceTorque::getSensor(const std::string& sensorScopedName) const
+ForceTorqueData* ForceTorqueDataSingleton::getSensor(const std::string& sensorScopedName) const
 {
     ForceTorqueData* tmp;
 
@@ -61,7 +62,7 @@ ForceTorqueData* HandlerForceTorque::getSensor(const std::string& sensorScopedNa
     return tmp;
 }
 
-void HandlerForceTorque::removeSensor(const std::string& sensorName)
+void ForceTorqueDataSingleton::removeSensor(const std::string& sensorName)
 {
     SensorsMap::iterator sensor = m_sensorsMap.find(sensorName);
     if (sensor != m_sensorsMap.end())
@@ -73,15 +74,15 @@ void HandlerForceTorque::removeSensor(const std::string& sensorName)
     }
 }
 
-HandlerForceTorque::HandlerForceTorque()
+ForceTorqueDataSingleton::ForceTorqueDataSingleton()
     : m_sensorsMap()
 {
     m_sensorsMap.clear();
 }
 
-HandlerForceTorque* HandlerForceTorque::s_handle = NULL;
+ForceTorqueDataSingleton* ForceTorqueDataSingleton::s_handle = NULL;
 
-std::mutex& HandlerForceTorque::mutex()
+std::mutex& ForceTorqueDataSingleton::mutex()
 {
     static std::mutex s_mutex;
     return s_mutex;
