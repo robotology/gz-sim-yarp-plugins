@@ -1,6 +1,8 @@
-#include <gz/common/Event.hh>
 #include <mutex>
 #include <string>
+
+#include <gz/common/Event.hh>
+
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 
@@ -18,10 +20,10 @@ struct CameraData
 namespace gzyarp
 {
 
-class HandlerCamera
+class CameraDataSingleton
 {
 public:
-    static HandlerCamera* getHandler();
+    static CameraDataSingleton* getHandler();
 
     bool setSensor(CameraData* _sensorDataPtr);
 
@@ -30,8 +32,8 @@ public:
     void removeSensor(const std::string& sensorName);
 
 private:
-    HandlerCamera();
-    static HandlerCamera* s_handle;
+    CameraDataSingleton();
+    static CameraDataSingleton* s_handle;
     static std::mutex& mutex();
     typedef std::map<std::string, CameraData*> SensorsMap;
     SensorsMap m_sensorsMap;

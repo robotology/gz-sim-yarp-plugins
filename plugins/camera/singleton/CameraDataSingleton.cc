@@ -1,16 +1,17 @@
-#include "Handler.hh"
+#include <CameraDataSingleton.hh>
+
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
 namespace gzyarp
 {
 
-HandlerCamera* HandlerCamera::getHandler()
+CameraDataSingleton* CameraDataSingleton::getHandler()
 {
     std::lock_guard<std::mutex> lock(mutex());
     if (!s_handle)
     {
-        s_handle = new HandlerCamera();
+        s_handle = new CameraDataSingleton();
         if (!s_handle)
             yError() << "Error while calling gzyarp::HandlerCamera constructor";
     }
@@ -18,7 +19,7 @@ HandlerCamera* HandlerCamera::getHandler()
     return s_handle;
 }
 
-bool HandlerCamera::setSensor(CameraData* _sensorDataPtr)
+bool CameraDataSingleton::setSensor(CameraData* _sensorDataPtr)
 {
     bool ret = false;
     std::string sensorScopedName = _sensorDataPtr->sensorScopedName;
@@ -45,7 +46,7 @@ bool HandlerCamera::setSensor(CameraData* _sensorDataPtr)
     return ret;
 }
 
-CameraData* HandlerCamera::getSensor(const std::string& sensorScopedName) const
+CameraData* CameraDataSingleton::getSensor(const std::string& sensorScopedName) const
 {
     CameraData* tmp;
 
@@ -61,7 +62,7 @@ CameraData* HandlerCamera::getSensor(const std::string& sensorScopedName) const
     return tmp;
 }
 
-void HandlerCamera::removeSensor(const std::string& sensorName)
+void CameraDataSingleton::removeSensor(const std::string& sensorName)
 {
     SensorsMap::iterator sensor = m_sensorsMap.find(sensorName);
     if (sensor != m_sensorsMap.end())
@@ -73,15 +74,15 @@ void HandlerCamera::removeSensor(const std::string& sensorName)
     }
 }
 
-HandlerCamera::HandlerCamera()
+CameraDataSingleton::CameraDataSingleton()
     : m_sensorsMap()
 {
     m_sensorsMap.clear();
 }
 
-HandlerCamera* HandlerCamera::s_handle = NULL;
+CameraDataSingleton* CameraDataSingleton::s_handle = NULL;
 
-std::mutex& HandlerCamera::mutex()
+std::mutex& CameraDataSingleton::mutex()
 {
     static std::mutex s_mutex;
     return s_mutex;
