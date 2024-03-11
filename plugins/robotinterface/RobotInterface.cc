@@ -1,8 +1,10 @@
-#include "../../libraries/singleton-devices/Handler.hh"
+#include <Handler.hh>
+
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/System.hh>
 #include <gz/sim/Util.hh>
+
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 #include <yarp/os/LogStream.h>
