@@ -1,12 +1,12 @@
 #pragma once
 
 #include <chrono>
+#include <mutex>
+
 #include <gz/sim/Model.hh>
 
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
-
-#include <mutex>
 
 namespace yarp
 {

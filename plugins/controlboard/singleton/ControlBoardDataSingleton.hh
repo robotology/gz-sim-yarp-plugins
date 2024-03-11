@@ -1,10 +1,11 @@
 #pragma once
 
-#include "ControlBoardData.hh"
+#include <ControlBoardData.hh>
 
 #include <map>
 #include <mutex>
 #include <string>
+#include <vector>
 
 #include <gz/common/Event.hh>
 
@@ -26,6 +27,8 @@ public:
     ControlBoardData* getControlBoardData(const std::string& _controlBoardScopedName) const;
 
     void removeControlBoard(const std::string& _controlBoardScopedName);
+
+    std::vector<std::string> getControlBoardKeys() const;
 
 private:
     ControlBoardDataSingleton();

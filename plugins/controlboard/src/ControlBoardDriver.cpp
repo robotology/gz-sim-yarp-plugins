@@ -1,7 +1,7 @@
-#include "../include/ControlBoardDriver.hh"
+#include <ControlBoardDriver.hh>
 
-#include "../include/ControlBoardData.hh"
-#include "../include/ControlBoardDataSingleton.hh"
+#include <ControlBoardData.hh>
+#include <ControlBoardDataSingleton.hh>
 
 #include <cmath>
 #include <cstddef>
@@ -33,11 +33,11 @@ bool ControlBoardDriver::open(yarp::os::Searchable& config)
     yarp::os::Property pluginParameters{};
     pluginParameters.fromString(config.toString().c_str());
 
-    m_controlBoardScopedName = pluginParameters.find(YarpControlBoardScopedName).asString();
+    m_controlBoardId = pluginParameters.find(YarpControlBoardScopedName).asString();
 
     m_controlBoardData
         = ::gzyarp::ControlBoardDataSingleton::getControlBoardHandler()->getControlBoardData(
-            m_controlBoardScopedName);
+            m_controlBoardId);
 
     return true;
 }

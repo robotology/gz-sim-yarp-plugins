@@ -1,15 +1,13 @@
-#include "../include/ControlBoard.hh"
+#include <ControlBoard.hh>
 
-#include "../../../libraries/common/Common.hh"
-#include "../../../libraries/singleton-devices/Handler.hh"
-#include "../include/ControlBoardDataSingleton.hh"
-#include "../include/ControlBoardDriver.hh"
+#include <Common.hh>
+#include <ControlBoardDataSingleton.hh>
+#include <ControlBoardDriver.hh>
+#include <Handler.hh>
 
 #include <cstddef>
 #include <cstdlib>
 #include <exception>
-#include <gz/math/Vector3.hh>
-#include <gz/msgs/details/wrench.pb.h>
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -17,6 +15,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <gz/math/Vector3.hh>
+#include <gz/msgs/details/wrench.pb.h>
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Entity.hh>
 #include <gz/sim/EntityComponentManager.hh>
@@ -64,7 +64,7 @@ ControlBoard::~ControlBoard()
         m_controlBoardDriver.close();
     }
     ControlBoardDataSingleton::getControlBoardHandler()->removeControlBoard(
-        m_controlBoardData.modelScopedName);
+        m_controlBoardData.controlBoardId);
 }
 
 void ControlBoard::Configure(const Entity& _entity,
@@ -109,7 +109,7 @@ void ControlBoard::Configure(const Entity& _entity,
 
     m_modelEntity = _entity;
 
-    m_controlBoardData.modelScopedName = m_robotScopedName;
+    m_controlBoardData.controlBoardId = m_deviceScopedName;
 
     m_pluginParameters.put(yarp::dev::gzyarp::YarpControlBoardScopedName.c_str(),
                            m_robotScopedName.c_str());
@@ -118,8 +118,7 @@ void ControlBoard::Configure(const Entity& _entity,
     ControlBoardDataSingleton::getControlBoardHandler()->setControlBoardData(&(m_controlBoardData));
 
     m_pluginParameters.put("device", "gazebo_controlboard");
-    m_pluginParameters.put("name", m_deviceScopedName);
-    m_pluginParameters.put("robotScopedName", m_robotScopedName);
+    m_pluginParameters.put("controlBoardId", m_deviceScopedName);
 
     if (_sdf->HasElement("initialConfiguration"))
     {

@@ -1,10 +1,9 @@
-#include "../include/ControlBoardDataSingleton.hh"
+#include <ControlBoardDataSingleton.hh>
 
-#include "../include/ControlBoardData.hh"
+#include <ControlBoardData.hh>
 
 #include <mutex>
 #include <string>
-#include <utility>
 
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
@@ -30,18 +29,19 @@ bool ControlBoardDataSingleton::setControlBoardData(ControlBoardData* _controlBo
 {
     bool ret = false;
     ControlBoardMap::iterator controlBoard
-        = m_controlBoardMap.find(_controlBoardPtr->modelScopedName);
+        = m_controlBoardMap.find(_controlBoardPtr->controlBoardId);
 
     if (controlBoard != m_controlBoardMap.end())
     {
+        yDebug() << "Control board scoped name: " << _controlBoardPtr->controlBoardId
+                 << " already present.\n";
         ret = true;
     } else
     {
         // controlBoard does not exists. Add to map
         if (!m_controlBoardMap
-                 .insert(
-                     std::pair<std::string, ControlBoardData*>(_controlBoardPtr->modelScopedName,
-                                                               _controlBoardPtr))
+                 .insert(std::pair<std::string, ControlBoardData*>(_controlBoardPtr->controlBoardId,
+                                                                   _controlBoardPtr))
                  .second)
         {
             yError() << "Error in gzyarp::ControlBoardDataSingleton while inserting a new control "
@@ -55,6 +55,7 @@ bool ControlBoardDataSingleton::setControlBoardData(ControlBoardData* _controlBo
         } else
         {
             ret = true;
+            yDebug() << "Added control board: " << _controlBoardPtr->controlBoardId;
         }
     }
     return ret;
@@ -86,6 +87,18 @@ void ControlBoardDataSingleton::removeControlBoard(const std::string& _controlBo
         yError() << "Control board was not found: " << _controlBoardScopedName;
     }
 }
+
+std::vector<std::string> ControlBoardDataSingleton::getControlBoardKeys() const
+{
+    std::vector<std::string> keys;
+    for (const auto& controlBoard : m_controlBoardMap)
+    {
+        keys.push_back(controlBoard.first);
+    }
+    return keys;
+}
+
+// Private methods
 
 ControlBoardDataSingleton::ControlBoardDataSingleton()
     : m_controlBoardMap()

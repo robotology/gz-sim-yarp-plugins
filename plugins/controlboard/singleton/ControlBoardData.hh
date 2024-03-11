@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ControlBoardTrajectory.hh"
+#include <ControlBoardTrajectory.hh>
 
 #include <chrono>
 #include <limits>
@@ -64,7 +64,7 @@ class ControlBoardData
 {
 public:
     std::mutex mutex;
-    std::string modelScopedName;
+    std::string controlBoardId;
     std::vector<JointProperties> joints;
     yarp::os::Stamp simTime;
 
