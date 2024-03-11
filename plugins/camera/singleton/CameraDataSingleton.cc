@@ -1,24 +1,25 @@
-#include "Handler.hh"
+#include <CameraDataSingleton.hh>
+
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
 namespace gzyarp
 {
 
-HandlerForceTorque* HandlerForceTorque::getHandler()
+CameraDataSingleton* CameraDataSingleton::getHandler()
 {
     std::lock_guard<std::mutex> lock(mutex());
     if (!s_handle)
     {
-        s_handle = new HandlerForceTorque();
+        s_handle = new CameraDataSingleton();
         if (!s_handle)
-            yError() << "Error while calling gzyarp::HandlerForceTorque constructor";
+            yError() << "Error while calling gzyarp::HandlerCamera constructor";
     }
 
     return s_handle;
 }
 
-bool HandlerForceTorque::setSensor(ForceTorqueData* _sensorDataPtr)
+bool CameraDataSingleton::setSensor(CameraData* _sensorDataPtr)
 {
     bool ret = false;
     std::string sensorScopedName = _sensorDataPtr->sensorScopedName;
@@ -30,10 +31,10 @@ bool HandlerForceTorque::setSensor(ForceTorqueData* _sensorDataPtr)
     {
         // sensor does not exists. Add to map
         if (!m_sensorsMap
-                 .insert(std::pair<std::string, ForceTorqueData*>(sensorScopedName, _sensorDataPtr))
+                 .insert(std::pair<std::string, CameraData*>(sensorScopedName, _sensorDataPtr))
                  .second)
         {
-            yError() << "Error in gzyarp::HandlerForceTorque while inserting a new sensor pointer!";
+            yError() << "Error in gzyarp::HandlerCamera while inserting a new sensor pointer!";
             yError() << " The name of the sensor is already present but the pointer does not match "
                         "with the one already registered!";
             yError() << " This should not happen, as the scoped name should be unique in Gazebo. "
@@ -45,9 +46,9 @@ bool HandlerForceTorque::setSensor(ForceTorqueData* _sensorDataPtr)
     return ret;
 }
 
-ForceTorqueData* HandlerForceTorque::getSensor(const std::string& sensorScopedName) const
+CameraData* CameraDataSingleton::getSensor(const std::string& sensorScopedName) const
 {
-    ForceTorqueData* tmp;
+    CameraData* tmp;
 
     SensorsMap::const_iterator sensor = m_sensorsMap.find(sensorScopedName);
     if (sensor != m_sensorsMap.end())
@@ -61,7 +62,7 @@ ForceTorqueData* HandlerForceTorque::getSensor(const std::string& sensorScopedNa
     return tmp;
 }
 
-void HandlerForceTorque::removeSensor(const std::string& sensorName)
+void CameraDataSingleton::removeSensor(const std::string& sensorName)
 {
     SensorsMap::iterator sensor = m_sensorsMap.find(sensorName);
     if (sensor != m_sensorsMap.end())
@@ -73,15 +74,15 @@ void HandlerForceTorque::removeSensor(const std::string& sensorName)
     }
 }
 
-HandlerForceTorque::HandlerForceTorque()
+CameraDataSingleton::CameraDataSingleton()
     : m_sensorsMap()
 {
     m_sensorsMap.clear();
 }
 
-HandlerForceTorque* HandlerForceTorque::s_handle = NULL;
+CameraDataSingleton* CameraDataSingleton::s_handle = NULL;
 
-std::mutex& HandlerForceTorque::mutex()
+std::mutex& CameraDataSingleton::mutex()
 {
     static std::mutex s_mutex;
     return s_mutex;

@@ -1,4 +1,4 @@
-#include "IMUDriver.cpp"
+#include <IMUDriver.cpp>
 
 #include <gz/msgs/details/imu.pb.h>
 #include <gz/plugin/Register.hh>
@@ -25,19 +25,19 @@ using namespace systems;
 namespace gzyarp
 {
 
-class IMU : public System,
+class Imu : public System,
             public ISystemConfigure,
             public ISystemPreUpdate,
             public ISystemPostUpdate
 
 {
 public:
-    IMU()
+    Imu()
         : m_deviceRegistered(false)
     {
     }
 
-    virtual ~IMU()
+    virtual ~Imu()
     {
         if (m_deviceRegistered)
         {
@@ -47,7 +47,7 @@ public:
 
         if (m_imuDriver.isValid())
             m_imuDriver.close();
-        HandlerIMU::getHandler()->removeSensor(sensorScopedName);
+        ImuDataSingleton::getHandler()->removeSensor(sensorScopedName);
     }
 
     virtual void Configure(const Entity& _entity,
@@ -58,7 +58,7 @@ public:
 
         std::string netWrapper = "inertial";
         ::yarp::dev::Drivers::factory().add(
-            new ::yarp::dev::DriverCreatorOf<::yarp::dev::gzyarp::IMUDriver>("gazebo_imu",
+            new ::yarp::dev::DriverCreatorOf<::yarp::dev::gzyarp::ImuDriver>("gazebo_imu",
                                                                              netWrapper.c_str(),
                                                                              "IMUDriver"));
 
@@ -107,7 +107,7 @@ public:
         }
 
         // Insert the pointer in the singleton handler for retriving it in the yarp driver
-        HandlerIMU::getHandler()->setSensor(&(this->imuData));
+        ImuDataSingleton::getHandler()->setSensor(&(this->imuData));
 
         driver_properties.put("device", "gazebo_imu");
         driver_properties.put("sensor_name", sensorName);
@@ -136,7 +136,7 @@ public:
         {
             this->imuInitialized = true;
             auto imuTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value();
-            this->node.Subscribe(imuTopicName, &IMU::imuCb, this);
+            this->node.Subscribe(imuTopicName, &Imu::imuCb, this);
         }
     }
 
@@ -178,7 +178,7 @@ private:
     std::string m_deviceScopedName;
     std::string sensorScopedName;
     bool m_deviceRegistered;
-    IMUData imuData;
+    ImuData imuData;
     bool imuInitialized;
     gz::transport::Node node;
     gz::msgs::IMU imuMsg;
@@ -189,8 +189,8 @@ private:
 } // namespace gzyarp
 
 // Register plugin
-GZ_ADD_PLUGIN(gzyarp::IMU,
+GZ_ADD_PLUGIN(gzyarp::Imu,
               gz::sim::System,
-              gzyarp::IMU::ISystemConfigure,
-              gzyarp::IMU::ISystemPreUpdate,
-              gzyarp::IMU::ISystemPostUpdate)
+              gzyarp::Imu::ISystemConfigure,
+              gzyarp::Imu::ISystemPreUpdate,
+              gzyarp::Imu::ISystemPostUpdate)

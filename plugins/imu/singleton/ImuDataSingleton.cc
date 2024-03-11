@@ -1,16 +1,17 @@
-#include "Handler.hh"
+#include <ImuDataSingleton.hh>
+
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
 namespace gzyarp
 {
 
-HandlerIMU* HandlerIMU::getHandler()
+ImuDataSingleton* ImuDataSingleton::getHandler()
 {
     std::lock_guard<std::mutex> lock(mutex());
     if (!s_handle)
     {
-        s_handle = new HandlerIMU();
+        s_handle = new ImuDataSingleton();
         if (!s_handle)
             yError() << "Error while calling gzyarp::HandlerIMU constructor";
     }
@@ -18,7 +19,7 @@ HandlerIMU* HandlerIMU::getHandler()
     return s_handle;
 }
 
-bool HandlerIMU::setSensor(IMUData* _sensorDataPtr)
+bool ImuDataSingleton::setSensor(ImuData* _sensorDataPtr)
 {
     bool ret = false;
     std::string sensorScopedName = _sensorDataPtr->sensorScopedName;
@@ -29,7 +30,7 @@ bool HandlerIMU::setSensor(IMUData* _sensorDataPtr)
     else
     {
         // sensor does not exists. Add to map
-        if (!m_sensorsMap.insert(std::pair<std::string, IMUData*>(sensorScopedName, _sensorDataPtr))
+        if (!m_sensorsMap.insert(std::pair<std::string, ImuData*>(sensorScopedName, _sensorDataPtr))
                  .second)
         {
             yError() << "Error in gzyarp::HandlerIMU while inserting a new sensor pointer!";
@@ -44,9 +45,9 @@ bool HandlerIMU::setSensor(IMUData* _sensorDataPtr)
     return ret;
 }
 
-IMUData* HandlerIMU::getSensor(const std::string& sensorScopedName) const
+ImuData* ImuDataSingleton::getSensor(const std::string& sensorScopedName) const
 {
-    IMUData* tmp;
+    ImuData* tmp;
 
     SensorsMap::const_iterator sensor = m_sensorsMap.find(sensorScopedName);
     if (sensor != m_sensorsMap.end())
@@ -60,7 +61,7 @@ IMUData* HandlerIMU::getSensor(const std::string& sensorScopedName) const
     return tmp;
 }
 
-void HandlerIMU::removeSensor(const std::string& sensorName)
+void ImuDataSingleton::removeSensor(const std::string& sensorName)
 {
     SensorsMap::iterator sensor = m_sensorsMap.find(sensorName);
     if (sensor != m_sensorsMap.end())
@@ -72,15 +73,15 @@ void HandlerIMU::removeSensor(const std::string& sensorName)
     }
 }
 
-HandlerIMU::HandlerIMU()
+ImuDataSingleton::ImuDataSingleton()
     : m_sensorsMap()
 {
     m_sensorsMap.clear();
 }
 
-HandlerIMU* HandlerIMU::s_handle = NULL;
+ImuDataSingleton* ImuDataSingleton::s_handle = NULL;
 
-std::mutex& HandlerIMU::mutex()
+std::mutex& ImuDataSingleton::mutex()
 {
     static std::mutex s_mutex;
     return s_mutex;

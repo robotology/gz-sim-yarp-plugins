@@ -1,4 +1,4 @@
-#include "LaserDriver.cpp"
+#include <LaserDriver.cpp>
 
 #include <gz/msgs.hh>
 #include <gz/plugin/Register.hh>
@@ -47,7 +47,7 @@ public:
 
         if (m_laserDriver.isValid())
             m_laserDriver.close();
-        HandlerLaser::getHandler()->removeSensor(sensorScopedName);
+        LaserDataSingleton::getHandler()->removeSensor(sensorScopedName);
         yarp::os::Network::fini();
     }
 
@@ -112,7 +112,7 @@ public:
         }
 
         // Insert the pointer in the singleton handler for retriving it in the yarp driver
-        HandlerLaser::getHandler()->setSensor(&(this->laserData));
+        LaserDataSingleton::getHandler()->setSensor(&(this->laserData));
 
         driver_properties.put("device", "gazebo_laser");
         driver_properties.put("sensor_name", sensorName);

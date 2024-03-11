@@ -1,6 +1,8 @@
-#include "../../libraries/singleton-devices/Handler.hh"
-#include "singleton-camera/Handler.hh"
+#include <CameraDataSingleton.hh>
+#include <Handler.hh>
+
 #include <mutex>
+
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
 #include <yarp/os/Log.h>
@@ -52,7 +54,7 @@ public:
     virtual bool open(yarp::os::Searchable& config)
     {
         std::string sensorScopedName(config.find(YarpCameraScopedName.c_str()).asString().c_str());
-        m_sensorData = ::gzyarp::HandlerCamera::getHandler()->getSensor(sensorScopedName);
+        m_sensorData = ::gzyarp::CameraDataSingleton::getHandler()->getSensor(sensorScopedName);
 
         if (!m_sensorData)
         {

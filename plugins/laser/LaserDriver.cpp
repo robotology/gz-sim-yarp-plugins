@@ -1,7 +1,8 @@
-#include "../../libraries/singleton-devices/Handler.hh"
-#include "singleton-laser/Handler.hh"
-#include <iostream>
+#include <Handler.hh>
+#include <LaserDataSingleton.hh>
+
 #include <mutex>
+
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IRangefinder2D.h>
 #include <yarp/dev/LaserMeasurementData.h>
@@ -48,7 +49,7 @@ public:
             m_sensorName = config.find("sensor_name").asString().substr(pos + separator.size() - 1);
         }
         m_frameName = m_sensorName;
-        m_sensorData = ::gzyarp::HandlerLaser::getHandler()->getSensor(sensorScopedName);
+        m_sensorData = ::gzyarp::LaserDataSingleton::getHandler()->getSensor(sensorScopedName);
 
         if (!m_sensorData)
         {

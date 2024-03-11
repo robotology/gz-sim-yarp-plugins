@@ -1,7 +1,9 @@
 #include <array>
-#include <gz/common/Event.hh>
 #include <mutex>
 #include <string>
+
+#include <gz/common/Event.hh>
+
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 
@@ -16,10 +18,10 @@ struct ForceTorqueData
 namespace gzyarp
 {
 
-class HandlerForceTorque
+class ForceTorqueDataSingleton
 {
 public:
-    static HandlerForceTorque* getHandler();
+    static ForceTorqueDataSingleton* getHandler();
 
     bool setSensor(ForceTorqueData* _sensorDataPtr);
 
@@ -28,8 +30,8 @@ public:
     void removeSensor(const std::string& sensorName);
 
 private:
-    HandlerForceTorque();
-    static HandlerForceTorque* s_handle;
+    ForceTorqueDataSingleton();
+    static ForceTorqueDataSingleton* s_handle;
     static std::mutex& mutex();
     typedef std::map<std::string, ForceTorqueData*> SensorsMap;
     SensorsMap m_sensorsMap; // map of known sensors

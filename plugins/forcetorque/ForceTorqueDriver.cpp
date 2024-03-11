@@ -1,6 +1,8 @@
-#include "../../libraries/singleton-devices/Handler.hh"
-#include "singleton-forcetorque/Handler.hh"
+#include <ForceTorqueDataSingleton.hh>
+#include <Handler.hh>
+
 #include <mutex>
+
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
@@ -50,7 +52,8 @@ public:
         }
 
         m_frameName = m_sensorName;
-        m_sensorData = ::gzyarp::HandlerForceTorque::getHandler()->getSensor(sensorScopedName);
+        m_sensorData
+            = ::gzyarp::ForceTorqueDataSingleton::getHandler()->getSensor(sensorScopedName);
 
         if (!m_sensorData)
         {

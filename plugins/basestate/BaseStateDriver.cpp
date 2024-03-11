@@ -1,6 +1,8 @@
-#include "../../libraries/singleton-devices/Handler.hh"
-#include "singleton-basestate/BaseStateDataSingleton.hh"
+#include <BaseStateDataSingleton.hh>
+#include <Handler.hh>
+
 #include <mutex>
+
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/IPreciselyTimed.h>

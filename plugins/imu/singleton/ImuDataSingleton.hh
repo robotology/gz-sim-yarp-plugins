@@ -1,11 +1,13 @@
 #include <array>
-#include <gz/common/Event.hh>
 #include <mutex>
 #include <string>
+
+#include <gz/common/Event.hh>
+
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 
-struct IMUData
+struct ImuData
 {
     std::mutex m_mutex;
     std::array<double, 9> m_data;
@@ -16,22 +18,22 @@ struct IMUData
 namespace gzyarp
 {
 
-class HandlerIMU
+class ImuDataSingleton
 {
 public:
-    static HandlerIMU* getHandler();
+    static ImuDataSingleton* getHandler();
 
-    bool setSensor(IMUData* _sensorDataPtr);
+    bool setSensor(ImuData* _sensorDataPtr);
 
-    IMUData* getSensor(const std::string& sensorScopedName) const;
+    ImuData* getSensor(const std::string& sensorScopedName) const;
 
     void removeSensor(const std::string& sensorName);
 
 private:
-    HandlerIMU();
-    static HandlerIMU* s_handle;
+    ImuDataSingleton();
+    static ImuDataSingleton* s_handle;
     static std::mutex& mutex();
-    typedef std::map<std::string, IMUData*> SensorsMap;
+    typedef std::map<std::string, ImuData*> SensorsMap;
     SensorsMap m_sensorsMap; // map of known sensors
 };
 

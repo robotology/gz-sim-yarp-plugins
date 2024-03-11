@@ -1,6 +1,8 @@
-#include "../../libraries/singleton-devices/Handler.hh"
-#include "singleton-imu/Handler.hh"
+#include <Handler.hh>
+#include <ImuDataSingleton.hh>
+
 #include <mutex>
+
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <yarp/os/Log.h>
@@ -12,7 +14,7 @@ namespace dev
 {
 namespace gzyarp
 {
-class IMUDriver;
+class ImuDriver;
 }
 } // namespace dev
 } // namespace yarp
@@ -29,16 +31,16 @@ const std::string YarpIMUScopedName = "sensorScopedName";
  * 6  7  8  = Calibrated 3-axis (X, Y, Z) gyroscope data
  *
  */
-class yarp::dev::gzyarp::IMUDriver : public yarp::dev::DeviceDriver,
+class yarp::dev::gzyarp::ImuDriver : public yarp::dev::DeviceDriver,
                                      public yarp::dev::IThreeAxisGyroscopes,
                                      public yarp::dev::IThreeAxisLinearAccelerometers,
                                      public yarp::dev::IOrientationSensors
 {
 public:
-    IMUDriver()
+    ImuDriver()
     {
     }
-    virtual ~IMUDriver()
+    virtual ~ImuDriver()
     {
     }
 
@@ -59,7 +61,7 @@ public:
         }
 
         m_frameName = m_sensorName;
-        m_sensorData = ::gzyarp::HandlerIMU::getHandler()->getSensor(sensorScopedName);
+        m_sensorData = ::gzyarp::ImuDataSingleton::getHandler()->getSensor(sensorScopedName);
 
         if (!m_sensorData)
         {
@@ -160,7 +162,7 @@ public:
     }
 
 private:
-    IMUData* m_sensorData;
+    ImuData* m_sensorData;
     std::string m_sensorName;
     std::string m_frameName;
 

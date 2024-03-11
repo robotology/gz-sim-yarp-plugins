@@ -1,7 +1,9 @@
-#include <gz/common/Event.hh>
 #include <mutex>
 #include <string>
 #include <vector>
+
+#include <gz/common/Event.hh>
+
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 
@@ -16,10 +18,10 @@ struct LaserData
 namespace gzyarp
 {
 
-class HandlerLaser
+class LaserDataSingleton
 {
 public:
-    static HandlerLaser* getHandler();
+    static LaserDataSingleton* getHandler();
 
     bool setSensor(LaserData* _sensorDataPtr);
 
@@ -28,8 +30,8 @@ public:
     void removeSensor(const std::string& sensorName);
 
 private:
-    HandlerLaser();
-    static HandlerLaser* s_handle;
+    LaserDataSingleton();
+    static LaserDataSingleton* s_handle;
     static std::mutex& mutex();
     typedef std::map<std::string, LaserData*> SensorsMap;
     SensorsMap m_sensorsMap; // map of known sensors

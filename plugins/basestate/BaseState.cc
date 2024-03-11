@@ -1,4 +1,5 @@
-#include "BaseStateDriver.cpp"
+#include <BaseStateDriver.cpp>
+
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Link.hh>
@@ -8,7 +9,7 @@
 #include <gz/sim/Util.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/transport/Node.hh>
-#include <iostream>
+
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 #include <yarp/os/LogStream.h>

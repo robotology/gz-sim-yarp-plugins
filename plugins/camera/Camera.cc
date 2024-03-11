@@ -1,4 +1,5 @@
-#include "CameraDriver.cpp"
+#include <CameraDriver.cpp>
+
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
@@ -10,6 +11,7 @@
 #include <gz/sim/components/ParentEntity.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/transport/Node.hh>
+
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 #include <yarp/os/LogStream.h>
@@ -46,7 +48,7 @@ public:
         {
             m_cameraDriver.close();
         }
-        HandlerCamera::getHandler()->removeSensor(sensorScopedName);
+        CameraDataSingleton::getHandler()->removeSensor(sensorScopedName);
         yarp::os::Network::fini();
     }
 
@@ -119,7 +121,7 @@ public:
         }
 
         // Insert the pointer in the singleton handler for retriving it in the yarp driver
-        HandlerCamera::getHandler()->setSensor(&(this->cameraData));
+        CameraDataSingleton::getHandler()->setSensor(&(this->cameraData));
 
         driver_properties.put("device", "gazebo_camera");
         driver_properties.put("sensor_name", sensorName);

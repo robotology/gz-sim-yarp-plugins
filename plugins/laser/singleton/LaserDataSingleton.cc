@@ -1,24 +1,25 @@
-#include "Handler.hh"
+#include <LaserDataSingleton.hh>
+
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
 namespace gzyarp
 {
 
-HandlerCamera* HandlerCamera::getHandler()
+LaserDataSingleton* LaserDataSingleton::getHandler()
 {
     std::lock_guard<std::mutex> lock(mutex());
     if (!s_handle)
     {
-        s_handle = new HandlerCamera();
+        s_handle = new LaserDataSingleton();
         if (!s_handle)
-            yError() << "Error while calling gzyarp::HandlerCamera constructor";
+            yError() << "Error while calling gzyarp::HandlerLaser constructor";
     }
 
     return s_handle;
 }
 
-bool HandlerCamera::setSensor(CameraData* _sensorDataPtr)
+bool LaserDataSingleton::setSensor(LaserData* _sensorDataPtr)
 {
     bool ret = false;
     std::string sensorScopedName = _sensorDataPtr->sensorScopedName;
@@ -30,10 +31,10 @@ bool HandlerCamera::setSensor(CameraData* _sensorDataPtr)
     {
         // sensor does not exists. Add to map
         if (!m_sensorsMap
-                 .insert(std::pair<std::string, CameraData*>(sensorScopedName, _sensorDataPtr))
+                 .insert(std::pair<std::string, LaserData*>(sensorScopedName, _sensorDataPtr))
                  .second)
         {
-            yError() << "Error in gzyarp::HandlerCamera while inserting a new sensor pointer!";
+            yError() << "Error in gzyarp::HandlerLaser while inserting a new sensor pointer!";
             yError() << " The name of the sensor is already present but the pointer does not match "
                         "with the one already registered!";
             yError() << " This should not happen, as the scoped name should be unique in Gazebo. "
@@ -45,9 +46,9 @@ bool HandlerCamera::setSensor(CameraData* _sensorDataPtr)
     return ret;
 }
 
-CameraData* HandlerCamera::getSensor(const std::string& sensorScopedName) const
+LaserData* LaserDataSingleton::getSensor(const std::string& sensorScopedName) const
 {
-    CameraData* tmp;
+    LaserData* tmp;
 
     SensorsMap::const_iterator sensor = m_sensorsMap.find(sensorScopedName);
     if (sensor != m_sensorsMap.end())
@@ -61,7 +62,7 @@ CameraData* HandlerCamera::getSensor(const std::string& sensorScopedName) const
     return tmp;
 }
 
-void HandlerCamera::removeSensor(const std::string& sensorName)
+void LaserDataSingleton::removeSensor(const std::string& sensorName)
 {
     SensorsMap::iterator sensor = m_sensorsMap.find(sensorName);
     if (sensor != m_sensorsMap.end())
@@ -73,15 +74,15 @@ void HandlerCamera::removeSensor(const std::string& sensorName)
     }
 }
 
-HandlerCamera::HandlerCamera()
+LaserDataSingleton::LaserDataSingleton()
     : m_sensorsMap()
 {
     m_sensorsMap.clear();
 }
 
-HandlerCamera* HandlerCamera::s_handle = NULL;
+LaserDataSingleton* LaserDataSingleton::s_handle = NULL;
 
-std::mutex& HandlerCamera::mutex()
+std::mutex& LaserDataSingleton::mutex()
 {
     static std::mutex s_mutex;
     return s_mutex;
