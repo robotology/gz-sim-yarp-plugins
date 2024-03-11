@@ -1,7 +1,9 @@
 #include <array>
-#include <gz/common/Event.hh>
 #include <mutex>
 #include <string>
+
+#include <gz/common/Event.hh>
+
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 #include <yarp/os/Stamp.h>

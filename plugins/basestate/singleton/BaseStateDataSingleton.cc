@@ -1,4 +1,5 @@
-#include "BaseStateDataSingleton.hh"
+#include <BaseStateDataSingleton.hh>
+
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
