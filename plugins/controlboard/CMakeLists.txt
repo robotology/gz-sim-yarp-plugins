@@ -27,6 +27,7 @@ target_link_libraries(gz-sim-yarp-controlboard-system
     gz-sim-yarp-commons
     gz-sim-yarp-handler
     gz-sim-yarp-controlboard-singleton
+    gz-sim-yarp-commons
 )
 
 # Add install target
