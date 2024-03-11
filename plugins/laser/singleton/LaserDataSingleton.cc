@@ -1,16 +1,17 @@
-#include "Handler.hh"
+#include <LaserDataSingleton.hh>
+
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
 namespace gzyarp
 {
 
-HandlerLaser* HandlerLaser::getHandler()
+LaserDataSingleton* LaserDataSingleton::getHandler()
 {
     std::lock_guard<std::mutex> lock(mutex());
     if (!s_handle)
     {
-        s_handle = new HandlerLaser();
+        s_handle = new LaserDataSingleton();
         if (!s_handle)
             yError() << "Error while calling gzyarp::HandlerLaser constructor";
     }
@@ -18,7 +19,7 @@ HandlerLaser* HandlerLaser::getHandler()
     return s_handle;
 }
 
-bool HandlerLaser::setSensor(LaserData* _sensorDataPtr)
+bool LaserDataSingleton::setSensor(LaserData* _sensorDataPtr)
 {
     bool ret = false;
     std::string sensorScopedName = _sensorDataPtr->sensorScopedName;
@@ -45,7 +46,7 @@ bool HandlerLaser::setSensor(LaserData* _sensorDataPtr)
     return ret;
 }
 
-LaserData* HandlerLaser::getSensor(const std::string& sensorScopedName) const
+LaserData* LaserDataSingleton::getSensor(const std::string& sensorScopedName) const
 {
     LaserData* tmp;
 
@@ -61,7 +62,7 @@ LaserData* HandlerLaser::getSensor(const std::string& sensorScopedName) const
     return tmp;
 }
 
-void HandlerLaser::removeSensor(const std::string& sensorName)
+void LaserDataSingleton::removeSensor(const std::string& sensorName)
 {
     SensorsMap::iterator sensor = m_sensorsMap.find(sensorName);
     if (sensor != m_sensorsMap.end())
@@ -73,15 +74,15 @@ void HandlerLaser::removeSensor(const std::string& sensorName)
     }
 }
 
-HandlerLaser::HandlerLaser()
+LaserDataSingleton::LaserDataSingleton()
     : m_sensorsMap()
 {
     m_sensorsMap.clear();
 }
 
-HandlerLaser* HandlerLaser::s_handle = NULL;
+LaserDataSingleton* LaserDataSingleton::s_handle = NULL;
 
-std::mutex& HandlerLaser::mutex()
+std::mutex& LaserDataSingleton::mutex()
 {
     static std::mutex s_mutex;
     return s_mutex;
