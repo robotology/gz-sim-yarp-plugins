@@ -64,7 +64,7 @@
       </link>
     </model>
     <model name="sensor_box">
-      <plugin name="gzyarp::IMU" filename="gz-sim-yarp-imu-system">
+      <plugin name="gzyarp::Imu" filename="gz-sim-yarp-imu-system">
         <yarpConfigurationString>(yarpDeviceName imu_plugin_device) (parentLinkName link_1) (sensorName imu_sensor)</yarpConfigurationString>
       </plugin>
       <pose>4 0 3.0 0 0.0 3.14</pose>
