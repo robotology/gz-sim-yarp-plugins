@@ -75,8 +75,6 @@
 
       <!-- LASER PLUGIN -->
       <plugin name="gzyarp::Laser" filename="gz-sim-yarp-laser-system">
-        <!--
-        <yarpConfigurationFile>/home/acroci/repos/gz-sim-yarp-plugins/tests/commons/conf/laser.ini</yarpConfigurationFile> -->
         <yarpConfigurationFile>model://commons/conf/laser.ini</yarpConfigurationFile>
       </plugin>
 
@@ -102,6 +100,11 @@
       <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
         <yarpConfigurationFile>model://commons/conf/controlboard.ini
         </yarpConfigurationFile>
+      </plugin>
+
+      <!-- ROBOT INTERFACE PLUGIN -->
+      <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
+        <yarpRobotInterfaceConfigurationFile>model://commons/conf/camera_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
 
       <link name="link_1">
@@ -209,10 +212,6 @@
           </geometry>
         </collision>
       </link>
-
-      <!-- <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
-      <yarpRobotInterfaceConfigurationFile>../../../tests/camera/camera_nws.xml</yarpRobotInterfaceConfigurationFile>
-      </plugin> -->
     </model>
 
   </world>

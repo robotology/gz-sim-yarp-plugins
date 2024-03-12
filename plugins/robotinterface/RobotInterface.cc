@@ -135,8 +135,11 @@ private:
             return false;
         }
 
-        m_xmlRobotInterfaceResult
-            = m_xmlRobotInterfaceReader.getRobotFromFile(robotinterface_file_name);
+        // Resolve potential URIs
+        auto sysPaths = gz::common::SystemPaths();
+        auto filepath = sysPaths.FindFileURI(robotinterface_file_name);
+
+        m_xmlRobotInterfaceResult = m_xmlRobotInterfaceReader.getRobotFromFile(filepath);
 
         if (!m_xmlRobotInterfaceResult.parsingIsSuccessful)
         {
