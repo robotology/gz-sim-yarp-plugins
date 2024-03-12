@@ -1,0 +1,219 @@
+<?xml version="1.0"?>
+
+<sdf version="1.11">
+  <world name="commons_test">
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin
+      filename="gz-sim-physics-system"
+      name="gz::sim::systems::Physics">
+    </plugin>
+    <plugin
+      filename="gz-sim-user-commands-system"
+      name="gz::sim::systems::UserCommands">
+    </plugin>
+    <plugin
+      filename="gz-sim-sensors-system"
+      name="gz::sim::systems::Sensors">
+    </plugin>
+    <plugin
+      filename="gz-sim-scene-broadcaster-system"
+      name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="model_with_plugins">
+      <static>true</static>
+      <pose>0 0 0.1 0 0 0</pose>
+
+      <!-- CAMERA PLUGIN -->
+      <plugin name="gzyarp::Camera" filename="gz-sim-yarp-camera-system">
+        <yarpConfigurationFile>model://commons/conf/camera.ini</yarpConfigurationFile>
+      </plugin>
+
+      <!-- LASER PLUGIN -->
+      <plugin name="gzyarp::Laser" filename="gz-sim-yarp-laser-system">
+        <!--
+        <yarpConfigurationFile>/home/acroci/repos/gz-sim-yarp-plugins/tests/commons/conf/laser.ini</yarpConfigurationFile> -->
+        <yarpConfigurationFile>model://commons/conf/laser.ini</yarpConfigurationFile>
+      </plugin>
+
+      <!-- IMU PLUGIN -->
+      <plugin name="gzyarp::Imu" filename="gz-sim-yarp-imu-system">
+        <yarpConfigurationFile>model://commons/conf/imu.ini
+        </yarpConfigurationFile>
+      </plugin>
+
+      <!-- BASESTATE -->
+      <plugin name="gzyarp::BaseState" filename="gz-sim-yarp-basestate-system">
+        <yarpConfigurationFile>model://commons/conf/basestate.ini
+        </yarpConfigurationFile>
+      </plugin>
+
+      <!-- FORCE-TORQUE PLUGIN -->
+      <plugin name="gzyarp::ForceTorque" filename="gz-sim-yarp-forcetorque-system">
+        <yarpConfigurationFile>model://commons/conf/forcetorque.ini
+        </yarpConfigurationFile>
+      </plugin>
+
+      <!-- CONTROLBOARD PLUGIN -->
+      <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
+        <yarpConfigurationFile>model://commons/conf/controlboard.ini
+        </yarpConfigurationFile>
+      </plugin>
+
+      <link name="link_1">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.1 0.1 0.1</size>
+            </box>
+          </geometry>
+        </visual>
+
+        <!-- CAMERA SENSOR-->
+        <sensor name="camera_sensor" type="camera">
+          <camera>
+            <horizontal_fov>1.5708</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+            </image>
+            <clip>
+              <near>0.1</near>
+              <far>100</far>
+            </clip>
+          </camera>
+          <always_on>1</always_on>
+          <update_rate>30</update_rate>
+          <visualize>true</visualize>
+        </sensor>
+
+        <!-- LASER -->
+        <sensor name="laser_sensor" type="gpu_lidar">
+          <lidar> IMPORTANT: Make sure that this values matches specified in laser.ini <scan>
+              <horizontal>
+                <samples>360</samples>
+                <resolution>1</resolution>
+                <min_angle>-3.14159</min_angle>
+                <max_angle>3.14159</max_angle>
+              </horizontal>
+            </scan>
+            <range>
+              <min>0.10</min>
+              <max>5.0</max>
+              <resolution>0.01</resolution>
+            </range>
+            <noise>
+              <type>gaussian</type>
+              <mean>0.0</mean>
+              <stddev>0.005</stddev>
+            </noise>
+          </lidar>
+          <always_on>1</always_on>
+          <update_rate>30</update_rate>
+          <visualize>true</visualize>
+        </sensor>
+
+        <!-- IMU -->
+        <sensor name="imu_sensor" type="imu">
+          <always_on>1</always_on>
+          <update_rate>100</update_rate>
+          <visualize>true</visualize>
+          <enable_metrics>true</enable_metrics>
+        </sensor>
+      </link>
+
+      <!-- FORCE-TORQUE SENSOR-->
+      <joint name="joint_12" type="revolute">
+        <parent>link_1</parent>
+        <child>link_2</child>
+        <sensor name="force_torque_sensor" type="force_torque">
+          <always_on>true</always_on>
+          <visualize>true</visualize>
+          <update_rate>30</update_rate>
+
+        </sensor>
+      </joint>
+
+      <link name="link_2">
+        <pose>0 0 0.15 0 0 0</pose>
+        <inertial>
+          <pose>0 0 0.0 0 0 0</pose>
+          <inertia>
+            <ixx>0.020000</ixx>
+            <ixy>0.000000</ixy>
+            <ixz>0.000000</ixz>
+            <iyy>0.020000</iyy>
+            <iyz>0.000000</iyz>
+            <izz>0.020000</izz>
+          </inertia>
+          <mass>10.000000</mass>
+        </inertial>
+        <visual name="visual_box">
+          <pose>0 0 0.0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.1 0.1 0.1</size>
+            </box>
+          </geometry>
+        </visual>
+        <collision name="collision_box">
+          <pose>0 0 0.0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.1 0.1 0.1</size>
+            </box>
+          </geometry>
+        </collision>
+      </link>
+
+      <!-- <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
+      <yarpRobotInterfaceConfigurationFile>../../../tests/camera/camera_nws.xml</yarpRobotInterfaceConfigurationFile>
+      </plugin> -->
+    </model>
+
+  </world>
+</sdf>
