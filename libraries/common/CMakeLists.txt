@@ -9,6 +9,7 @@ target_link_libraries(gz-sim-yarp-commons
   PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
   PRIVATE
     YARP::YARP_dev
+    YARP::YARP_robotinterface
     YARP::YARP_os
     YARP::YARP_init)
 

@@ -1,3 +1,4 @@
+#include <ConfigurationHelpers.hh>
 #include <Handler.hh>
 
 #include <gz/plugin/Register.hh>
@@ -103,9 +104,7 @@ public:
     }
 
 private:
-    yarp::robotinterface::XMLReader m_xmlRobotInterfaceReader;
     yarp::robotinterface::XMLReaderResult m_xmlRobotInterfaceResult;
-    std::string robotinterface_file_name;
     std::vector<std::string> m_deviceScopedNames;
     bool m_robotInterfaceCorrectlyStarted;
 
@@ -116,39 +115,15 @@ private:
         if (!_sdf->HasElement("yarpRobotInterfaceConfigurationFile"))
         {
             yError() << "gz-sim-yarp-robotinterface-system :"
+                        "yarpRobotInterfaceConfigurationFile element not found";
+
+            return false;
+        }
+
+        if (!ConfigurationHelpers::loadRobotInterfaceConfiguration(_sdf, m_xmlRobotInterfaceResult))
+        {
+            yError() << "gz-sim-yarp-robotinterface-system :"
                         "yarpRobotInterfaceConfigurationFile not found";
-
-            return false;
-        }
-
-        robotinterface_file_name = _sdf->Get<std::string>("yarpRobotInterfaceConfigurationFil"
-                                                          "e");
-        if (robotinterface_file_name.empty())
-        {
-            yError() << "gz-sim-yarp-robotinterface-system error: failure in finding "
-                        "robotinterface configuration for model"
-                     << model.Name(_ecm) << "\n"
-                     << "gz-sim-yarp-robotinterface-system error: "
-                        "yarpRobotInterfaceConfigurationFile : "
-                     << robotinterface_file_name;
-
-            return false;
-        }
-
-        // Resolve potential URIs
-        auto sysPaths = gz::common::SystemPaths();
-        auto filepath = sysPaths.FindFileURI(robotinterface_file_name);
-
-        m_xmlRobotInterfaceResult = m_xmlRobotInterfaceReader.getRobotFromFile(filepath);
-
-        if (!m_xmlRobotInterfaceResult.parsingIsSuccessful)
-        {
-            yError() << "gz-sim-yarp-robotinterface-system error: failure in parsing "
-                        "robotinterface configuration for model"
-                     << model.Name(_ecm) << "\n"
-                     << "gz-sim-yarp-robotinterface-system error: "
-                        "yarpRobotInterfaceConfigurationFile : "
-                     << robotinterface_file_name;
             return false;
         }
 

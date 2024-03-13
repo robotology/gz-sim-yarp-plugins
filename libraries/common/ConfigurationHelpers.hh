@@ -6,6 +6,7 @@
 #include <sdf/Element.hh>
 
 #include <yarp/os/Property.h>
+#include <yarp/robotinterface/XMLReader.h>
 
 namespace gzyarp
 {
@@ -16,7 +17,14 @@ public:
     static bool loadPluginConfiguration(const std::shared_ptr<const sdf::Element>& sdf,
                                         yarp::os::Property& config);
 
+    static bool loadRobotInterfaceConfiguration(const std::shared_ptr<const sdf::Element>& sdf,
+                                                yarp::robotinterface::XMLReaderResult& result);
+
 private:
+    static bool isURI(const std::string& filepath);
+
+    static bool findFile(const std::string& filename, std::string& filepath);
+
     static bool
     loadYarpConfigurationFile(const std::string& yarpConfigurationFile, yarp::os::Property& config);
 

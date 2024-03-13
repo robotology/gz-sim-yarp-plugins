@@ -1,7 +1,6 @@
 #include <ConfigurationHelpers.hh>
 
 #include <filesystem>
-#include <iostream>
 #include <regex>
 #include <string>
 
@@ -9,6 +8,7 @@
 
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
+#include <yarp/robotinterface/XMLReader.h>
 
 namespace gzyarp
 {
@@ -30,6 +30,39 @@ bool ConfigurationHelpers::loadPluginConfiguration(const std::shared_ptr<const s
     return false;
 }
 
+bool ConfigurationHelpers::loadRobotInterfaceConfiguration(
+    const std::shared_ptr<const sdf::Element>& sdf, yarp::robotinterface::XMLReaderResult& result)
+{
+    if (!sdf->HasElement("yarpRobotInterfaceConfigurationFile"))
+    {
+        yError() << "yarpRobotInterfaceConfigurationFile element not found";
+        return false;
+    }
+
+    auto robotinterface_file_name = sdf->Get<std::string>("yarpRobotInterfaceConfigurationFil"
+                                                          "e");
+
+    std::string filepath;
+    if (!findFile(robotinterface_file_name, filepath))
+    {
+        yError() << "Error while finding yarpRobotInterfaceConfigurationFile: "
+                 << robotinterface_file_name;
+        return false;
+    }
+
+    yarp::robotinterface::XMLReader xmlRobotInterfaceReader;
+    result = xmlRobotInterfaceReader.getRobotFromFile(filepath);
+
+    if (!result.parsingIsSuccessful)
+    {
+        yError() << "Failure in parsing yarpRobotInterfaceConfigurationFile: "
+                 << robotinterface_file_name;
+        return false;
+    }
+
+    return true;
+}
+
 // Private methods
 
 bool ConfigurationHelpers::loadYarpConfigurationString(
@@ -49,7 +82,7 @@ bool ConfigurationHelpers::loadYarpConfigurationString(
     return true;
 }
 
-bool isURI(const std::string& filepath)
+bool ConfigurationHelpers::isURI(const std::string& filepath)
 {
     // Regular expression to match the URI pattern
     std::regex uriRegex("^(\\w+):\\/\\/([^\\/]+)?([^?#]+)?(\\?[^#]*)?(#.*)?$");
@@ -61,35 +94,11 @@ bool isURI(const std::string& filepath)
 bool ConfigurationHelpers::loadYarpConfigurationFile(const std::string& yarpConfigurationFile,
                                                      yarp::os::Property& config)
 {
-    std::string filepath{};
-    auto sysPaths = gz::common::SystemPaths();
-
-    if (isURI(yarpConfigurationFile))
+    std::string filepath;
+    if (!findFile(yarpConfigurationFile, filepath))
     {
-        yInfo() << "File is a URI: " << yarpConfigurationFile;
-        filepath = sysPaths.FindFileURI(yarpConfigurationFile);
-        if (filepath.empty())
-        {
-            yError() << "File not found: " << yarpConfigurationFile;
-            return false;
-        }
-    } else
-    {
-        if (std::filesystem::exists(yarpConfigurationFile)
-            && std::filesystem::is_regular_file(yarpConfigurationFile)
-            && std::filesystem::path(yarpConfigurationFile).is_absolute())
-        {
-
-            yWarning() << "File is an absolute path: " << yarpConfigurationFile
-                       << ". It is recommended to use a URI or relative path.";
-            filepath = yarpConfigurationFile;
-
-        } else
-        {
-
-            yError() << "File not found: " << yarpConfigurationFile;
-            return false;
-        }
+        yError() << "Error while finding Yarp configuration file: " << yarpConfigurationFile;
+        return false;
     }
 
     if (!config.fromConfigFile(filepath))
@@ -99,6 +108,46 @@ bool ConfigurationHelpers::loadYarpConfigurationFile(const std::string& yarpConf
     }
 
     yInfo() << "Yarp configuration file loaded: " << filepath;
+
+    return true;
+}
+
+bool ConfigurationHelpers::findFile(const std::string& filename, std::string& filepath)
+{
+    auto sysPaths = gz::common::SystemPaths();
+
+    if (isURI(filename))
+    {
+        yInfo() << "File is a URI: " << filename;
+        filepath = sysPaths.FindFileURI(filename);
+        if (filepath.empty())
+        {
+            yError() << "File not found: " << filename;
+            return false;
+        }
+    } else
+    {
+        if (std::filesystem::exists(filename) && std::filesystem::is_regular_file(filename))
+        {
+            if (std::filesystem::path(filename).is_absolute())
+            {
+                yWarning() << "File specified with an absolute path: " << filename
+                           << ". It is recommended to use a URI or relative path.";
+                filepath = filename;
+            } else
+            {
+                std::filesystem::path relativePath(filename);
+                filepath = std::filesystem::absolute(relativePath);
+                yInfo() << "File specified with a relative path: " << filename
+                        << ", resolved to: " << filepath;
+            }
+        } else
+        {
+
+            yError() << "File not found: " << filename;
+            return false;
+        }
+    }
 
     return true;
 }
