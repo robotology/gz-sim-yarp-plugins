@@ -80,7 +80,7 @@ void ControlBoard::Configure(const Entity& _entity,
 
     bool wipe = false;
 
-    if (loadPluginConfiguration(_sdf, m_pluginParameters))
+    if (ConfigurationHelpers::loadPluginConfiguration(_sdf, m_pluginParameters))
     {
         if (!m_pluginParameters.check("yarpDeviceName"))
         {

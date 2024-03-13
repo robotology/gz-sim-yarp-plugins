@@ -70,7 +70,7 @@ public:
                                                                                "LaserDriver"));
         ::yarp::os::Property driver_properties;
 
-        if (loadPluginConfiguration(_sdf, driver_properties))
+        if (ConfigurationHelpers::loadPluginConfiguration(_sdf, driver_properties))
         {
             if (!driver_properties.check("sensorName"))
             {
