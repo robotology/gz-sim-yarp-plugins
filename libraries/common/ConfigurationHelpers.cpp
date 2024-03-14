@@ -132,14 +132,14 @@ bool ConfigurationHelpers::findFile(const std::string& filename, std::string& fi
             if (std::filesystem::path(filename).is_absolute())
             {
                 yWarning() << "File specified with an absolute path: " << filename
-                           << ". It is recommended to use a URI or relative path.";
+                           << ". It is recommended to use a URI.";
                 filepath = filename;
             } else
             {
                 std::filesystem::path relativePath(filename);
                 filepath = std::filesystem::absolute(relativePath).string();
-                yInfo() << "File specified with a relative path: " << filename
-                        << ", resolved to: " << filepath;
+                yWarning() << "File specified with a relative path: " << filename
+                           << ", resolved to: " << filepath << ". It is recommended to use a URI.";
             }
         } else
         {
