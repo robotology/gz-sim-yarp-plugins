@@ -137,7 +137,7 @@ bool ConfigurationHelpers::findFile(const std::string& filename, std::string& fi
             } else
             {
                 std::filesystem::path relativePath(filename);
-                filepath = std::filesystem::absolute(relativePath);
+                filepath = std::filesystem::absolute(relativePath).string();
                 yInfo() << "File specified with a relative path: " << filename
                         << ", resolved to: " << filepath;
             }
