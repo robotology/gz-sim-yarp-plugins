@@ -217,10 +217,6 @@
           </geometry>
         </collision>
       </link>
-
-      <!-- <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
-      <yarpRobotInterfaceConfigurationFile>../../../tests/camera/camera_nws.xml</yarpRobotInterfaceConfigurationFile>
-      </plugin> -->
     </model>
 
   </world>
