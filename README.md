@@ -106,6 +106,39 @@ where `<install_location>` is the directory passed to `CMAKE_INSTALL_PREFIX` dur
 
 Once the plugins are available, you can see how to use the different plugins by looking in the directories contained in the `tutorial` folder of this repo. Each directory is an example, and contains a README that shows how to run that example.
 
+### How to specify Yarp configurations
+There are two ways to specify the Yarp configuration of a plugin:
+- `yarpConfigurationString`: it allows to directly specify the configuration in a string that must follow the [standard data representation format](https://www.yarp.it/latest/data_rep.html);
+- `yarpConfigurationFile`: it specifies the location of a [Yarp configuration file](https://www.yarp.it/latest/yarp_config_files.html).
+
+Concerning `yarpConfigurationFile`, the preferred way to specify the path to the configuration file is by using [Gazebo URIs](https://gazebosim.org/api/common/6/classgz_1_1common_1_1URI.html). A URI has the following general scheme:
+```
+scheme:[//authority]path[?query][#fragment] 
+```
+
+For example, the configuration file for an IMU plugin can be specified as:
+
+```xml
+<plugin name="gzyarp::Imu" filename="gz-sim-yarp-imu-system">
+    <yarpConfigurationFile>model://ergoCub/conf/imu.ini</yarpConfigurationFile>
+</plugin>
+```
+
+This means that the `imu.ini` file location is relative to the `ergoCub` model path, that is automatically found by Gazebo through the `GZ_SIM_SYSTEM_PLUGIN_PATH` environment variable:
+
+```
+models
+    └── ergoCub
+        ├── conf
+        │   ├── controlboard.ini
+        │   ├── ft.ini
+        │   └── imu.ini
+        └── model.sdf
+```
+
+> [!WARNING]
+> It is possible, but strongly discouraged, to specify the location of a `yarpConfigurationFile` using absolute paths or paths relative to the current working directory: the former approach is not portable, while the latter only works if the library is loaded from the directory it was intended to be loaded from.
+
 ## Run Tests
 
 To run the tests, just configure the project with the `BUILD_TESTING` option, and run `ctest`:
