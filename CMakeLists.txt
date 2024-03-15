@@ -4,6 +4,7 @@ project(gz-sim-yarp-plugins)
 
 find_package(gz-cmake3 REQUIRED)
 find_package(YARP REQUIRED COMPONENTS robotinterface os)
+find_package(YCM REQUIRED)
 
 gz_find_package(gz-plugin2 REQUIRED COMPONENTS register)
 set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
@@ -44,6 +45,10 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 add_subdirectory(libraries)
 add_subdirectory(plugins)
+
+# Add the uninstall target
+include(AddUninstallTarget)
+
 option(BUILD_TESTING "Create tests using CMake" ON)
 if(BUILD_TESTING)
   include(CTest)
