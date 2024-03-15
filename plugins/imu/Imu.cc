@@ -1,4 +1,5 @@
-#include <IMUDriver.cpp>
+#include <ConfigurationHelpers.hh>
+#include <ImuDriver.cpp>
 
 #include <gz/msgs/details/imu.pb.h>
 #include <gz/plugin/Register.hh>
@@ -64,11 +65,8 @@ public:
 
         ::yarp::os::Property driver_properties;
 
-        bool wipe = false;
-        if (_sdf->HasElement("yarpConfigurationString"))
+        if (ConfigurationHelpers::loadPluginConfiguration(_sdf, driver_properties))
         {
-            std::string configuration_string = _sdf->Get<std::string>("yarpConfigurationString");
-            driver_properties.fromString(configuration_string, wipe);
             if (!driver_properties.check("sensorName"))
             {
                 yError() << "gz-sim-yarp-imu-system : missing sensorName parameter";
@@ -80,13 +78,13 @@ public:
                 return;
             }
             yInfo() << "gz-sim-yarp-imu-system: configuration of sensor "
-                    << driver_properties.find("sensorName").asString()
-                    << " loaded from yarpConfigurationString : " << configuration_string << "\n";
+                    << driver_properties.find("sensorName").asString() << " loaded";
         } else
         {
-            yError() << "gz-sim-yarp-imu-system : missing yarpConfigurationString element";
+            yError() << "gz-sim-yarp-imu-system : missing configuration";
             return;
         }
+
         std::string sensorName = driver_properties.find("sensorName").asString();
         std::string parentLinkName = driver_properties.find("parentLinkName").asString();
         auto model = Model(_entity);

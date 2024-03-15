@@ -1,6 +1,7 @@
 #include <ControlBoard.hh>
 
 #include <Common.hh>
+#include <ConfigurationHelpers.hh>
 #include <ControlBoardDataSingleton.hh>
 #include <ControlBoardDriver.hh>
 #include <Handler.hh>
@@ -79,10 +80,8 @@ void ControlBoard::Configure(const Entity& _entity,
 
     bool wipe = false;
 
-    if (_sdf->HasElement("yarpConfigurationFile"))
+    if (ConfigurationHelpers::loadPluginConfiguration(_sdf, m_pluginParameters))
     {
-        std::string ini_file_path = _sdf->Get<std::string>("yarpConfigurationFile");
-        m_pluginParameters.fromConfigFile(ini_file_path.c_str(), wipe);
         if (!m_pluginParameters.check("yarpDeviceName"))
         {
             yError() << "gz-sim-yarp-controlboard-system : missing yarpDeviceName parameter";
@@ -90,11 +89,10 @@ void ControlBoard::Configure(const Entity& _entity,
         }
 
         yInfo() << "gz-sim-yarp-controlboard-system: configuration of device "
-                << m_pluginParameters.find("yarpDeviceName").asString()
-                << " loaded from yarpConfigurationFile : " << ini_file_path << "\n";
+                << m_pluginParameters.find("yarpDeviceName").asString() << " loaded";
     } else
     {
-        yError() << "gz-sim-yarp-controlboard-system : missing yarpConfigurationFile element";
+        yError() << "gz-sim-yarp-controlboard-system : missing configuration";
         return;
     }
 

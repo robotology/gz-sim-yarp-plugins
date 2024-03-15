@@ -1,4 +1,5 @@
 #include <CameraDriver.cpp>
+#include <ConfigurationHelpers.hh>
 
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Link.hh>
@@ -70,11 +71,8 @@ public:
                                                                                 "CameraDriver"));
         ::yarp::os::Property driver_properties;
 
-        bool wipe = false;
-        if (_sdf->HasElement("yarpConfigurationString"))
+        if (ConfigurationHelpers::loadPluginConfiguration(_sdf, driver_properties))
         {
-            std::string configuration_string = _sdf->Get<std::string>("yarpConfigurationString");
-            driver_properties.fromString(configuration_string, wipe);
             if (!driver_properties.check("sensorName"))
             {
                 yError() << "gz-sim-yarp-camera-system : missing sensorName parameter";
@@ -86,11 +84,10 @@ public:
                 return;
             }
             yInfo() << "gz-sim-yarp-camera-system: configuration of sensor "
-                    << driver_properties.find("sensorName").asString()
-                    << " loaded from yarpConfigurationString : " << configuration_string << "\n";
+                    << driver_properties.find("sensorName").asString() << " loaded";
         } else
         {
-            yError() << "gz-sim-yarp-camera-system : missing yarpConfigurationString element";
+            yError() << "gz-sim-yarp-camera-system : missing configuration";
             return;
         }
 

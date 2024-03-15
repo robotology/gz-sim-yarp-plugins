@@ -1,3 +1,4 @@
+#include <ConfigurationHelpers.hh>
 #include <Handler.hh>
 
 #include <gz/plugin/Register.hh>
@@ -7,6 +8,7 @@
 
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
+#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
 #include <yarp/robotinterface/XMLReader.h>
@@ -69,43 +71,10 @@ public:
         }
         auto model = Model(_entity);
 
-        bool loaded_configuration = false;
-        if (_sdf->HasElement("yarpRobotInterfaceConfigurationFile"))
+        if (!loadYarpRobotInterfaceConfigurationFile(_sdf, _ecm, model))
         {
-            robotinterface_file_name = _sdf->Get<std::string>("yarpRobotInterfaceConfigurationFil"
-                                                              "e");
-            if (robotinterface_file_name == "")
-            {
-                yError() << "gz-sim-yarp-robotinterface-system error: failure in finding "
-                            "robotinterface configuration for model"
-                         << model.Name(_ecm) << "\n"
-                         << "gz-sim-yarp-robotinterface-system error: "
-                            "yarpRobotInterfaceConfigurationFile : "
-                         << robotinterface_file_name;
-                loaded_configuration = false;
-            } else
-            {
-                m_xmlRobotInterfaceResult
-                    = m_xmlRobotInterfaceReader.getRobotFromFile(robotinterface_file_name);
-                if (m_xmlRobotInterfaceResult.parsingIsSuccessful)
-                {
-                    loaded_configuration = true;
-                } else
-                {
-                    yError() << "gz-sim-yarp-robotinterface-system error: failure in parsing "
-                                "robotinterface configuration for model"
-                             << model.Name(_ecm) << "\n"
-                             << "gz-sim-yarp-robotinterface-system error: "
-                                "yarpRobotInterfaceConfigurationFile : "
-                             << robotinterface_file_name;
-                    loaded_configuration = false;
-                }
-            }
-        }
-        if (!loaded_configuration)
-        {
-            yError() << "gz-sim-yarp-robotinterface-system : xml file specified in "
-                        "yarpRobotInterfaceConfigurationFile not found or not loaded.";
+            yError("gz-sim-yarp-robotinterface-system : Error loading robotinterface configuration "
+                   "file");
             return;
         }
 
@@ -135,11 +104,31 @@ public:
     }
 
 private:
-    yarp::robotinterface::XMLReader m_xmlRobotInterfaceReader;
     yarp::robotinterface::XMLReaderResult m_xmlRobotInterfaceResult;
-    std::string robotinterface_file_name;
     std::vector<std::string> m_deviceScopedNames;
     bool m_robotInterfaceCorrectlyStarted;
+
+    bool loadYarpRobotInterfaceConfigurationFile(const std::shared_ptr<const sdf::Element>& _sdf,
+                                                 const EntityComponentManager& _ecm,
+                                                 const Model& model)
+    {
+        if (!_sdf->HasElement("yarpRobotInterfaceConfigurationFile"))
+        {
+            yError() << "gz-sim-yarp-robotinterface-system :"
+                        "yarpRobotInterfaceConfigurationFile element not found";
+
+            return false;
+        }
+
+        if (!ConfigurationHelpers::loadRobotInterfaceConfiguration(_sdf, m_xmlRobotInterfaceResult))
+        {
+            yError() << "gz-sim-yarp-robotinterface-system :"
+                        "yarpRobotInterfaceConfigurationFile not found";
+            return false;
+        }
+
+        return true;
+    }
 };
 
 } // namespace gzyarp

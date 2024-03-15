@@ -1,3 +1,4 @@
+#include <ConfigurationHelpers.hh>
 #include <LaserDriver.cpp>
 
 #include <gz/msgs.hh>
@@ -69,11 +70,8 @@ public:
                                                                                "LaserDriver"));
         ::yarp::os::Property driver_properties;
 
-        bool wipe = false;
-        if (_sdf->HasElement("yarpConfigurationFile"))
+        if (ConfigurationHelpers::loadPluginConfiguration(_sdf, driver_properties))
         {
-            std::string ini_file_path = _sdf->Get<std::string>("yarpConfigurationFile");
-            driver_properties.fromConfigFile(ini_file_path.c_str(), wipe);
             if (!driver_properties.check("sensorName"))
             {
                 yError() << "gz-sim-yarp-laser-system : missing sensorName parameter";
@@ -85,11 +83,10 @@ public:
                 return;
             }
             yInfo() << "gz-sim-yarp-laser-system: configuration of sensor "
-                    << driver_properties.find("sensorName").asString()
-                    << " loaded from yarpConfigurationFile : " << ini_file_path << "\n";
+                    << driver_properties.find("sensorName").asString() << " loaded";
         } else
         {
-            yError() << "gz-sim-yarp-laser-system : missing yarpConfigurationFile element";
+            yError() << "gz-sim-yarp-laser-system : missing configuration";
             return;
         }
         std::string sensorName = driver_properties.find("sensorName").asString();
