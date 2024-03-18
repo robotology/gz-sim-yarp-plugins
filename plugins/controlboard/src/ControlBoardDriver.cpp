@@ -1630,16 +1630,43 @@ bool ControlBoardDriver::getEncoders(double* encs)
 
 bool ControlBoardDriver::getEncoderSpeed(int j, double* sp)
 {
-    // TODO
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
-    return false;
+    if (!sp)
+    {
+        yError() << "Error while getting encoder speed: sp is null";
+        return false;
+    }
+
+    if (j < 0 || j >= m_controlBoardData->joints.size())
+    {
+        yError() << "Error while getting encoder speed: joint index " + std::to_string(j)
+                        + " out of range";
+        return false;
+    }
+
+    *sp = m_controlBoardData->joints.at(j).velocity;
+
+    return true;
 }
 
 bool ControlBoardDriver::getEncoderSpeeds(double* spds)
 {
-    // TODO
+    if (!spds)
+    {
+        yError() << "Error while getting encoder speeds: spds array is null";
+        return false;
+    }
 
-    return false;
+    for (int i = 0; i < m_controlBoardData->joints.size(); i++)
+    {
+        if (!ControlBoardDriver::getEncoderSpeed(i, &spds[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool ControlBoardDriver::getEncoderAcceleration(int j, double* spds)
