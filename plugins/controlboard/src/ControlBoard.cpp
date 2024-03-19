@@ -646,18 +646,20 @@ bool ControlBoard::initializeJointPositionLimits(const gz::sim::EntityComponentM
     size_t numberOfJoints = m_controlBoardData.joints.size();
     Bottle limitMinGroup, limitMaxGroup;
 
-    for (auto& joint : m_controlBoardData.joints)
+    if (!(tryGetGroup(limitsGroup, limitMinGroup, "jntPosMin", "", numberOfJoints + 1)
+          && tryGetGroup(limitsGroup, limitMaxGroup, "jntPosMax", "", numberOfJoints + 1)))
+    {
+        yError() << "Error while reading joint position limits from plugin configuration";
+        return false;
+    }
+
+    for (size_t i = 0; i < numberOfJoints; ++i)
     {
         // TODO: access gazebo joint position limits and use them to check if software limits
         // ([LIMITS] group) are consistent. In case they are not defined set them as sw limits.
-        if (!(tryGetGroup(limitsGroup, limitMinGroup, "jntPosMin", "", numberOfJoints + 1)
-              && tryGetGroup(limitsGroup, limitMaxGroup, "jntPosMax", "", numberOfJoints + 1)))
-        {
-            yError() << "Error while reading joint position limits from plugin parameters";
-            return false;
-        }
-        joint.positionLimitMin = limitMinGroup.get(1).asFloat64();
-        joint.positionLimitMax = limitMaxGroup.get(1).asFloat64();
+        auto& joint = m_controlBoardData.joints[i];
+        joint.positionLimitMin = limitMinGroup.get(i + 1).asFloat64();
+        joint.positionLimitMax = limitMaxGroup.get(i + 1).asFloat64();
     }
 
     return true;

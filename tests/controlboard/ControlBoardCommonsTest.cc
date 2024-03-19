@@ -10,6 +10,8 @@
 #include <gz/sim/TestFixture.hh>
 #include <gz/sim/World.hh>
 
+#include <vector>
+#include <yarp/dev/IControlLimits.h>
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IEncoders.h>
 #include <yarp/dev/IPositionControl.h>
@@ -70,6 +72,47 @@ TEST(ControlBoardCommonsTest, ConfigureMultipleControlBoards)
     std::cerr << "ControlBoard ids: " << keys[0] << ", " << keys[1] << std::endl;
     ASSERT_TRUE(std::find(keys.begin(), keys.end(), cb1Key) != keys.end());
     ASSERT_TRUE(std::find(keys.begin(), keys.end(), cb2Key) != keys.end());
+}
+
+// Check that joint position limits are read correctly from yarp configuration
+TEST(ControlBoardCommonsTest, JointPositionLimitsForMultipleJoints)
+{
+    std::string modelSdfName = "coupled_pendulum_two_joints_single_controlboard.sdf";
+    std::string sdfPath = std::string("../../../tests/controlboard/") + modelSdfName;
+    std::string deviceScopedName = "model/coupled_pendulum/controlboard_plugin_device";
+    yarp::dev::PolyDriver* driver;
+    yarp::dev::IControlLimits* iControlLimits;
+
+    gz::sim::TestFixture testFixture{sdfPath};
+    gz::common::Console::SetVerbosity(4);
+
+    testFixture.Finalize();
+
+    driver = gzyarp::Handler::getHandler()->getDevice(deviceScopedName);
+    ASSERT_TRUE(driver != nullptr);
+    ASSERT_TRUE(driver->view(iControlLimits));
+
+    auto singleton = ControlBoardDataSingleton::getControlBoardHandler();
+    auto keys = singleton->getControlBoardKeys();
+
+    std::cerr << "ControlBoard singleton keys vector size: " << keys.size() << std::endl;
+    ASSERT_EQ(keys.size(), 1);
+
+    std::cerr << "ControlBoard ids: " << keys[0] << std::endl;
+    ASSERT_TRUE(std::find(keys.begin(), keys.end(), deviceScopedName) != keys.end());
+
+    auto controlBoardData = singleton->getControlBoardData(deviceScopedName);
+
+    auto expectedJointMaxLimits = std::vector<double>{200.0, 10.0};
+    auto expectedJointMinLimits = std::vector<double>{-200.0, -10.0};
+
+    for (int i = 0; i < expectedJointMaxLimits.size(); i++)
+    {
+        double maxLimit, minLimit;
+        iControlLimits->getLimits(i, &minLimit, &maxLimit);
+        EXPECT_DOUBLE_EQ(maxLimit, expectedJointMaxLimits[i]);
+        EXPECT_DOUBLE_EQ(minLimit, expectedJointMinLimits[i]);
+    }
 }
 
 } // namespace test
