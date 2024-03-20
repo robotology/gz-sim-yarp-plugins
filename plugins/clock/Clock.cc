@@ -1,6 +1,8 @@
+#include <chrono>
 #include <gz/plugin/Register.hh>
 #include <gz/sim/System.hh>
 #include <gz/sim/Util.hh>
+
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Log.h>
@@ -58,9 +60,15 @@ public:
             return;
         }
 
+        auto currentTime = _info.simTime;
+        std::chrono::seconds seconds
+            = std::chrono::duration_cast<std::chrono::seconds>(currentTime);
+        std::chrono::nanoseconds nanoseconds = currentTime - seconds;
+
         Bottle& b = m_clockPort.prepare();
         b.clear();
-        b.addInt64(_info.simTime.count());
+        b.addInt32(seconds.count());
+        b.addInt32(nanoseconds.count());
         m_clockPort.write();
     }
 
