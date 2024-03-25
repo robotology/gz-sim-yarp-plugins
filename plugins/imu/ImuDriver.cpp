@@ -34,8 +34,10 @@ const std::string YarpIMUScopedName = "sensorScopedName";
 class yarp::dev::gzyarp::ImuDriver : public yarp::dev::DeviceDriver,
                                      public yarp::dev::IThreeAxisGyroscopes,
                                      public yarp::dev::IThreeAxisLinearAccelerometers,
-                                     public yarp::dev::IOrientationSensors
+                                     public yarp::dev::IOrientationSensors,
+                                     public yarp::dev::IThreeAxisMagnetometers
 {
+
 public:
     ImuDriver()
     {
@@ -45,7 +47,7 @@ public:
     }
 
     // DEVICE DRIVER
-    virtual bool open(yarp::os::Searchable& config)
+    bool open(yarp::os::Searchable& config) override
     {
 
         std::string sensorScopedName(config.find(YarpIMUScopedName.c_str()).asString().c_str());
@@ -72,93 +74,123 @@ public:
         return true;
     }
 
-    virtual bool close()
+    bool close() override
     {
         return true;
     }
 
     // THREE AXIS GYROSCOPES
-    virtual size_t getNrOfThreeAxisGyroscopes() const
+    size_t getNrOfThreeAxisGyroscopes() const override
     {
         return 1;
     }
 
-    virtual yarp::dev::MAS_status getThreeAxisGyroscopeStatus(size_t sens_index) const
+    yarp::dev::MAS_status getThreeAxisGyroscopeStatus(size_t sens_index) const override
     {
         return genericGetStatus(sens_index);
     }
 
-    virtual bool getThreeAxisGyroscopeName(size_t sens_index, std::string& name) const
+    bool getThreeAxisGyroscopeName(size_t sens_index, std::string& name) const override
     {
         return genericGetSensorName(sens_index, name);
     }
 
-    virtual bool getThreeAxisGyroscopeFrameName(size_t sens_index, std::string& frameName) const
+    bool getThreeAxisGyroscopeFrameName(size_t sens_index, std::string& frameName) const override
     {
         return genericGetFrameName(sens_index, frameName);
     }
 
-    virtual bool
-    getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+    bool getThreeAxisGyroscopeMeasure(size_t sens_index,
+                                      yarp::sig::Vector& out,
+                                      double& timestamp) const override
     {
         return genericGetMeasure(sens_index, out, timestamp, gyroStartIdx);
     }
 
     // THREE AXIS LINEAR ACCELEROMETERS
-    virtual size_t getNrOfThreeAxisLinearAccelerometers() const
+    size_t getNrOfThreeAxisLinearAccelerometers() const override
     {
         return 1;
     }
 
-    virtual yarp::dev::MAS_status getThreeAxisLinearAccelerometerStatus(size_t sens_index) const
+    yarp::dev::MAS_status getThreeAxisLinearAccelerometerStatus(size_t sens_index) const override
     {
         return genericGetStatus(sens_index);
     }
 
-    virtual bool getThreeAxisLinearAccelerometerName(size_t sens_index, std::string& name) const
+    bool getThreeAxisLinearAccelerometerName(size_t sens_index, std::string& name) const override
     {
         return genericGetSensorName(sens_index, name);
     }
 
-    virtual bool
-    getThreeAxisLinearAccelerometerFrameName(size_t sens_index, std::string& frameName) const
+    bool getThreeAxisLinearAccelerometerFrameName(size_t sens_index,
+                                                  std::string& frameName) const override
     {
         return genericGetFrameName(sens_index, frameName);
     }
 
-    virtual bool getThreeAxisLinearAccelerometerMeasure(size_t sens_index,
-                                                        yarp::sig::Vector& out,
-                                                        double& timestamp) const
+    bool getThreeAxisLinearAccelerometerMeasure(size_t sens_index,
+                                                yarp::sig::Vector& out,
+                                                double& timestamp) const override
     {
         return genericGetMeasure(sens_index, out, timestamp, accelStartIdx);
     }
 
     // ORIENTATION SENSORS
-    virtual size_t getNrOfOrientationSensors() const
+    size_t getNrOfOrientationSensors() const override
     {
         return 1;
     }
 
-    virtual yarp::dev::MAS_status getOrientationSensorStatus(size_t sens_index) const
+    yarp::dev::MAS_status getOrientationSensorStatus(size_t sens_index) const override
     {
         return genericGetStatus(sens_index);
     }
 
-    virtual bool getOrientationSensorName(size_t sens_index, std::string& name) const
+    bool getOrientationSensorName(size_t sens_index, std::string& name) const override
     {
         return genericGetSensorName(sens_index, name);
     }
 
-    virtual bool getOrientationSensorFrameName(size_t sens_index, std::string& frameName) const
+    bool getOrientationSensorFrameName(size_t sens_index, std::string& frameName) const override
     {
         return genericGetFrameName(sens_index, frameName);
     }
 
-    virtual bool getOrientationSensorMeasureAsRollPitchYaw(size_t sens_index,
-                                                           yarp::sig::Vector& rpy,
-                                                           double& timestamp) const
+    bool getOrientationSensorMeasureAsRollPitchYaw(size_t sens_index,
+                                                   yarp::sig::Vector& rpy,
+                                                   double& timestamp) const override
     {
         return genericGetMeasure(sens_index, rpy, timestamp, rpyStartIdx);
+    }
+
+    // THREE AXIS MAGNETOMETERS
+
+    size_t getNrOfThreeAxisMagnetometers() const override
+    {
+        return 1;
+    }
+
+    yarp::dev::MAS_status getThreeAxisMagnetometerStatus(size_t sens_index) const override
+    {
+        return genericGetStatus(sens_index);
+    }
+
+    bool getThreeAxisMagnetometerName(size_t sens_index, std::string& name) const override
+    {
+        return genericGetSensorName(sens_index, name);
+    }
+
+    bool getThreeAxisMagnetometerFrameName(size_t sens_index, std::string& frameName) const override
+    {
+        return genericGetFrameName(sens_index, frameName);
+    }
+
+    bool getThreeAxisMagnetometerMeasure(size_t sens_index,
+                                         yarp::sig::Vector& out,
+                                         double& timestamp) const override
+    {
+        return genericGetMeasure(sens_index, out, timestamp, 0);
     }
 
 private:
