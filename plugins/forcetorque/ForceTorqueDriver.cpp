@@ -23,8 +23,12 @@ class ForceTorqueDriver;
 const unsigned YarpForceTorqueChannelsNumber = 6; // The ForceTorque sensor has 6 fixed channels
 const std::string YarpForceTorqueScopedName = "sensorScopedName";
 
+const unsigned YarpTemperatureChannelsNumber = 1; // The Temperature sensor has 1 fixed channel
+const double fakeTemperatureValue = 25.0;
+
 class yarp::dev::gzyarp::ForceTorqueDriver : public yarp::dev::DeviceDriver,
-                                             public yarp::dev::ISixAxisForceTorqueSensors
+                                             public yarp::dev::ISixAxisForceTorqueSensors,
+                                             public yarp::dev::ITemperatureSensors
 {
 public:
     ForceTorqueDriver()
@@ -129,6 +133,81 @@ public:
         m_forceTorqueData[5] = m_sensorData->m_data[5];
         out = m_forceTorqueData;
 
+        timestamp = m_sensorData->simTime;
+        return true;
+    }
+
+    // TEMPERATURE SENSORS
+
+    size_t getNrOfTemperatureSensors() const override
+    {
+        return 1;
+    }
+
+    yarp::dev::MAS_status getTemperatureSensorStatus(size_t sens_index) const override
+    {
+        if (sens_index >= 1)
+        {
+            return MAS_UNKNOWN;
+        }
+
+        return MAS_OK;
+    }
+
+    bool getTemperatureSensorName(size_t sens_index, std::string& name) const override
+    {
+        if (sens_index >= 1)
+        {
+            return false;
+        }
+
+        std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
+        name = m_sensorName;
+        return true;
+    }
+
+    bool getTemperatureSensorFrameName(size_t sens_index, std::string& frameName) const override
+    {
+        if (sens_index >= 1)
+        {
+            return false;
+        }
+
+        std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
+        frameName = m_frameName;
+        return true;
+    }
+
+    bool
+    getTemperatureSensorMeasure(size_t sens_index, double& out, double& timestamp) const override
+    {
+        if (sens_index >= 1)
+        {
+            return false;
+        }
+
+        std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
+        out = fakeTemperatureValue;
+        timestamp = m_sensorData->simTime;
+        return true;
+    }
+
+    bool getTemperatureSensorMeasure(size_t sens_index,
+                                     yarp::sig::Vector& out,
+                                     double& timestamp) const override
+    {
+        if (sens_index >= 1)
+        {
+            return false;
+        }
+
+        if (out.size() != YarpTemperatureChannelsNumber)
+        {
+            out.resize(YarpTemperatureChannelsNumber);
+        }
+
+        std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
+        out[0] = fakeTemperatureValue;
         timestamp = m_sensorData->simTime;
         return true;
     }
