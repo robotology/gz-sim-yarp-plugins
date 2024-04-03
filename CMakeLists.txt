@@ -49,7 +49,7 @@ add_subdirectory(plugins)
 # Add the uninstall target
 include(AddUninstallTarget)
 
-option(BUILD_TESTING "Create tests using CMake" ON)
+option(BUILD_TESTING "Create tests using CMake" OFF)
 if(BUILD_TESTING)
   include(CTest)
   add_subdirectory(tests)
