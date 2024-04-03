@@ -9,7 +9,7 @@ foreach(TEST ${TESTS})
   add_executable(${TEST} ${TEST}.cc)
 
   target_link_libraries(${TEST}
-    PRIVATE gtest_main
+    PRIVATE GTest::gtest_main
     PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
     PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
     PRIVATE
