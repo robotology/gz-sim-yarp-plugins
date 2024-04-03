@@ -9,3 +9,4 @@ dependencies:
   - pkg-config
   - libgz-sim8
   - yarp
+  - gtest

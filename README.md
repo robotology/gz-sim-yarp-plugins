@@ -14,7 +14,7 @@ installing the dependencies with conda-forge on Linux, macOS or Windows, or apt 
 Create and activate an environment with the required dependencies:
 
 ~~~
-mamba create -c conda-forge -n gsypdev libgz-sim8 yarp ycm-cmake-modules cmake ninja pkg-config cmake compilers
+mamba create -c conda-forge -n gsypdev libgz-sim8 yarp ycm-cmake-modules cmake ninja pkg-config cmake compilers gtest
 mamba activate gsypdev
 ~~~
 
@@ -48,7 +48,7 @@ First install some necessary dependencies from apt
 
 ~~~
 sudo apt-get update
-sudo apt-get install lsb-release wget gnupg cmake pkg-config ninja-build build-essential
+sudo apt-get install lsb-release wget gnupg cmake pkg-config ninja-build build-essential libgtest-dev
 ~~~
 
 Then install Gazebo Harmonic:

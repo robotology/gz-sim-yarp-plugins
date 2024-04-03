@@ -2,7 +2,7 @@ add_executable(ConfigurationParsingTest ConfigurationParsingTest.cc)
 
 target_link_libraries(ConfigurationParsingTest
 PRIVATE
-  gtest_main
+  GTest::gtest_main
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
   gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
   YARP::YARP_dev

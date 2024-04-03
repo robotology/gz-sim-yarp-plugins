@@ -1,6 +1,6 @@
 add_executable(ForceTorqueTest ForceTorqueTest.cc)
 target_link_libraries(ForceTorqueTest
-  gtest_main
+  GTest::gtest_main
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
   gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
   ${YARP_LIBRARIES}

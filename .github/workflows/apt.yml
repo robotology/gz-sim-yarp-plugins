@@ -41,7 +41,10 @@ jobs:
         sudo apt-get update
         # YARP dependencies
         sudo apt-get install git build-essential cmake ninja-build libace-dev libeigen3-dev libopencv-dev libtinyxml-dev
+        # gz-sim-yarp-plugins dependencies
         sudo apt-get install gz-${{ matrix.gazebo_distro }}
+        # Test dependencies
+        sudo apt-get install libgtest-dev
 
     - name: Cache Source-based Dependencies
       id: cache-source-deps
