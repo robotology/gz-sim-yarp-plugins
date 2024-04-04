@@ -37,6 +37,7 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
+#include <yarp/os/Value.h>
 
 using namespace gz;
 using namespace sim;
@@ -186,15 +187,16 @@ void ControlBoard::Reset(const UpdateInfo& _info, EntityComponentManager& _ecm)
 
 bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
 {
-    yarp::os::Bottle jointsFromConfig = m_pluginParameters.findGroup("jointNames");
+    std::vector<std::string> jointNames{};
+    bool paramOk = gzyarp::readVectorFromConfigFile(m_pluginParameters, "jointNames", jointNames);
 
-    if (jointsFromConfig.isNull())
+    if (!paramOk)
     {
-        yError() << "Error while reading jointNames from plugin parameters";
+        yError() << "Error while reading jointNames parameter from plugin parameters";
         return false;
     }
 
-    auto jointsFromConfigNum = jointsFromConfig.size() - 1; // -1 to exclude the group name
+    auto jointsFromConfigNum = jointNames.size();
     yInfo() << "Found " + std::to_string(jointsFromConfigNum)
                    + " joints from the plugin configuration.";
 
@@ -211,7 +213,7 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
         m_controlBoardData.joints.resize(jointsFromConfigNum);
         for (size_t i = 0; i < jointsFromConfigNum; i++)
         {
-            auto jointFromConfigName = jointsFromConfig.get(i + 1).asString();
+            std::string jointFromConfigName = jointNames.at(i);
 
             auto jointEntity = model.JointByName(_ecm, jointFromConfigName);
             if (!jointEntity)
@@ -436,43 +438,46 @@ bool ControlBoard::initializePIDsForPositionControl()
     Bottle pidGroup = m_pluginParameters.findGroup("POSITION_CONTROL");
 
     size_t numberOfJoints = m_controlBoardData.joints.size();
-    Bottle pidParamGroup;
     auto cUnits = AngleUnitEnum::DEG;
 
     // control units block
-    pidParamGroup = pidGroup.findGroup("controlUnits");
-    if (pidParamGroup.isNull())
+    yarp::os::Value controlUnitsValue = pidGroup.find("controlUnits");
+    if (!controlUnitsValue.isNull() && controlUnitsValue.isString())
+    {
+        if (controlUnitsValue.asString() == "metric_units")
+        {
+            cUnits = AngleUnitEnum::DEG;
+        } else if (controlUnitsValue.asString() == "si_units")
+        {
+            cUnits = AngleUnitEnum::RAD;
+        } else
+        {
+            yError() << "invalid controlUnits value";
+            return false;
+        }
+    } else
     {
         yError() << "POSITION_CONTROL: 'controlUnits' param missing. Cannot "
                     "continue";
         return false;
     }
-    if (pidParamGroup.get(1).asString() == "metric_units")
-    {
-        cUnits = AngleUnitEnum::DEG;
-    } else if (pidParamGroup.get(1).asString() == "si_units")
-    {
-        cUnits = AngleUnitEnum::RAD;
-    } else
-    {
-        yError() << "invalid controlUnits value";
-        return false;
-    }
 
     // control law block
-    pidParamGroup = pidGroup.findGroup("controlLaw");
-    if (pidParamGroup.isNull())
+    yarp::os::Value controlLawValue = pidGroup.find("controlLaw");
+    if (!controlLawValue.isNull() && controlLawValue.isString())
     {
-        yError() << "POSITION_CONTROL: 'controlLaw' parameter missing";
-        return false;
-    }
-    if (pidParamGroup.get(1).asString() == "joint_pid_gazebo_v1")
-    {
-        for (size_t i = 0; i < numberOfJoints; i++)
-            m_controlBoardData.joints[i].positionControlLaw = "joint_pid_gazebo_v1";
+        if (controlLawValue.asString() == "joint_pid_gazebo_v1")
+        {
+            for (size_t i = 0; i < numberOfJoints; i++)
+                m_controlBoardData.joints[i].positionControlLaw = "joint_pid_gazebo_v1";
+        } else
+        {
+            yError() << "invalid controlLaw value";
+            return false;
+        }
     } else
     {
-        yError() << "invalid controlLaw value";
+        yError() << "POSITION_CONTROL: 'controlLaw' parameter missing";
         return false;
     }
 
@@ -491,12 +496,12 @@ bool ControlBoard::initializePIDsForPositionControl()
 
     for (const auto& param : parameters)
     {
-        if (!tryGetGroup(pidGroup, pidParamGroup, param.first, param.second, numberOfJoints + 1))
-        // +1 to include the group name
+        std::vector<double> pidParams{};
+        if (!tryGetGroup(pidGroup, pidParams, param.first, param.second, numberOfJoints))
         {
             return false;
         }
-        setYarpPIDsParam(pidParamGroup, param.first, yarpPIDs, numberOfJoints);
+        setYarpPIDsParam(pidParams, param.first, yarpPIDs, numberOfJoints);
     }
 
     setJointPositionPIDs(cUnits, yarpPIDs);
@@ -504,26 +509,28 @@ bool ControlBoard::initializePIDsForPositionControl()
     return true;
 }
 
-bool ControlBoard::tryGetGroup(
-    const Bottle& in, Bottle& out, const std::string& key, const std::string& txt, int size)
+bool ControlBoard::tryGetGroup(const Bottle& in,
+                               std::vector<double>& out,
+                               const std::string& key,
+                               const std::string& txt,
+                               int expectedSize)
 {
-    Bottle& tmp = in.findGroup(key, txt);
-    if (tmp.isNull())
+    bool vecOk = gzyarp::readVectorFromConfigFile(in, key, out);
+    if (!vecOk)
     {
         yError() << key << " not found";
         return false;
     }
-    if (tmp.size() != size)
+    if (out.size() != expectedSize)
     {
         yError() << "Incorrect number of entries for group: " << key;
         return false;
     }
 
-    out = tmp;
     return true;
 }
 
-bool ControlBoard::setYarpPIDsParam(const Bottle& pidParamGroup,
+bool ControlBoard::setYarpPIDsParam(const std::vector<double>& pidParams,
                                     const std::string& paramName,
                                     std::vector<yarp::dev::Pid>& yarpPIDs,
                                     size_t numberOfJoints)
@@ -544,31 +551,31 @@ bool ControlBoard::setYarpPIDsParam(const Bottle& pidParamGroup,
         switch (pidParamNameMap[paramName])
         {
         case 0:
-            yarpPIDs[i].kp = pidParamGroup.get(i + 1).asFloat64();
+            yarpPIDs[i].kp = pidParams.at(i);
             break;
         case 1:
-            yarpPIDs[i].kd = pidParamGroup.get(i + 1).asFloat64();
+            yarpPIDs[i].kd = pidParams.at(i);
             break;
         case 2:
-            yarpPIDs[i].ki = pidParamGroup.get(i + 1).asFloat64();
+            yarpPIDs[i].ki = pidParams.at(i);
             break;
         case 3:
-            yarpPIDs[i].max_int = pidParamGroup.get(i + 1).asFloat64();
+            yarpPIDs[i].max_int = pidParams.at(i);
             break;
         case 4:
-            yarpPIDs[i].max_output = pidParamGroup.get(i + 1).asFloat64();
+            yarpPIDs[i].max_output = pidParams.at(i);
             break;
         case 5:
-            yarpPIDs[i].scale = pidParamGroup.get(i + 1).asFloat64();
+            yarpPIDs[i].scale = pidParams.at(i);
             break;
         case 6:
-            yarpPIDs[i].offset = pidParamGroup.get(i + 1).asFloat64();
+            yarpPIDs[i].offset = pidParams.at(i);
             break;
         case 7:
-            yarpPIDs[i].stiction_up_val = pidParamGroup.get(i + 1).asFloat64();
+            yarpPIDs[i].stiction_up_val = pidParams.at(i);
             break;
         case 8:
-            yarpPIDs[i].stiction_down_val = pidParamGroup.get(i + 1).asFloat64();
+            yarpPIDs[i].stiction_down_val = pidParams.at(i);
             break;
         default:
             yError() << "Invalid parameter name";
@@ -644,10 +651,10 @@ bool ControlBoard::initializeJointPositionLimits(const gz::sim::EntityComponentM
 
     Bottle limitsGroup = m_pluginParameters.findGroup("LIMITS");
     size_t numberOfJoints = m_controlBoardData.joints.size();
-    Bottle limitMinGroup, limitMaxGroup;
+    std::vector<double> limitMinGroup, limitMaxGroup;
 
-    if (!(tryGetGroup(limitsGroup, limitMinGroup, "jntPosMin", "", numberOfJoints + 1)
-          && tryGetGroup(limitsGroup, limitMaxGroup, "jntPosMax", "", numberOfJoints + 1)))
+    if (!(tryGetGroup(limitsGroup, limitMinGroup, "jntPosMin", "", numberOfJoints)
+          && tryGetGroup(limitsGroup, limitMaxGroup, "jntPosMax", "", numberOfJoints)))
     {
         yError() << "Error while reading joint position limits from plugin configuration";
         return false;
@@ -658,8 +665,8 @@ bool ControlBoard::initializeJointPositionLimits(const gz::sim::EntityComponentM
         // TODO: access gazebo joint position limits and use them to check if software limits
         // ([LIMITS] group) are consistent. In case they are not defined set them as sw limits.
         auto& joint = m_controlBoardData.joints[i];
-        joint.positionLimitMin = limitMinGroup.get(i + 1).asFloat64();
-        joint.positionLimitMax = limitMaxGroup.get(i + 1).asFloat64();
+        joint.positionLimitMin = limitMinGroup.at(i);
+        joint.positionLimitMax = limitMaxGroup.at(i);
     }
 
     return true;
@@ -677,8 +684,8 @@ bool ControlBoard::initializeTrajectoryGenerators()
         missingConfiguration = true;
     }
 
-    auto trajectoryTypeGroup = trajectoryGeneratorsGroup.findGroup("trajectory_type");
-    if (!missingConfiguration && trajectoryTypeGroup.isNull())
+    auto trajectoryTypeValue = trajectoryGeneratorsGroup.find("trajectory_type");
+    if (!missingConfiguration && (trajectoryTypeValue.isNull() || !trajectoryTypeValue.isString()))
     {
         yWarning() << "Group trajectoryType not found in TRAJECTORY_GENERATION group. Defaults to "
                       "minimum jerk trajectory";
@@ -701,11 +708,11 @@ bool ControlBoard::initializeTrajectoryGenerators()
 
         try
         {
-            trajectoryType = trajectoryTypeMap.at(trajectoryTypeGroup.get(1).asString());
-            yInfo() << "Trajectory generator type set to " << trajectoryTypeGroup.get(1).asString();
+            trajectoryType = trajectoryTypeMap.at(trajectoryTypeValue.asString());
+            yInfo() << "Trajectory generator type set to " << trajectoryTypeValue.asString();
         } catch (const std::out_of_range& e)
         {
-            yError() << "Invalid trajectory type " << trajectoryTypeGroup.get(1).asString()
+            yError() << "Invalid trajectory type " << trajectoryTypeValue.asString()
                      << " specified in trajectoryType parameter. Defaults to minimum jerk "
                         "trajectory";
         }
@@ -729,7 +736,7 @@ bool ControlBoard::initializeTrajectoryGenerators()
 bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGeneratorsGroup)
 {
     bool useDefaultSpeedRef{false}, useDefaultAccelerationRef{false};
-    Bottle refSpeedGroup, refAccelerationGroup;
+    std::vector<double> refSpeedGroup, refAccelerationGroup;
 
     if (!trajectoryGeneratorsGroup.isNull())
     {
@@ -738,7 +745,7 @@ bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGen
                          refSpeedGroup,
                          "refSpeed",
                          "",
-                         m_controlBoardData.joints.size() + 1))
+                         m_controlBoardData.joints.size()))
         {
             yWarning() << "Parameter refSpeed not found in TRAJECTORY_GENERATION group. Defaults "
                           "will be applied";
@@ -749,7 +756,7 @@ bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGen
                          refAccelerationGroup,
                          "refAcceleration",
                          "",
-                         m_controlBoardData.joints.size() + 1))
+                         m_controlBoardData.joints.size()))
         {
             yWarning() << "Parameter refAcceleration not found in TRAJECTORY_GENERATION group. "
                           "Defaults will be applied";
@@ -774,7 +781,7 @@ bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGen
             joint.trajectoryGenerationRefSpeed = 10.0; // [deg/s]
         } else
         {
-            joint.trajectoryGenerationRefSpeed = refSpeedGroup.get(i + 1).asFloat64();
+            joint.trajectoryGenerationRefSpeed = refSpeedGroup.at(i);
         }
 
         if (useDefaultAccelerationRef)
@@ -782,7 +789,7 @@ bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGen
             joint.trajectoryGenerationRefAcceleration = 10.0; // [deg/s^2]
         } else
         {
-            joint.trajectoryGenerationRefAcceleration = refAccelerationGroup.get(i + 1).asFloat64();
+            joint.trajectoryGenerationRefAcceleration = refAccelerationGroup.at(i);
         }
 
         // Clip trajectory generation reference velocities according to max joint limit

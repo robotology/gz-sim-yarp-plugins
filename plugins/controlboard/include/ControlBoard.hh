@@ -78,11 +78,11 @@ private:
                                                const gz::sim::EntityComponentManager& ecm) const;
     bool initializePIDsForPositionControl();
     bool tryGetGroup(const yarp::os::Bottle& in,
-                     yarp::os::Bottle& out,
+                     std::vector<double>& out,
                      const std::string& key,
                      const std::string& txt,
-                     int size);
-    bool setYarpPIDsParam(const yarp::os::Bottle& pidParamGroup,
+                     int expectedSize);
+    bool setYarpPIDsParam(const std::vector<double>& pidParams,
                           const std::string& paramName,
                           std::vector<yarp::dev::Pid>& yarpPIDs,
                           size_t numberOfJoints);
