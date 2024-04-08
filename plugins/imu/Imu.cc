@@ -42,7 +42,7 @@ public:
     {
         if (m_deviceRegistered)
         {
-            Handler::getHandler()->removeDevice(m_deviceScopedName);
+            DeviceRegistry::getHandler()->removeDevice(m_deviceScopedName);
             m_deviceRegistered = false;
         }
 
@@ -118,7 +118,7 @@ public:
         m_deviceScopedName
             = sensorScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
 
-        if (!Handler::getHandler()->setDevice(m_deviceScopedName, &m_imuDriver))
+        if (!DeviceRegistry::getHandler()->setDevice(m_deviceScopedName, &m_imuDriver))
         {
             yError() << "gz-sim-yarp-imu-system: failed setting scopedDeviceName(="
                      << m_deviceScopedName << ")";

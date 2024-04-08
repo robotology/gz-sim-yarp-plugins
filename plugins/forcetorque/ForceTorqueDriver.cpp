@@ -1,5 +1,5 @@
+#include <DeviceRegistry.hh>
 #include <ForceTorqueDataSingleton.hh>
-#include <Handler.hh>
 
 #include <mutex>
 

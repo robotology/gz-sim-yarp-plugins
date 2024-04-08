@@ -1,16 +1,16 @@
-#include "Handler.hh"
+#include <DeviceRegistry.hh>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
 namespace gzyarp
 {
 
-Handler* Handler::getHandler()
+DeviceRegistry* DeviceRegistry::getHandler()
 {
     std::lock_guard<std::mutex> lock(mutex());
     if (!s_handle)
     {
-        s_handle = new Handler();
+        s_handle = new DeviceRegistry();
         if (!s_handle)
             yError() << "Error while calling gzyarp::Handler constructor";
     }
@@ -18,7 +18,7 @@ Handler* Handler::getHandler()
     return s_handle;
 }
 
-bool Handler::getDevicesAsPolyDriverList(
+bool DeviceRegistry::getDevicesAsPolyDriverList(
     const std::string& modelScopedName,
     yarp::dev::PolyDriverList& list,
     std::vector<std::string>& deviceScopedNames /*, const std::string& worldName*/)
@@ -73,7 +73,7 @@ bool Handler::getDevicesAsPolyDriverList(
     return true;
 }
 
-bool Handler::setDevice(std::string deviceDatabaseKey, yarp::dev::PolyDriver* device2add)
+bool DeviceRegistry::setDevice(std::string deviceDatabaseKey, yarp::dev::PolyDriver* device2add)
 {
     bool ret = false;
     DevicesMap::iterator device = m_devicesMap.find(deviceDatabaseKey);
@@ -105,7 +105,7 @@ bool Handler::setDevice(std::string deviceDatabaseKey, yarp::dev::PolyDriver* de
     return ret;
 }
 
-yarp::dev::PolyDriver* Handler::getDevice(const std::string& deviceDatabaseKey) const
+yarp::dev::PolyDriver* DeviceRegistry::getDevice(const std::string& deviceDatabaseKey) const
 {
     yarp::dev::PolyDriver* tmp = NULL;
 
@@ -118,7 +118,7 @@ yarp::dev::PolyDriver* Handler::getDevice(const std::string& deviceDatabaseKey) 
     return tmp;
 }
 
-void Handler::removeDevice(const std::string& deviceDatabaseKey)
+void DeviceRegistry::removeDevice(const std::string& deviceDatabaseKey)
 {
     DevicesMap::iterator device = m_devicesMap.find(deviceDatabaseKey);
     if (device != m_devicesMap.end())
@@ -132,15 +132,15 @@ void Handler::removeDevice(const std::string& deviceDatabaseKey)
     return;
 }
 
-Handler::Handler()
+DeviceRegistry::DeviceRegistry()
     : m_devicesMap()
 {
     m_devicesMap.clear();
 }
 
-Handler* Handler::s_handle = NULL;
+DeviceRegistry* DeviceRegistry::s_handle = NULL;
 
-std::mutex& Handler::mutex()
+std::mutex& DeviceRegistry::mutex()
 {
     static std::mutex s_mutex;
     return s_mutex;

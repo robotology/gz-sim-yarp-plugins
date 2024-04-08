@@ -8,7 +8,7 @@ PRIVATE
   YARP::YARP_dev
   YARP::YARP_os
   YARP::YARP_init
-  gz-sim-yarp-handler
+  gz-sim-yarp-device-registry
 )
 
 add_test(NAME ConfigurationParsingTest COMMAND ConfigurationParsingTest)
@@ -16,7 +16,7 @@ add_test(NAME ConfigurationParsingTest COMMAND ConfigurationParsingTest)
 set(_env_vars)
 # list(APPEND _env_vars "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-camera-system>")
 list(APPEND _env_vars "LIBGL_ALWAYS_SOFTWARE=1"
-  "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-handler>"
+  "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-device-registry>"
   "GZ_SIM_RESOURCE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/.."
   )
 

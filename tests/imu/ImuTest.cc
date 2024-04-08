@@ -1,4 +1,4 @@
-#include "../../libraries/singleton-devices/Handler.hh"
+#include <DeviceRegistry.hh>
 
 #include <gtest/gtest.h>
 #include <gz/sim/TestFixture.hh>
@@ -18,7 +18,7 @@ protected:
                                     const std::shared_ptr<const sdf::Element>& /*_sdf*/,
                                     gz::sim::EntityComponentManager& _ecm,
                                     gz::sim::EventManager& /*_eventMgr*/) {
-            driver = gzyarp::Handler::getHandler()->getDevice(deviceScopedName);
+            driver = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceScopedName);
             ASSERT_TRUE(driver != nullptr);
             ASSERT_TRUE(driver->view(igyroscope));
             ASSERT_TRUE(driver->view(iorientation));

@@ -1,5 +1,5 @@
 #include <Common.hh>
-#include <Handler.hh>
+#include <DeviceRegistry.hh>
 
 #include <gtest/gtest.h>
 
@@ -55,7 +55,7 @@ protected:
                 EXPECT_NE(gz::sim::kNullEntity, modelEntity);
                 model = gz::sim::Model(modelEntity);
 
-                driver = gzyarp::Handler::getHandler()->getDevice(deviceScopedName);
+                driver = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceScopedName);
                 ASSERT_TRUE(driver != nullptr);
                 iPositionDirectControl = nullptr;
                 ASSERT_TRUE(driver->view(iPositionDirectControl));

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <Handler.hh>
+#include <DeviceRegistry.hh>
 
 #include <gz/sim/TestFixture.hh>
 
@@ -24,7 +24,7 @@ TEST(ConfigurationParsingTest, LoadPluginsWithYarpConfigurationString)
     std::cerr << "Testing Camera configuration" << std::endl;
     auto cameraDeviceName = "model/model_with_plugins/link/link_1/sensor/camera_sensor/"
                             "camera_plugin_device"; // sensorScopedName / yarpDeviceName
-    auto driver = gzyarp::Handler::getHandler()->getDevice(cameraDeviceName);
+    auto driver = gzyarp::DeviceRegistry::getHandler()->getDevice(cameraDeviceName);
     EXPECT_TRUE(driver != nullptr);
 
     // Test ForceTorque
@@ -32,28 +32,28 @@ TEST(ConfigurationParsingTest, LoadPluginsWithYarpConfigurationString)
     auto ftDeviceName = "model/model_with_plugins/joint/joint_12/sensor/"
                         "force_torque_sensor/"
                         "forcetorque_plugin_device";
-    driver = gzyarp::Handler::getHandler()->getDevice(ftDeviceName);
+    driver = gzyarp::DeviceRegistry::getHandler()->getDevice(ftDeviceName);
     EXPECT_TRUE(driver != nullptr);
 
     // Test Imu
     std::cerr << "Testing Imu configuration" << std::endl;
     auto imuDeviceName = "model/model_with_plugins/link/link_1/sensor/imu_sensor/"
                          "imu_plugin_device";
-    driver = gzyarp::Handler::getHandler()->getDevice(imuDeviceName);
+    driver = gzyarp::DeviceRegistry::getHandler()->getDevice(imuDeviceName);
     EXPECT_TRUE(driver != nullptr);
 
     // Test Laser
     std::cerr << "Testing Laser configuration" << std::endl;
     auto laserDeviceName = "model/model_with_plugins/link/link_1/sensor/laser_sensor/"
                            "laser_plugin_device";
-    driver = gzyarp::Handler::getHandler()->getDevice(laserDeviceName);
+    driver = gzyarp::DeviceRegistry::getHandler()->getDevice(laserDeviceName);
     EXPECT_TRUE(driver != nullptr);
 
     // Test basestate
     std::cerr << "Testing BaseState configuration" << std::endl;
     auto baseStateDeviceName = "model/model_with_plugins/link/link_1/"
                                "basestate_plugin_device";
-    driver = gzyarp::Handler::getHandler()->getDevice(baseStateDeviceName);
+    driver = gzyarp::DeviceRegistry::getHandler()->getDevice(baseStateDeviceName);
     EXPECT_TRUE(driver != nullptr);
 
     // Controlboard test skipped since configuration too complex to pass as string
@@ -75,7 +75,7 @@ TEST(ConfigurationParsingTest, LoadPluginsWithYarpConfigurationFile)
     std::cerr << "Testing Camera configuration" << std::endl;
     auto cameraDeviceName = "model/model_with_plugins/link/link_1/sensor/camera_sensor/"
                             "camera_plugin_device"; // sensorScopedName / yarpDeviceName
-    driver = gzyarp::Handler::getHandler()->getDevice(cameraDeviceName);
+    driver = gzyarp::DeviceRegistry::getHandler()->getDevice(cameraDeviceName);
     EXPECT_TRUE(driver != nullptr);
 
     // Test ForceTorque
@@ -83,33 +83,33 @@ TEST(ConfigurationParsingTest, LoadPluginsWithYarpConfigurationFile)
     auto ftDeviceName = "model/model_with_plugins/joint/joint_12/sensor/"
                         "force_torque_sensor/"
                         "forcetorque_plugin_device";
-    driver = gzyarp::Handler::getHandler()->getDevice(ftDeviceName);
+    driver = gzyarp::DeviceRegistry::getHandler()->getDevice(ftDeviceName);
     EXPECT_TRUE(driver != nullptr);
 
     // Test Imu
     std::cerr << "Testing Imu configuration" << std::endl;
     auto imuDeviceName = "model/model_with_plugins/link/link_1/sensor/imu_sensor/"
                          "imu_plugin_device";
-    driver = gzyarp::Handler::getHandler()->getDevice(imuDeviceName);
+    driver = gzyarp::DeviceRegistry::getHandler()->getDevice(imuDeviceName);
     EXPECT_TRUE(driver != nullptr);
 
     // Test Laser
     std::cerr << "Testing Laser configuration" << std::endl;
     auto laserDeviceName = "model/model_with_plugins/link/link_1/sensor/laser_sensor/"
                            "laser_plugin_device";
-    driver = gzyarp::Handler::getHandler()->getDevice(laserDeviceName);
+    driver = gzyarp::DeviceRegistry::getHandler()->getDevice(laserDeviceName);
     EXPECT_TRUE(driver != nullptr);
 
     // Test basestate
     std::cerr << "Testing BaseState configuration" << std::endl;
     auto baseStateDeviceName = "model/model_with_plugins/link/link_1/"
                                "basestate_plugin_device";
-    driver = gzyarp::Handler::getHandler()->getDevice(baseStateDeviceName);
+    driver = gzyarp::DeviceRegistry::getHandler()->getDevice(baseStateDeviceName);
     EXPECT_TRUE(driver != nullptr);
 
     // Test controlboard
     std::cerr << "Testing ControlBoard configuration" << std::endl;
     auto controlboardDeviceName = "model/model_with_plugins/controlboard_plugin_device";
-    driver = gzyarp::Handler::getHandler()->getDevice(controlboardDeviceName);
+    driver = gzyarp::DeviceRegistry::getHandler()->getDevice(controlboardDeviceName);
     EXPECT_TRUE(driver != nullptr);
 }

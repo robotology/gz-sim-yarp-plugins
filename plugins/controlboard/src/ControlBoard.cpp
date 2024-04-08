@@ -4,7 +4,7 @@
 #include <ConfigurationHelpers.hh>
 #include <ControlBoardDataSingleton.hh>
 #include <ControlBoardDriver.hh>
-#include <Handler.hh>
+#include <DeviceRegistry.hh>
 
 #include <cstddef>
 #include <cstdlib>
@@ -57,7 +57,7 @@ ControlBoard::~ControlBoard()
 {
     if (m_deviceRegistered)
     {
-        Handler::getHandler()->removeDevice(m_deviceScopedName);
+        DeviceRegistry::getHandler()->removeDevice(m_deviceScopedName);
         m_deviceRegistered = false;
     }
 
@@ -134,7 +134,7 @@ void ControlBoard::Configure(const Entity& _entity,
         return;
     }
 
-    if (!Handler::getHandler()->setDevice(m_deviceScopedName, &m_controlBoardDriver))
+    if (!DeviceRegistry::getHandler()->setDevice(m_deviceScopedName, &m_controlBoardDriver))
     {
         yError() << "gz-sim-yarp-basestate-system: failed setting scopedDeviceName(="
                  << m_deviceScopedName << ")";

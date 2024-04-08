@@ -35,7 +35,7 @@ public:
     {
         if (m_deviceRegistered)
         {
-            Handler::getHandler()->removeDevice(m_deviceScopedName);
+            DeviceRegistry::getHandler()->removeDevice(m_deviceScopedName);
             m_deviceRegistered = false;
         }
 
@@ -135,7 +135,7 @@ public:
         m_deviceScopedName
             = m_baseLinkScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
 
-        if (!Handler::getHandler()->setDevice(m_deviceScopedName, &m_baseStateDriver))
+        if (!DeviceRegistry::getHandler()->setDevice(m_deviceScopedName, &m_baseStateDriver))
         {
             yError() << "gz-sim-yarp-basestate-system: failed setting scopedDeviceName(="
                      << m_deviceScopedName << ")";

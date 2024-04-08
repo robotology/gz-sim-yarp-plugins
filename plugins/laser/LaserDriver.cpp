@@ -1,4 +1,4 @@
-#include <Handler.hh>
+#include <DeviceRegistry.hh>
 #include <LaserDataSingleton.hh>
 
 #include <mutex>
