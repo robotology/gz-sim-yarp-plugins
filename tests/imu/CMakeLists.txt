@@ -7,7 +7,7 @@ target_link_libraries(ImuTest
         YARP::YARP_dev
         YARP::YARP_os
         YARP::YARP_init
-        gz-sim-yarp-handler
+        gz-sim-yarp-device-registry
 )
 add_test(NAME ImuTest
          COMMAND ImuTest)

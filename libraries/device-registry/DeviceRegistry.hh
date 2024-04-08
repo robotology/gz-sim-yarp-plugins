@@ -6,10 +6,10 @@
 namespace gzyarp
 {
 
-class Handler
+class DeviceRegistry
 {
 public:
-    static Handler* getHandler();
+    static DeviceRegistry* getHandler();
 
     bool getDevicesAsPolyDriverList(
         const std::string& modelScopedName,
@@ -23,8 +23,8 @@ public:
     void removeDevice(const std::string& deviceDatabaseKey);
 
 private:
-    Handler();
-    static Handler* s_handle;
+    DeviceRegistry();
+    static DeviceRegistry* s_handle;
     static std::mutex& mutex();
     typedef std::map<std::string, yarp::dev::PolyDriver*> DevicesMap;
     DevicesMap m_devicesMap; // map of known yarp devices

@@ -1,5 +1,5 @@
 #include <BaseStateDataSingleton.hh>
-#include <Handler.hh>
+#include <DeviceRegistry.hh>
 
 #include <mutex>
 

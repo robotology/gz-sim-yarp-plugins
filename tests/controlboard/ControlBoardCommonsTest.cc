@@ -1,5 +1,5 @@
 #include <ControlBoardDataSingleton.hh>
-#include <Handler.hh>
+#include <DeviceRegistry.hh>
 
 #include <gtest/gtest.h>
 
@@ -88,7 +88,7 @@ TEST(ControlBoardCommonsTest, JointPositionLimitsForMultipleJoints)
 
     testFixture.Finalize();
 
-    driver = gzyarp::Handler::getHandler()->getDevice(deviceScopedName);
+    driver = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceScopedName);
     ASSERT_TRUE(driver != nullptr);
     ASSERT_TRUE(driver->view(iControlLimits));
 

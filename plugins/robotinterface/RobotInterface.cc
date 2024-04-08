@@ -1,5 +1,5 @@
 #include <ConfigurationHelpers.hh>
-#include <Handler.hh>
+#include <DeviceRegistry.hh>
 
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Model.hh>
@@ -80,9 +80,9 @@ public:
 
         yarp::dev::PolyDriverList externalDriverList;
 
-        Handler::getHandler()->getDevicesAsPolyDriverList(scopedName(model.Entity(), _ecm),
-                                                          externalDriverList,
-                                                          m_deviceScopedNames);
+        DeviceRegistry::getHandler()->getDevicesAsPolyDriverList(scopedName(model.Entity(), _ecm),
+                                                                 externalDriverList,
+                                                                 m_deviceScopedNames);
 
         bool ok = m_xmlRobotInterfaceResult.robot.setExternalDevices(externalDriverList);
         if (!ok)

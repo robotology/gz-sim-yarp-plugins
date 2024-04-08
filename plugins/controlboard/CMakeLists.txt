@@ -25,7 +25,7 @@ target_link_libraries(gz-sim-yarp-controlboard-system
     YARP::YARP_os
     YARP::YARP_init
     gz-sim-yarp-commons
-    gz-sim-yarp-handler
+    gz-sim-yarp-device-registry
     gz-sim-yarp-controlboard-singleton
     gz-sim-yarp-commons
 )

@@ -1,5 +1,5 @@
 #include <CameraDataSingleton.hh>
-#include <Handler.hh>
+#include <DeviceRegistry.hh>
 
 #include <mutex>
 
