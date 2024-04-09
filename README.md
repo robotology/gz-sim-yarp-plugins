@@ -4,6 +4,14 @@
 > This repository contains a preliminary work in progress of integration of Modern Gazebo (gz) and YARP devices, a port of some functionalities of <https://github.com/robotology/gazebo-yarp-plugins> to Modern Gazebo. \
 > The repo is working in progress, and public interfaces can change without warning.
 
+## Table of contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Run Tests](#run-tests)
+- [Contributing](#contributing)
+- [Maintainers](#maintainers)
+
 ## Installation
 
 At the moment we do not provide any binary for `gz-sim-yarp-plugins`, so you need to compile it from source, either
@@ -106,6 +114,8 @@ where `<install_location>` is the directory passed to `CMAKE_INSTALL_PREFIX` dur
 
 Once the plugins are available, you can see how to use the different plugins by looking in the directories contained in the `tutorial` folder of this repo. Each directory is an example, and contains a README that shows how to run that example.
 
+If you are migrating from an existing project made for Gazebo Classic and `gazebo-yarp-plugins`, check out the [migration guide](docs/how-to-migrate-from-gazebo-classic.md).
+
 ### How to specify Yarp configurations
 There are two ways to specify the Yarp configuration of a plugin:
 - `yarpConfigurationString`: it allows to directly specify the configuration in a string that must follow the [standard data representation format](https://www.yarp.it/latest/data_rep.html);
@@ -154,3 +164,9 @@ For more details, check how the tests are run as part of the Continuous Integrat
 ## Contributing
 
 Refer to the [Contributing page](CONTRIBUTING.md).
+
+## Maintainers
+- Silvio Traversaro ([@traversaro](https://github.com/traversaro))
+- Alessandro Croci ([@xela-95](https://github.com/xela-95))
+
+
