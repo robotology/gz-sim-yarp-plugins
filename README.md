@@ -14,114 +14,41 @@
 
 ## Installation
 
-At the moment we do not provide any binary for `gz-sim-yarp-plugins`, so you need to compile it from source, either
-installing the dependencies with conda-forge on Linux, macOS or Windows, or apt on Ubuntu.
+### conda (recommended)
 
-### Compile from source using conda-forge dependencies on Linux, macOS or Windows
+You can easily install the C++ and Python library with via [`conda-forge`](https://conda-forge.org) using the following command:
 
-Create and activate an environment with the required dependencies:
+```bash
+conda install -c conda-forge gz-sim-yarp-plugins
+```
 
-~~~
-mamba create -c conda-forge -n gsypdev libgz-sim8 yarp ycm-cmake-modules cmake ninja pkg-config cmake compilers gtest
-mamba activate gsypdev
-~~~
+If you are not familiar with conda or conda-forge, you can read an introduction document in [conda-forge overview](https://github.com/robotology/robotology-superbuild/blob/master/doc/conda-forge.md#conda-forge-overview).
 
-All the commands in this README should be executed in a terminal with the activated environment.
+### robotology-superbuild (advanced)
 
-Then, compile gz-sim-yarp-plugins itself, using the following commands on Linux and macOS:
+You may want to install `gz-sim-yarp-plugins` through the [robotology-superbuild](https://github.com/robotology/robotology-superbuild), an easy way to download, compile and install the robotology software on multiple operating systems, using the [CMake](https://www.cmake.org) build system and its extension [YCM](http://robotology.github.io/ycm). To get `gz-sim-yarp-plugins` when using the `robotology-superbuild`, please enable the `ROBOTOLOGY_USES_GZ_SIM` CMake option of the superbuild.
 
-~~~
-git clone https://github.dev/robotology/gz-sim-yarp-plugins
-mkdir build
-cd build
-cmake -GNinja -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DCMAKE_PREFIX_PATH=$CONDA_PREFIX ..
-ninja
-ninja install
-~~~
+### Build from source (advanced)
 
-or the following commands on Windows:
-
-~~~
-git clone https://github.dev/robotology/gz-sim-yarp-plugins
-mkdir build
-cd build
-cmake -GNinja -DCMAKE_INSTALL_PREFIX=%CONDA_PREFIX%\Library -DCMAKE_PREFIX_PATH=%CONDA_PREFIX%\Library ..
-ninja
-ninja install
-~~~
-
-### Compile from source using apt dependencies on Linux, macOS or Windows
-
-First install some necessary dependencies from apt  
-
-~~~
-sudo apt-get update
-sudo apt-get install lsb-release wget gnupg cmake pkg-config ninja-build build-essential libgtest-dev
-~~~
-
-Then install Gazebo Harmonic:
-
-~~~
-sudo wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
-sudo apt-get update
-sudo apt-get install gz-harmonic
-~~~
-
-Then, you need to install [`ycm-cmake-modules`](https://github.com/robotology/ycm) and [`yarp`](https://github.com/robotology/yarp), for which no apt binaries are available. You can install them easily via the `robotology-superbuild`, or otherwise with the following commands:
-
-~~~
-mkdir ~/gsyp_ws
-cd ~/gsyp_ws
-git clone https://github.com/robotology/ycm
-git clone https://github.com/robotology/yarp
-cd ycm
-mkdir build
-cd build
-cmake -GNinja -DCMAKE_INSTALL_PREFIX=~/gsyp_ws/install -DCMAKE_PREFIX_PATH=~/gsyp_ws/install ..
-ninja
-ninja install
-cd ~/gsyp_ws/yarp
-cd yarp
-git checkout v3.9.0
-mkdir build
-cd build
-cmake -GNinja -DCMAKE_INSTALL_PREFIX=~/gsyp_ws/install -DCMAKE_PREFIX_PATH=~/gsyp_ws/install ..
-ninja
-ninja install
-~~~
-
-Then, install `gz-sim-yarp-plugins` itself:
-
-~~~
-git clone https://github.dev/robotology/gz-sim-yarp-plugins
-mkdir build
-cd build
-cmake -GNinja -DCMAKE_INSTALL_PREFIX=~/gsyp_ws/install -DCMAKE_PREFIX_PATH=~/gsyp_ws/install ..
-ninja
-ninja install
-~~~
+If you want to build `gz-sim-yarp-plugins` directly from source, you can check the documentation in [`docs/build-from-source.md`](docs/build-from-source.md).
 
 ## Usage
 
-To notify Gazebo of the new plugins compiled, it is necessary to modify the `GZ_SIM_SYSTEM_PLUGIN_PATH` environment variable, for example on Linux:
+Once the plugins are available, you can see how to use the different plugins by looking in the directories contained in the [tutorial](tutorial/) folder of this repo. Each directory is an example, and contains a README that shows how to run that example.
 
-~~~
-export GZ_SIM_SYSTEM_PLUGIN_PATH=${GZ_SIM_SYSTEM_PLUGIN_PATH}:<install_location>/lib
-~~~
-
-where `<install_location>` is the directory passed to `CMAKE_INSTALL_PREFIX` during the CMake configuration.
-
-Once the plugins are available, you can see how to use the different plugins by looking in the directories contained in the `tutorial` folder of this repo. Each directory is an example, and contains a README that shows how to run that example.
+### Migrating from Gazebo Classic and `gazebo-yarp-plugins`
 
 If you are migrating from an existing project made for Gazebo Classic and `gazebo-yarp-plugins`, check out the [migration guide](docs/how-to-migrate-from-gazebo-classic.md).
 
 ### How to specify Yarp configurations
+
 There are two ways to specify the Yarp configuration of a plugin:
+
 - `yarpConfigurationString`: it allows to directly specify the configuration in a string that must follow the [standard data representation format](https://www.yarp.it/latest/data_rep.html);
 - `yarpConfigurationFile`: it specifies the location of a [Yarp configuration file](https://www.yarp.it/latest/yarp_config_files.html).
 
 Concerning `yarpConfigurationFile`, the preferred way to specify the path to the configuration file is by using [Gazebo URIs](https://gazebosim.org/api/common/6/classgz_1_1common_1_1URI.html). A URI has the following general scheme:
+
 ```
 scheme:[//authority]path[?query][#fragment] 
 ```
@@ -166,7 +93,6 @@ For more details, check how the tests are run as part of the Continuous Integrat
 Refer to the [Contributing page](CONTRIBUTING.md).
 
 ## Maintainers
+
 - Silvio Traversaro ([@traversaro](https://github.com/traversaro))
 - Alessandro Croci ([@xela-95](https://github.com/xela-95))
-
-
