@@ -1,9 +1,16 @@
 # Build gz-sim-yarp-plugins from source
 
-`gz-sim-yarp-plugins` is a fairly classical C++ project build with CMake, so it should be quite easy to build if you are already familiar with how you build C++ projects with CMake.
-If you are not familiar with the use of CMake, you can check some documentation on <https://cmake.org/runningcmake/> or <https://cgold.readthedocs.io> .
+## Table of Contents
 
-## C++ Dependencies
+- [Dependencies](#dependencies)
+- [Compile from source using conda-forge dependencies on Linux, macOS or Windows](#compile-from-source-using-conda-forge-dependencies-on-linux-macos-or-windows)
+- [Compile from source using apt dependencies on Linux, macOS or Windows](#compile-from-source-using-apt-dependencies-on-linux-macos-or-windows)
+- [Usage](#usage)
+
+## Dependencies
+
+`gz-sim-yarp-plugins` is a fairly classical C++ project build with CMake, so it should be quite easy to build if you are already familiar with how you build C++ projects with CMake.
+If you are not familiar with the use of CMake, you can check some documentation on <https://cmake.org/runningcmake/> or <https://cgold.readthedocs.io>.
 
 Before building `gz-sim-yarp-plugins`, you need to install its dependencies, the main ones being:
 
@@ -18,7 +25,7 @@ in addition to the usual dependencies used to configure, compile and test C++ pa
 If you are using conda (or mamba), the dependencies of `gz-sim-yarp-plugins` can be installed with:
 
 ```bash
-mamba install -c conda-forge libgz-sim8 yarp ycm-cmake-modules cmake ninja pkg-config cmake compilers gtest
+conda install -c conda-forge libgz-sim8 yarp ycm-cmake-modules cmake ninja pkg-config cmake compilers gtest
 ```
 
 This command should be executed in a terminal with the environment activated.
@@ -47,7 +54,7 @@ ninja
 ninja install
 ```
 
-### Compile from source using apt dependencies on Linux, macOS or Windows
+## Compile from source using apt dependencies on Linux, macOS or Windows
 
 If you are using an apt-based distribution such as Ubuntu and you want to use apt, the dependencies can be installed via:
 
@@ -98,3 +105,13 @@ cmake -GNinja -DCMAKE_INSTALL_PREFIX=~/gsyp_ws/install -DCMAKE_PREFIX_PATH=~/gsy
 ninja
 ninja install
 ```
+
+## Usage
+
+To notify Gazebo of the new plugins compiled, it is necessary to modify the `GZ_SIM_SYSTEM_PLUGIN_PATH` environment variable, for example on Linux:
+
+~~~
+export GZ_SIM_SYSTEM_PLUGIN_PATH=${GZ_SIM_SYSTEM_PLUGIN_PATH}:<install_location>/lib
+~~~
+
+where `<install_location>` is the directory passed to `CMAKE_INSTALL_PREFIX` during the CMake configuration.
