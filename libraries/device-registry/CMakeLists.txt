@@ -17,4 +17,4 @@ install(TARGETS gz-sim-yarp-device-registry
         EXPORT ${PROJECT_NAME})
 
 install(FILES DeviceRegistry.hh 
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/gz-sim-yarp-device-registry")
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/gzyarp")
