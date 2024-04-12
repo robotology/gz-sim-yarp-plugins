@@ -1,5 +1,3 @@
-add_subdirectory(singleton)
-
 add_library(gz-sim-yarp-camera-system SHARED Camera.cc CameraDriver.cpp)
 
 target_include_directories(gz-sim-yarp-camera-system PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
@@ -14,7 +12,6 @@ target_link_libraries(gz-sim-yarp-camera-system
     YARP::YARP_os
     YARP::YARP_init
     gz-sim-yarp-device-registry
-    gz-sim-yarp-camera-singleton
     gz-sim-yarp-commons)
 
 # Add install target

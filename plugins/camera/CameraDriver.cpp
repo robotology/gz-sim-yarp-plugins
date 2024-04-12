@@ -1,12 +1,18 @@
-#include <CameraDataSingleton.hh>
+#include <CameraShared.hh>
 #include <DeviceRegistry.hh>
 
+#include <cstdio>
+#include <cstring>
 #include <mutex>
 
+#include <string>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
+#include <yarp/dev/IFrameGrabberImage.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
+#include <yarp/os/Searchable.h>
+#include <yarp/sig/Image.h>
 
 namespace yarp
 {
@@ -22,7 +28,8 @@ class CameraDriver;
 const std::string YarpCameraScopedName = "sensorScopedName";
 
 class yarp::dev::gzyarp::CameraDriver : public yarp::dev::DeviceDriver,
-                                        public yarp::dev::IFrameGrabberImage
+                                        public yarp::dev::IFrameGrabberImage,
+                                        public ::gzyarp::ICameraData
 {
 public:
     CameraDriver()
@@ -51,16 +58,9 @@ public:
     }
 
     // DEVICE DRIVER
-    virtual bool open(yarp::os::Searchable& config)
+    bool open(yarp::os::Searchable& config) override
     {
         std::string sensorScopedName(config.find(YarpCameraScopedName.c_str()).asString().c_str());
-        m_sensorData = ::gzyarp::CameraDataSingleton::getHandler()->getSensor(sensorScopedName);
-
-        if (!m_sensorData)
-        {
-            yError() << "Error, Camera sensor was not found";
-            return false;
-        }
 
         {
             std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
@@ -80,7 +80,7 @@ public:
         return true;
     }
 
-    virtual bool close()
+    bool close() override
     {
         delete[] m_sensorData->m_imageBuffer;
         m_sensorData->m_imageBuffer = 0;
@@ -88,7 +88,7 @@ public:
     }
 
     // IFRAMEGRABBER IMAGE
-    virtual bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& _image)
+    bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& _image) override
     {
         std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
         _image.resize(width(), height());
@@ -184,17 +184,17 @@ public:
         return true;
     }
 
-    virtual int height() const
+    int height() const override
     {
         return m_sensorData->m_height;
     }
 
-    virtual int width() const
+    int width() const override
     {
         return m_sensorData->m_width;
     }
 
-    virtual int getRawBufferSize()
+    int getRawBufferSize()
     {
         return m_sensorData->m_bufferSize;
     }
@@ -270,8 +270,15 @@ public:
         }
     }
 
+    // ICameraData
+
+    void setCameraData(::gzyarp::CameraData* dataPtr) override
+    {
+        m_sensorData = dataPtr;
+    }
+
 private:
-    CameraData* m_sensorData;
+    ::gzyarp::CameraData* m_sensorData;
     int counter;
     bool m_vertical_flip;
     bool m_horizontal_flip;

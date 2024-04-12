@@ -1,23 +1,40 @@
 #include <CameraDriver.cpp>
+#include <CameraShared.hh>
 #include <ConfigurationHelpers.hh>
 #include <DeviceIdGenerator.hh>
 
+#include <cstddef>
+#include <cstring>
+#include <memory>
+#include <mutex>
+#include <string>
+
+#include <gz/msgs/details/image.pb.h>
 #include <gz/plugin/Register.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/Sensor.hh>
 #include <gz/sim/System.hh>
+#include <gz/sim/Types.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/components/Camera.hh>
 #include <gz/sim/components/Name.hh>
 #include <gz/sim/components/ParentEntity.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/transport/Node.hh>
+#include <sdf/Element.hh>
 
+#include <yarp/dev/Drivers.h>
+#include <yarp/dev/IFrameGrabberImage.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
+#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
+#include <yarp/os/Property.h>
 
 using namespace gz;
 using namespace sim;
@@ -50,7 +67,6 @@ public:
         {
             m_cameraDriver.close();
         }
-        CameraDataSingleton::getHandler()->removeSensor(sensorScopedName);
         yarp::os::Network::fini();
     }
 
@@ -117,9 +133,6 @@ public:
 
         driver_properties.put(YarpCameraScopedName.c_str(), sensorScopedName.c_str());
 
-        // Insert the pointer in the singleton handler for retriving it in the yarp driver
-        CameraDataSingleton::getHandler()->setSensor(&(this->cameraData));
-
         driver_properties.put("device", "gazebo_camera");
         driver_properties.put("sensor_name", sensorName);
 
@@ -129,6 +142,17 @@ public:
             yError() << "gz-sim-yarp-camera-system Plugin failed: error in opening yarp driver";
             return;
         }
+
+        ICameraData* iCameraData = nullptr;
+        auto viewOk = m_cameraDriver.view(iCameraData);
+
+        if (!viewOk || !iCameraData)
+        {
+            yError() << "gz-sim-yarp-camera-system Plugin failed: error in getting "
+                        "ICameraData interface";
+            return;
+        }
+        iCameraData->setCameraData(&cameraData);
 
         m_cameraDriver.view(iFrameGrabberImage);
         if (iFrameGrabberImage == NULL)
