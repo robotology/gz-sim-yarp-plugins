@@ -10,3 +10,4 @@ dependencies:
   - libgz-sim8
   - yarp
   - gtest
+  - cmake-package-check
