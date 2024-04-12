@@ -1,5 +1,3 @@
-add_subdirectory(singleton)
-
 add_library(gz-sim-yarp-forcetorque-system SHARED ForceTorque.cc ForceTorqueDriver.cpp)
 
 target_include_directories(gz-sim-yarp-forcetorque-system
@@ -15,7 +13,6 @@ target_link_libraries(gz-sim-yarp-forcetorque-system
     YARP::YARP_os
     YARP::YARP_init
     gz-sim-yarp-device-registry
-    gz-sim-yarp-forcetorque-singleton
     gz-sim-yarp-commons)
 
 # Add install target

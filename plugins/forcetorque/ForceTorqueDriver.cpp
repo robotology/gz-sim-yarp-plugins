@@ -1,13 +1,17 @@
 #include <DeviceRegistry.hh>
-#include <ForceTorqueDataSingleton.hh>
+#include <ForceTorqueShared.hh>
 
+#include <cstddef>
 #include <mutex>
+#include <string>
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
+#include <yarp/os/Searchable.h>
+#include <yarp/sig/Vector.h>
 
 namespace yarp
 {
@@ -28,7 +32,8 @@ const double fakeTemperatureValue = 25.0;
 
 class yarp::dev::gzyarp::ForceTorqueDriver : public yarp::dev::DeviceDriver,
                                              public yarp::dev::ISixAxisForceTorqueSensors,
-                                             public yarp::dev::ITemperatureSensors
+                                             public yarp::dev::ITemperatureSensors,
+                                             public ::gzyarp::IForceTorqueData
 {
 public:
     ForceTorqueDriver()
@@ -39,7 +44,7 @@ public:
     }
 
     // DEVICE DRIVER
-    virtual bool open(yarp::os::Searchable& config)
+    bool open(yarp::os::Searchable& config) override
     {
 
         std::string sensorScopedName(
@@ -56,29 +61,22 @@ public:
         }
 
         m_frameName = m_sensorName;
-        m_sensorData
-            = ::gzyarp::ForceTorqueDataSingleton::getHandler()->getSensor(sensorScopedName);
-
-        if (!m_sensorData)
-        {
-            yError() << "Error, ForceTorque sensor was not found";
-            return false;
-        }
 
         return true;
     }
 
-    virtual bool close()
+    bool close() override
     {
         return true;
     }
 
     // SIX AXIS FORCE TORQUE SENSORS
-    virtual size_t getNrOfSixAxisForceTorqueSensors() const
+    size_t getNrOfSixAxisForceTorqueSensors() const override
     {
         return 1;
     }
-    virtual yarp::dev::MAS_status getSixAxisForceTorqueSensorStatus(size_t sens_index) const
+
+    yarp::dev::MAS_status getSixAxisForceTorqueSensorStatus(size_t sens_index) const override
     {
         if (sens_index >= 1)
         {
@@ -87,7 +85,8 @@ public:
 
         return MAS_OK;
     }
-    virtual bool getSixAxisForceTorqueSensorName(size_t sens_index, std::string& name) const
+
+    bool getSixAxisForceTorqueSensorName(size_t sens_index, std::string& name) const override
     {
         if (sens_index >= 1)
         {
@@ -97,8 +96,9 @@ public:
         name = m_sensorName;
         return true;
     }
-    virtual bool
-    getSixAxisForceTorqueSensorFrameName(size_t sens_index, std::string& frameName) const
+
+    bool
+    getSixAxisForceTorqueSensorFrameName(size_t sens_index, std::string& frameName) const override
     {
         if (sens_index >= 1)
         {
@@ -212,8 +212,15 @@ public:
         return true;
     }
 
+    // IForceTorqueData
+
+    void setForceTorqueData(::gzyarp::ForceTorqueData* ftData) override
+    {
+        m_sensorData = ftData;
+    }
+
 private:
-    ForceTorqueData* m_sensorData;
+    ::gzyarp::ForceTorqueData* m_sensorData = nullptr;
     std::string m_sensorName;
     std::string m_frameName;
 };

@@ -2,20 +2,33 @@
 #include <DeviceIdGenerator.hh>
 #include <ForceTorqueDriver.cpp>
 
+#include <memory>
+#include <mutex>
+#include <string>
+
+#include <gz/msgs/details/wrench.pb.h>
 #include <gz/plugin/Register.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/Sensor.hh>
 #include <gz/sim/System.hh>
+#include <gz/sim/Types.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/transport/Node.hh>
+#include <sdf/Element.hh>
 #include <sdf/ForceTorque.hh>
 
+#include <yarp/dev/Drivers.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
+#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
+#include <yarp/os/Property.h>
 
 using namespace gz;
 using namespace sim;
@@ -45,7 +58,6 @@ public:
 
         if (m_forceTorqueDriver.isValid())
             m_forceTorqueDriver.close();
-        ForceTorqueDataSingleton::getHandler()->removeSensor(sensorScopedName);
         yarp::os::Network::fini();
     }
 
@@ -108,9 +120,6 @@ public:
 
         driver_properties.put(YarpForceTorqueScopedName.c_str(), sensorScopedName.c_str());
 
-        // Insert the pointer in the singleton handler for retriving it in the yarp driver
-        ForceTorqueDataSingleton::getHandler()->setSensor(&(this->forceTorqueData));
-
         driver_properties.put("device", "gazebo_forcetorque");
         driver_properties.put("sensor_name", sensorName);
         if (!m_forceTorqueDriver.open(driver_properties))
@@ -120,9 +129,19 @@ public:
             return;
         }
 
+        IForceTorqueData* ftData = nullptr;
+        auto viewOk = m_forceTorqueDriver.view(ftData);
+
+        if (!viewOk || !ftData)
+        {
+            yError() << "gz-sim-yarp-forcetorque-system Plugin failed: error in getting "
+                        "IForceTorqueData interface";
+            return;
+        }
+        ftData->setForceTorqueData(&forceTorqueData);
+
         auto deviceName = driver_properties.find("yarpDeviceName").asString();
         m_deviceId = DeviceIdGenerator::generateDeviceId(sensor, _ecm, deviceName);
-        std::cerr << "============== DeviceId: " << m_deviceId << std::endl;
         if (!DeviceRegistry::getHandler()->setDevice(m_deviceId, &m_forceTorqueDriver))
         {
             yError() << "gz-sim-yarp-forcetorque-system: failed setting scopedDeviceName(="
