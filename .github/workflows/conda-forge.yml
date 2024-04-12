@@ -96,3 +96,9 @@ jobs:
       run: |
         cd build
         cmake --build . --config ${{ matrix.build_type }} --target install
+
+    - name: Test installed package
+      shell: bash -l {0}
+      run: |
+        cd build
+        cmake-package-check gz-sim-yarp-plugins --targets gz-sim-yarp-plugins::gz-sim-yarp-device-registry
