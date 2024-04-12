@@ -1,12 +1,16 @@
 #include <DeviceRegistry.hh>
-#include <ImuDataSingleton.hh>
+#include <ImuShared.hh>
 
+#include <cstddef>
 #include <mutex>
+#include <string>
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
+#include <yarp/os/Searchable.h>
+#include <yarp/sig/Vector.h>
 
 namespace yarp
 {
@@ -35,7 +39,8 @@ class yarp::dev::gzyarp::ImuDriver : public yarp::dev::DeviceDriver,
                                      public yarp::dev::IThreeAxisGyroscopes,
                                      public yarp::dev::IThreeAxisLinearAccelerometers,
                                      public yarp::dev::IOrientationSensors,
-                                     public yarp::dev::IThreeAxisMagnetometers
+                                     public yarp::dev::IThreeAxisMagnetometers,
+                                     public ::gzyarp::IImuData
 {
 
 public:
@@ -63,13 +68,6 @@ public:
         }
 
         m_frameName = m_sensorName;
-        m_sensorData = ::gzyarp::ImuDataSingleton::getHandler()->getSensor(sensorScopedName);
-
-        if (!m_sensorData)
-        {
-            yError() << "Error, IMU sensor was not found";
-            return false;
-        }
 
         return true;
     }
@@ -193,8 +191,15 @@ public:
         return genericGetMeasure(sens_index, out, timestamp, 0);
     }
 
+    // IIMUDATA
+
+    void setImuData(::gzyarp::ImuData* dataPtr) override
+    {
+        m_sensorData = dataPtr;
+    }
+
 private:
-    ImuData* m_sensorData;
+    ::gzyarp::ImuData* m_sensorData = nullptr;
     std::string m_sensorName;
     std::string m_frameName;
 

@@ -1,5 +1,3 @@
-add_subdirectory(singleton)
-
 add_library(gz-sim-yarp-imu-system SHARED Imu.cc ImuDriver.cpp)
 
 target_include_directories(gz-sim-yarp-imu-system
@@ -15,7 +13,6 @@ target_link_libraries(gz-sim-yarp-imu-system
     YARP::YARP_os
     YARP::YARP_init
     gz-sim-yarp-device-registry
-    gz-sim-yarp-imu-singleton
     gz-sim-yarp-commons)
 
 # Add install target
