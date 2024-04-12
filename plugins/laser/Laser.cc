@@ -1,24 +1,39 @@
 #include <ConfigurationHelpers.hh>
 #include <DeviceIdGenerator.hh>
 #include <LaserDriver.cpp>
+#include <LaserShared.hh>
+
+#include <cstddef>
+#include <memory>
+#include <mutex>
+#include <string>
 
 #include <gz/msgs.hh>
+#include <gz/msgs/details/laserscan.pb.h>
 #include <gz/plugin/Register.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/Sensor.hh>
 #include <gz/sim/System.hh>
+#include <gz/sim/Types.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/components/Lidar.hh>
 #include <gz/sim/components/Name.hh>
 #include <gz/sim/components/ParentEntity.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/transport/Node.hh>
+#include <sdf/Element.hh>
 
+#include <yarp/dev/Drivers.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
+#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
+#include <yarp/os/Property.h>
 
 using namespace gz;
 using namespace sim;
@@ -49,7 +64,6 @@ public:
 
         if (m_laserDriver.isValid())
             m_laserDriver.close();
-        LaserDataSingleton::getHandler()->removeSensor(sensorScopedName);
         yarp::os::Network::fini();
     }
 
@@ -108,9 +122,6 @@ public:
 
         driver_properties.put(YarpLaserScopedName.c_str(), sensorScopedName.c_str());
 
-        // Insert the pointer in the singleton handler for retriving it in the yarp driver
-        LaserDataSingleton::getHandler()->setSensor(&(this->laserData));
-
         driver_properties.put("device", "gazebo_laser");
         driver_properties.put("sensor_name", sensorName);
         if (!m_laserDriver.open(driver_properties))
@@ -118,6 +129,17 @@ public:
             yError() << "gz-sim-yarp-laser-system Plugin failed: error in opening yarp driver";
             return;
         }
+
+        ILaserData* iLaserData = nullptr;
+        auto viewOk = m_laserDriver.view(iLaserData);
+
+        if (!viewOk || !iLaserData)
+        {
+            yError() << "gz-sim-yarp-laser-system Plugin failed: error in getting "
+                        "ILaserData interface";
+            return;
+        }
+        iLaserData->setLaserData(&laserData);
 
         auto deviceName = driver_properties.find("yarpDeviceName").asString();
         m_deviceId = DeviceIdGenerator::generateDeviceId(sensor, _ecm, deviceName);

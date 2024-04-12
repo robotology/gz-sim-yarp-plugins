@@ -1,14 +1,18 @@
 #include <DeviceRegistry.hh>
-#include <LaserDataSingleton.hh>
+#include <LaserShared.hh>
 
+#include <cstddef>
 #include <mutex>
 
+#include <string>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IRangefinder2D.h>
 #include <yarp/dev/LaserMeasurementData.h>
 #include <yarp/dev/Lidar2DDeviceBase.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
+#include <yarp/os/Searchable.h>
+#include <yarp/sig/Vector.h>
 
 namespace yarp
 {
@@ -24,7 +28,8 @@ class LaserDriver;
 const std::string YarpLaserScopedName = "sensorScopedName";
 
 class yarp::dev::gzyarp::LaserDriver : public yarp::dev::Lidar2DDeviceBase,
-                                       public yarp::dev::DeviceDriver
+                                       public yarp::dev::DeviceDriver,
+                                       public ::gzyarp::ILaserData
 {
 public:
     LaserDriver()
@@ -35,7 +40,7 @@ public:
     }
 
     // DEVICE DRIVER
-    virtual bool open(yarp::os::Searchable& config)
+    bool open(yarp::os::Searchable& config) override
     {
         std::string sensorScopedName(config.find(YarpLaserScopedName.c_str()).asString().c_str());
 
@@ -49,13 +54,7 @@ public:
             m_sensorName = config.find("sensor_name").asString().substr(pos + separator.size() - 1);
         }
         m_frameName = m_sensorName;
-        m_sensorData = ::gzyarp::LaserDataSingleton::getHandler()->getSensor(sensorScopedName);
 
-        if (!m_sensorData)
-        {
-            yError() << "Error, Laser sensor was not found";
-            return false;
-        }
         if (this->parseConfiguration(config) == false)
         {
             yError() << "error parsing parameters";
@@ -66,18 +65,18 @@ public:
         return true;
     }
 
-    virtual bool close()
+    bool close() override
     {
         return true;
     }
 
     // Lidar2DDeviceBase
-    bool acquireDataFromHW()
+    bool acquireDataFromHW() override
     {
         return true;
     }
 
-    bool getRawData(yarp::sig::Vector& ranges, double* timestamp)
+    bool getRawData(yarp::sig::Vector& ranges, double* timestamp) override
     {
         std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
 
@@ -92,36 +91,43 @@ public:
     }
 
     // IRangefinder2D
-    virtual bool setDistanceRange(double min, double max)
+    bool setDistanceRange(double min, double max) override
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         yError() << "setDistanceRange() Not yet implemented";
         return false;
     }
 
-    virtual bool setScanLimits(double min, double max)
+    bool setScanLimits(double min, double max) override
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         yError() << "setScanLimits() Not yet implemented";
         return false;
     }
 
-    virtual bool setHorizontalResolution(double step)
+    bool setHorizontalResolution(double step) override
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         yError() << "setHorizontalResolution() Not yet implemented";
         return false;
     }
 
-    virtual bool setScanRate(double rate)
+    bool setScanRate(double rate) override
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         yError() << "setScanRate() Not yet implemented";
         return false;
     }
 
+    // ILaserData
+
+    void setLaserData(::gzyarp::LaserData* dataPtr) override
+    {
+        m_sensorData = dataPtr;
+    }
+
 private:
-    LaserData* m_sensorData;
+    ::gzyarp::LaserData* m_sensorData;
     std::string m_sensorName;
     std::string m_frameName;
 };
