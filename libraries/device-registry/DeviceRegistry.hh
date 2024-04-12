@@ -1,5 +1,8 @@
-#include <gz/common/Event.hh>
+#include <map>
 #include <mutex>
+#include <string>
+#include <vector>
+
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 

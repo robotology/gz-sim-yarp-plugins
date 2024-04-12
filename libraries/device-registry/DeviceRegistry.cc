@@ -1,4 +1,13 @@
 #include <DeviceRegistry.hh>
+
+#include <cstddef>
+#include <mutex>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/PolyDriverList.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
