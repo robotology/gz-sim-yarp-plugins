@@ -129,6 +129,16 @@ yarp::dev::PolyDriver* DeviceRegistry::getDevice(const std::string& deviceDataba
     return tmp;
 }
 
+std::vector<std::string> DeviceRegistry::getDevicesKeys() const
+{
+    std::vector<std::string> keys;
+    for (auto&& [key, value] : m_devicesMap)
+        keys.push_back(key);
+    return keys;
+}
+
+// Private methods
+
 void DeviceRegistry::removeDevice(const std::string& deviceDatabaseKey)
 {
     DevicesMap::iterator device = m_devicesMap.find(deviceDatabaseKey);

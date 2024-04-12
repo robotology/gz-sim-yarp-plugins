@@ -25,6 +25,8 @@ public:
 
     void removeDevice(const std::string& deviceDatabaseKey);
 
+    std::vector<std::string> getDevicesKeys() const;
+
 private:
     DeviceRegistry();
     static DeviceRegistry* s_handle;
