@@ -1,21 +1,36 @@
 #include <BaseStateDriver.cpp>
+#include <BaseStateShared.hh>
 #include <ConfigurationHelpers.hh>
 #include <DeviceIdGenerator.hh>
 
+#include <memory>
+#include <mutex>
+#include <string>
+
+#include <gz/math/Pose3.hh>
+#include <gz/math/Vector3.hh>
 #include <gz/plugin/Register.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/Sensor.hh>
 #include <gz/sim/System.hh>
+#include <gz/sim/Types.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/transport/Node.hh>
+#include <sdf/Element.hh>
 
+#include <yarp/dev/Drivers.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
+#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
+#include <yarp/os/Property.h>
 
 using namespace gz;
 using namespace sim;
@@ -44,13 +59,12 @@ public:
         {
             m_baseStateDriver.close();
         }
-        BaseStateDataSingleton::getBaseStateDataHandler()->removeBaseLink(m_baseLinkScopedName);
     }
 
-    virtual void Configure(const Entity& _entity,
-                           const std::shared_ptr<const sdf::Element>& _sdf,
-                           EntityComponentManager& _ecm,
-                           EventManager& /*_eventMgr*/) override
+    void Configure(const Entity& _entity,
+                   const std::shared_ptr<const sdf::Element>& _sdf,
+                   EntityComponentManager& _ecm,
+                   EventManager& /*_eventMgr*/) override
     {
 
         std::string netWrapper = "analogServer";
@@ -112,9 +126,6 @@ public:
 
         driver_properties.put(YarpBaseStateScopedName.c_str(), m_baseLinkScopedName.c_str());
 
-        // Insert the pointer in the singleton handler for retrieving it in the yarp driver
-        BaseStateDataSingleton::getBaseStateDataHandler()->setBaseStateData(&(m_baseStateData));
-
         driver_properties.put("device", "gazebo_basestate");
         driver_properties.put("robot", m_baseLinkScopedName);
 
@@ -124,6 +135,17 @@ public:
                         "driver";
             return;
         }
+
+        IBaseStateData* iBaseStateData = nullptr;
+        auto viewOk = m_baseStateDriver.view(iBaseStateData);
+
+        if (!viewOk || !iBaseStateData)
+        {
+            yError() << "gz-sim-yarp-basestate-system Plugin failed: error in getting "
+                        "IBaseStateData interface";
+            return;
+        }
+        iBaseStateData->setBaseStateData(&m_baseStateData);
 
         m_deviceId = DeviceIdGenerator::generateDeviceId(m_baseLinkEntity, _ecm, deviceName);
 

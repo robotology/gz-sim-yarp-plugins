@@ -1,6 +1,3 @@
-
-add_subdirectory(singleton)
-
 add_library(gz-sim-yarp-basestate-system SHARED BaseState.cc BaseStateDriver.cpp)
 
 target_include_directories(gz-sim-yarp-basestate-system 
@@ -16,7 +13,6 @@ target_link_libraries(gz-sim-yarp-basestate-system
     YARP::YARP_os
     YARP::YARP_init
     gz-sim-yarp-device-registry
-    gz-sim-yarp-basestate-singleton
     gz-sim-yarp-commons)
 
 # Add install target
