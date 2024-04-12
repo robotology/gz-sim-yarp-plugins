@@ -1,5 +1,6 @@
 #include <BaseStateDriver.cpp>
 #include <ConfigurationHelpers.hh>
+#include <DeviceIdGenerator.hh>
 
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Joint.hh>
@@ -35,7 +36,7 @@ public:
     {
         if (m_deviceRegistered)
         {
-            DeviceRegistry::getHandler()->removeDevice(m_deviceScopedName);
+            DeviceRegistry::getHandler()->removeDevice(m_deviceId);
             m_deviceRegistered = false;
         }
 
@@ -111,14 +112,6 @@ public:
 
         driver_properties.put(YarpBaseStateScopedName.c_str(), m_baseLinkScopedName.c_str());
 
-        if (!driver_properties.check("yarpDeviceName"))
-        {
-            yError() << "gz-sim-yarp-basestate-system : missing yarpDeviceName parameter for "
-                        "device "
-                     << m_baseLinkScopedName;
-            return;
-        }
-
         // Insert the pointer in the singleton handler for retrieving it in the yarp driver
         BaseStateDataSingleton::getBaseStateDataHandler()->setBaseStateData(&(m_baseStateData));
 
@@ -132,17 +125,16 @@ public:
             return;
         }
 
-        m_deviceScopedName
-            = m_baseLinkScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
+        m_deviceId = DeviceIdGenerator::generateDeviceId(m_baseLinkEntity, _ecm, deviceName);
 
-        if (!DeviceRegistry::getHandler()->setDevice(m_deviceScopedName, &m_baseStateDriver))
+        if (!DeviceRegistry::getHandler()->setDevice(m_deviceId, &m_baseStateDriver))
         {
             yError() << "gz-sim-yarp-basestate-system: failed setting scopedDeviceName(="
-                     << m_deviceScopedName << ")";
+                     << m_deviceId << ")";
             return;
         }
         m_deviceRegistered = true;
-        yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
+        yInfo() << "Registered YARP device with instance name:" << m_deviceId;
     }
 
     virtual void PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm) override
@@ -235,7 +227,7 @@ public:
 private:
     bool m_deviceRegistered;
     std::string m_baseLinkScopedName;
-    std::string m_deviceScopedName;
+    std::string m_deviceId;
     Entity m_baseLinkEntity;
     Link m_baseLink;
     yarp::dev::PolyDriver m_baseStateDriver;

@@ -4,6 +4,7 @@
 #include <ConfigurationHelpers.hh>
 #include <ControlBoardDataSingleton.hh>
 #include <ControlBoardDriver.hh>
+#include <DeviceIdGenerator.hh>
 #include <DeviceRegistry.hh>
 
 #include <cstddef>
@@ -57,7 +58,7 @@ ControlBoard::~ControlBoard()
 {
     if (m_deviceRegistered)
     {
-        DeviceRegistry::getHandler()->removeDevice(m_deviceScopedName);
+        DeviceRegistry::getHandler()->removeDevice(m_deviceId);
         m_deviceRegistered = false;
     }
 
@@ -102,13 +103,12 @@ void ControlBoard::Configure(const Entity& _entity,
     m_robotScopedName = gz::sim::scopedName(_entity, _ecm, "/");
     yDebug() << "gz-sim-yarp-controlboard-system : robot scoped name: " << m_robotScopedName;
 
-    m_deviceScopedName
-        = m_robotScopedName + "/" + m_pluginParameters.find("yarpDeviceName").asString();
-    yDebug() << "gz-sim-yarp-controlboard-system : device scoped name: " << m_deviceScopedName;
+    m_deviceId = DeviceIdGenerator::generateDeviceId(_entity, _ecm, deviceName);
+    yDebug() << "gz-sim-yarp-controlboard-system : deviceId: " << m_deviceId;
 
     m_modelEntity = _entity;
 
-    m_controlBoardData.controlBoardId = m_deviceScopedName;
+    m_controlBoardData.controlBoardId = m_deviceId;
 
     m_pluginParameters.put(yarp::dev::gzyarp::YarpControlBoardScopedName.c_str(),
                            m_robotScopedName.c_str());
@@ -117,7 +117,7 @@ void ControlBoard::Configure(const Entity& _entity,
     ControlBoardDataSingleton::getControlBoardHandler()->setControlBoardData(&(m_controlBoardData));
 
     m_pluginParameters.put("device", "gazebo_controlboard");
-    m_pluginParameters.put("controlBoardId", m_deviceScopedName);
+    m_pluginParameters.put("controlBoardId", m_deviceId);
 
     if (_sdf->HasElement("initialConfiguration"))
     {
@@ -134,10 +134,10 @@ void ControlBoard::Configure(const Entity& _entity,
         return;
     }
 
-    if (!DeviceRegistry::getHandler()->setDevice(m_deviceScopedName, &m_controlBoardDriver))
+    if (!DeviceRegistry::getHandler()->setDevice(m_deviceId, &m_controlBoardDriver))
     {
-        yError() << "gz-sim-yarp-basestate-system: failed setting scopedDeviceName(="
-                 << m_deviceScopedName << ")";
+        yError() << "gz-sim-yarp-basestate-system: failed setting scopedDeviceName(=" << m_deviceId
+                 << ")";
         return;
     }
 
@@ -149,7 +149,7 @@ void ControlBoard::Configure(const Entity& _entity,
 
     resetPositionsAndTrajectoryGenerators(_ecm);
 
-    yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
+    yInfo() << "Registered YARP device with instance name:" << m_deviceId;
     m_deviceRegistered = true;
 }
 

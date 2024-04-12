@@ -1,4 +1,5 @@
 #include <ConfigurationHelpers.hh>
+#include <DeviceIdGenerator.hh>
 #include <LaserDriver.cpp>
 
 #include <gz/msgs.hh>
@@ -42,7 +43,7 @@ public:
     {
         if (m_deviceRegistered)
         {
-            DeviceRegistry::getHandler()->removeDevice(m_deviceScopedName);
+            DeviceRegistry::getHandler()->removeDevice(m_deviceId);
             m_deviceRegistered = false;
         }
 
@@ -82,6 +83,11 @@ public:
                 yError() << "gz-sim-yarp-laser-system : missing parentLinkName parameter";
                 return;
             }
+            if (!driver_properties.check("yarpDeviceName"))
+            {
+                yError() << "gz-sim-yarp-laser-system : missing yarpDeviceName parameter";
+                return;
+            }
             yInfo() << "gz-sim-yarp-laser-system: configuration of sensor "
                     << driver_properties.find("sensorName").asString() << " loaded";
         } else
@@ -101,12 +107,6 @@ public:
         this->laserData.sensorScopedName = sensorScopedName;
 
         driver_properties.put(YarpLaserScopedName.c_str(), sensorScopedName.c_str());
-        if (!driver_properties.check("yarpDeviceName"))
-        {
-            yError() << "gz-sim-yarp-laser-system : missing yarpDeviceName parameter for device"
-                     << sensorScopedName;
-            return;
-        }
 
         // Insert the pointer in the singleton handler for retriving it in the yarp driver
         LaserDataSingleton::getHandler()->setSensor(&(this->laserData));
@@ -119,17 +119,17 @@ public:
             return;
         }
 
-        m_deviceScopedName
-            = sensorScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
+        auto deviceName = driver_properties.find("yarpDeviceName").asString();
+        m_deviceId = DeviceIdGenerator::generateDeviceId(sensor, _ecm, deviceName);
 
-        if (!DeviceRegistry::getHandler()->setDevice(m_deviceScopedName, &m_laserDriver))
+        if (!DeviceRegistry::getHandler()->setDevice(m_deviceId, &m_laserDriver))
         {
-            yError() << "gz-sim-yarp-laser-system: failed setting scopedDeviceName(="
-                     << m_deviceScopedName << ")";
+            yError() << "gz-sim-yarp-laser-system: failed setting scopedDeviceName(=" << m_deviceId
+                     << ")";
             return;
         }
         m_deviceRegistered = true;
-        yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
+        yInfo() << "Registered YARP device with instance name:" << m_deviceId;
     }
     virtual void PreUpdate(const UpdateInfo& _info, EntityComponentManager& _ecm) override
     {
@@ -170,7 +170,7 @@ public:
 private:
     Entity sensor;
     yarp::dev::PolyDriver m_laserDriver;
-    std::string m_deviceScopedName;
+    std::string m_deviceId;
     std::string sensorScopedName;
     bool m_deviceRegistered;
     LaserData laserData;

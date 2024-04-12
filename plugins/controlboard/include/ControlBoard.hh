@@ -53,7 +53,7 @@ public:
 private:
     bool m_deviceRegistered;
     std::string m_robotScopedName;
-    std::string m_deviceScopedName;
+    std::string m_deviceId;
     gz::sim::Entity m_modelEntity;
     yarp::dev::PolyDriver m_controlBoardDriver;
     ControlBoardData m_controlBoardData;

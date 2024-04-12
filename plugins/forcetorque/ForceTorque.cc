@@ -1,4 +1,5 @@
 #include <ConfigurationHelpers.hh>
+#include <DeviceIdGenerator.hh>
 #include <ForceTorqueDriver.cpp>
 
 #include <gz/plugin/Register.hh>
@@ -38,7 +39,7 @@ public:
     {
         if (m_deviceRegistered)
         {
-            DeviceRegistry::getHandler()->removeDevice(m_deviceScopedName);
+            DeviceRegistry::getHandler()->removeDevice(m_deviceId);
             m_deviceRegistered = false;
         }
 
@@ -83,6 +84,11 @@ public:
                 yError() << "gz-sim-yarp-forcetorque-system : missing jointName parameter";
                 return;
             }
+            if (!driver_properties.check("yarpDeviceName"))
+            {
+                yError() << "gz-sim-yarp-forcetorque-system : missing yarpDeviceName parameter";
+                return;
+            }
             yInfo() << "gz-sim-yarp-forcetorque-system: configuration of sensor "
                     << driver_properties.find("sensorName").asString() << " loaded";
         } else
@@ -101,13 +107,6 @@ public:
         this->forceTorqueData.sensorScopedName = sensorScopedName;
 
         driver_properties.put(YarpForceTorqueScopedName.c_str(), sensorScopedName.c_str());
-        if (!driver_properties.check("yarpDeviceName"))
-        {
-            yError() << "gz-sim-yarp-forcetorque-system : missing yarpDeviceName parameter for "
-                        "device"
-                     << sensorScopedName;
-            return;
-        }
 
         // Insert the pointer in the singleton handler for retriving it in the yarp driver
         ForceTorqueDataSingleton::getHandler()->setSensor(&(this->forceTorqueData));
@@ -121,17 +120,17 @@ public:
             return;
         }
 
-        m_deviceScopedName
-            = sensorScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
-
-        if (!DeviceRegistry::getHandler()->setDevice(m_deviceScopedName, &m_forceTorqueDriver))
+        auto deviceName = driver_properties.find("yarpDeviceName").asString();
+        m_deviceId = DeviceIdGenerator::generateDeviceId(sensor, _ecm, deviceName);
+        std::cerr << "============== DeviceId: " << m_deviceId << std::endl;
+        if (!DeviceRegistry::getHandler()->setDevice(m_deviceId, &m_forceTorqueDriver))
         {
             yError() << "gz-sim-yarp-forcetorque-system: failed setting scopedDeviceName(="
-                     << m_deviceScopedName << ")";
+                     << m_deviceId << ")";
             return;
         }
         m_deviceRegistered = true;
-        yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
+        yInfo() << "Registered YARP device with instance name:" << m_deviceId;
     }
 
     virtual void PreUpdate(const UpdateInfo& _info, EntityComponentManager& _ecm) override
@@ -171,7 +170,7 @@ public:
 private:
     Entity sensor;
     yarp::dev::PolyDriver m_forceTorqueDriver;
-    std::string m_deviceScopedName;
+    std::string m_deviceId;
     std::string sensorScopedName;
     bool m_deviceRegistered;
     ForceTorqueData forceTorqueData;
