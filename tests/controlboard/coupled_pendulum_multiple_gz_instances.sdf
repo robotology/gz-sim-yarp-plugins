@@ -159,12 +159,12 @@
         </visual>
       </link>
 
-      <!-- <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
+      <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
         <yarpConfigurationFile>
           ../../../tests/controlboard/conf/gazebo_controlboard_multiple_joints.ini
         </yarpConfigurationFile>
         <initialConfiguration>0.0</initialConfiguration>
-      </plugin> -->
+      </plugin>
       <!-- <plugin name='robotinterface' filename='libgazebo_yarp_robotinterface.so'>
       <yarpRobotInterfaceConfigurationFile>model://coupled_pendulum/conf/coupled_pendulum_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin> -->
