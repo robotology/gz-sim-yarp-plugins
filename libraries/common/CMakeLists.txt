@@ -1,4 +1,4 @@
-add_library(gz-sim-yarp-commons SHARED Common.hh ConfigurationHelpers.hh ConfigurationHelpers.cpp)
+add_library(gz-sim-yarp-commons SHARED Common.hh ConfigurationHelpers.hh ConfigurationHelpers.cpp DeviceIdGenerator.hh DeviceIdGenerator.cpp)
 
 target_include_directories(gz-sim-yarp-commons PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
 
