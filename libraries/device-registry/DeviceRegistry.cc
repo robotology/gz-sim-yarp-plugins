@@ -21,7 +21,7 @@ DeviceRegistry* DeviceRegistry::getHandler()
     {
         s_handle = new DeviceRegistry();
         if (!s_handle)
-            yError() << "Error while calling gzyarp::Handler constructor";
+            yError() << "Error while calling gzyarp::DeviceRegistry constructor";
     }
 
     return s_handle;
@@ -67,7 +67,8 @@ bool DeviceRegistry::getDevicesAsPolyDriverList(
             } else
             {
                 // If a name collision is found, print a clear error and return
-                yError() << "gzyarp::Handler robotinterface getDevicesAsPolyDriverList error: ";
+                yError() << "gzyarp::DeviceRegistry robotinterface getDevicesAsPolyDriverList "
+                            "error: ";
                 yError() << "two YARP devices with yarpDeviceName " << yarpDeviceName
                          << " found in model " << modelScopedName;
                 yError() << "First instance: " << got->second;
@@ -92,7 +93,8 @@ bool DeviceRegistry::setDevice(std::string deviceDatabaseKey, yarp::dev::PolyDri
             ret = true;
         else
         {
-            yError() << " Error in gzyarp::Handler while inserting a new yarp device pointer!";
+            yError() << " Error in gzyarp::DeviceRegistry while inserting a new yarp device "
+                        "pointer!";
             yError() << " The name of the device is already present but the pointer does not match "
                         "with the one already registered!";
             yError() << " This should not happen, check the names are correct in your config file. "
@@ -106,7 +108,7 @@ bool DeviceRegistry::setDevice(std::string deviceDatabaseKey, yarp::dev::PolyDri
                      std::pair<std::string, yarp::dev::PolyDriver*>(deviceDatabaseKey, device2add))
                  .second)
         {
-            yError() << " Error in gzyarp::Handler while inserting a new device pointer!";
+            yError() << " Error in gzyarp::DeviceRegistry while inserting a new device pointer!";
             ret = false;
         } else
             ret = true;
