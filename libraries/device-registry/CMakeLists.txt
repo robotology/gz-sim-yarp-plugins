@@ -14,7 +14,7 @@ target_link_libraries(gz-sim-yarp-device-registry
     YARP::YARP_init)
 
 install(TARGETS gz-sim-yarp-device-registry
-        EXPORT gz-sim-yarp-device-registry)
+        EXPORT ${PROJECT_NAME})
 
 install(FILES DeviceRegistry.hh 
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/gz-sim-yarp-device-registry")
