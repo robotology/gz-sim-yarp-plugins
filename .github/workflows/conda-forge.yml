@@ -56,9 +56,8 @@ jobs:
         echo "CC=${compiler_path}" >> $GITHUB_ENV
         echo "CXX=${compiler_path}" >> $GITHUB_ENV
         echo "CMAKE_INSTALL_PREFIX=${CONDA_PREFIX}\Library" >> $GITHUB_ENV
-        - name: Setup compilation env variables (Windows)
 
-    - name: Setup compilation env variables (non-Windpows)
+    - name: Setup compilation env variables (non-Windows)
       if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
       shell: bash -l {0}
       run: |

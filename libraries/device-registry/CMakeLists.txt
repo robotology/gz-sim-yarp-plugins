@@ -1,4 +1,6 @@
+
 add_library(gz-sim-yarp-device-registry SHARED DeviceRegistry.hh DeviceRegistry.cc)
+add_library(${PROJECT_NAME}::gz-sim-yarp-device-registry ALIAS gz-sim-yarp-device-registry)
 
 target_include_directories(gz-sim-yarp-device-registry PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
                                                               "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
