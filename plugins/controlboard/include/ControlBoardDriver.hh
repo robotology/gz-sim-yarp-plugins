@@ -41,7 +41,8 @@ class ControlBoardDriver : public DeviceDriver,
                            public IPositionControl,
                            public IVelocityControl,
                            public ICurrentControl,
-                           public IPidControl
+                           public IPidControl,
+                           public ::gzyarp::IControlBoardData
 {
 public:
     // DeviceDriver
@@ -201,6 +202,10 @@ public:
     bool enablePid(const PidControlTypeEnum& pidtype, int j) override;
     bool setPidOffset(const PidControlTypeEnum& pidtype, int j, double v) override;
     bool isPidEnabled(const PidControlTypeEnum& pidtype, int j, bool* enabled) override;
+
+    // IControlBoardData
+
+    void setControlBoardData(::gzyarp::ControlBoardData* controlBoardData) override;
 
 private:
     std::string m_controlBoardId;

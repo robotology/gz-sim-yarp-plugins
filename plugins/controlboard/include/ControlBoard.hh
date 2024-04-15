@@ -2,6 +2,8 @@
 
 #include <ControlBoardData.hh>
 
+#include <cstddef>
+#include <gz/msgs/details/wrench.pb.h>
 #include <memory>
 #include <string>
 
@@ -14,8 +16,10 @@
 #include <gz/sim/Types.hh>
 #include <sdf/Element.hh>
 
+#include <vector>
 #include <yarp/dev/ControlBoardPid.h>
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/os/Bottle.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Property.h>
 

@@ -19,13 +19,12 @@ foreach(TEST ${TESTS})
       YARP::YARP_init
       gz-sim-yarp-commons
       gz-sim-yarp-device-registry
-      gz-sim-yarp-controlboard-singleton
-  )
+      gz-sim-yarp-controlboard-system)
 
   add_test(NAME ${TEST}
        COMMAND ${TEST})
 
   set_tests_properties(${TEST} PROPERTIES
-    ENVIRONMENT "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-controlboard-singleton>")
+    ENVIRONMENT "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-controlboard-system>")
     
 endforeach()

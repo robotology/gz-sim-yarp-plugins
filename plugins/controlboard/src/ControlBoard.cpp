@@ -2,19 +2,24 @@
 
 #include <Common.hh>
 #include <ConfigurationHelpers.hh>
-#include <ControlBoardDataSingleton.hh>
+#include <ControlBoardData.hh>
 #include <ControlBoardDriver.hh>
+#include <ControlBoardTrajectory.hh>
 #include <DeviceIdGenerator.hh>
 #include <DeviceRegistry.hh>
 
+#include <cmath>
 #include <cstddef>
 #include <cstdlib>
 #include <exception>
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <gz/math/Vector3.hh>
@@ -66,8 +71,6 @@ ControlBoard::~ControlBoard()
     {
         m_controlBoardDriver.close();
     }
-    ControlBoardDataSingleton::getControlBoardHandler()->removeControlBoard(
-        m_controlBoardData.controlBoardId);
 }
 
 void ControlBoard::Configure(const Entity& _entity,
@@ -113,9 +116,6 @@ void ControlBoard::Configure(const Entity& _entity,
     m_pluginParameters.put(yarp::dev::gzyarp::YarpControlBoardScopedName.c_str(),
                            m_robotScopedName.c_str());
 
-    // Insert the pointer in the singleton handler for retrieving it in the yarp driver
-    ControlBoardDataSingleton::getControlBoardHandler()->setControlBoardData(&(m_controlBoardData));
-
     m_pluginParameters.put("device", "gazebo_controlboard");
     m_pluginParameters.put("controlBoardId", m_deviceId);
 
@@ -140,6 +140,17 @@ void ControlBoard::Configure(const Entity& _entity,
                  << ")";
         return;
     }
+
+    IControlBoardData* iControlBoardData = nullptr;
+    auto viewOk = m_controlBoardDriver.view(iControlBoardData);
+
+    if (!viewOk || !iControlBoardData)
+    {
+        yError() << "gz-sim-yarp-controlboard-system Plugin failed: error in getting "
+                    "IControlBoardData interface";
+        return;
+    }
+    iControlBoardData->setControlBoardData(&m_controlBoardData);
 
     if (!setJointProperties(_ecm))
     {
