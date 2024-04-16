@@ -6,6 +6,8 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 
+#include <gz/sim/EntityComponentManager.hh>
+
 namespace gzyarp
 {
 
@@ -26,6 +28,9 @@ public:
     void removeDevice(const std::string& deviceDatabaseKey);
 
     std::vector<std::string> getDevicesKeys() const;
+
+    // Return only the devices that belong to simulation having the ecm passed as argument
+    std::vector<std::string> getDevicesKeys(const gz::sim::EntityComponentManager& ecm) const;
 
 private:
     DeviceRegistry();

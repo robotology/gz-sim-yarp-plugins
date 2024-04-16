@@ -1,21 +1,29 @@
 #include <Common.hh>
 #include <DeviceRegistry.hh>
 
+#include <algorithm>
+#include <chrono>
 #include <gtest/gtest.h>
-
-#include <cmath>
-#include <cstdlib>
+#include <iomanip>
+#include <ios>
 #include <iostream>
+#include <memory>
 #include <ostream>
 #include <string>
+#include <thread>
 
+#include <gz/common/Console.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/TestFixture.hh>
+#include <gz/sim/Types.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/World.hh>
 #include <gz/sim/components/JointForceCmd.hh>
+#include <sdf/Element.hh>
 
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IEncoders.h>
@@ -33,17 +41,16 @@ namespace test
 
 TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
 {
-    std::string deviceScopedName = "model/coupled_pendulum/controlboard_plugin_device";
-    auto plannedIterations = 100;
+    auto plannedIterations = 10'000;
     yarp::dev::PolyDriver* driver1;
     yarp::dev::PolyDriver* driver2;
     yarp::dev::IEncoders* iEncoders1 = nullptr;
     yarp::dev::IEncoders* iEncoders2 = nullptr;
     double jointPosition1{}, jointPosition2{};
     gz::sim::TestFixture fixture1("../../../tests/controlboard/"
-                                  "coupled_pendulum_multiple_gz_instances.sdf");
+                                  "double_pendulum_multiple_gz_instances.sdf");
     gz::sim::TestFixture fixture2("../../../tests/controlboard/"
-                                  "coupled_pendulum_multiple_gz_instances.sdf");
+                                  "double_pendulum_multiple_gz_instances.sdf");
     gz::common::Console::SetVerbosity(4);
 
     fixture1
@@ -51,18 +58,16 @@ TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
                          const std::shared_ptr<const sdf::Element>& /*_sdf*/,
                          gz::sim::EntityComponentManager& _ecm,
                          gz::sim::EventManager& /*_eventMgr*/) {
-            driver1 = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceScopedName);
+            auto deviceIds = gzyarp::DeviceRegistry::getHandler()->getDevicesKeys(_ecm);
+            ASSERT_TRUE(deviceIds.size() == 1);
+            driver1 = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceIds[0]);
             ASSERT_TRUE(driver1 != nullptr);
             iEncoders1 = nullptr;
             ASSERT_TRUE(driver1->view(iEncoders1));
         })
-        .OnPreUpdate(
-            [&](const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm) {})
         .OnPostUpdate(
             [&](const gz::sim::UpdateInfo& _info, const gz::sim::EntityComponentManager& _ecm) {
-                std::cerr << "Iteration: " << _info.iterations << std::endl;
                 iEncoders1->getEncoder(0, &jointPosition1);
-                std::cerr << "Joint position 1: " << jointPosition1 << std::endl;
             })
         .Finalize();
 
@@ -71,18 +76,16 @@ TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
                          const std::shared_ptr<const sdf::Element>& /*_sdf*/,
                          gz::sim::EntityComponentManager& _ecm,
                          gz::sim::EventManager& /*_eventMgr*/) {
-            driver2 = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceScopedName);
+            auto deviceIds = gzyarp::DeviceRegistry::getHandler()->getDevicesKeys(_ecm);
+            ASSERT_TRUE(deviceIds.size() == 1);
+            driver2 = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceIds[0]);
             ASSERT_TRUE(driver2 != nullptr);
             iEncoders2 = nullptr;
             ASSERT_TRUE(driver2->view(iEncoders2));
         })
-        .OnPreUpdate(
-            [&](const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm) {})
         .OnPostUpdate(
             [&](const gz::sim::UpdateInfo& _info, const gz::sim::EntityComponentManager& _ecm) {
-                std::cerr << "Iteration: " << _info.iterations << std::endl;
                 iEncoders2->getEncoder(0, &jointPosition2);
-                std::cerr << "Joint position 2: " << jointPosition2 << std::endl;
             })
         .Finalize();
 
@@ -91,7 +94,8 @@ TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
 
     while (fixture1.Server()->Running() || fixture2.Server()->Running())
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::cerr << "Waiting for Gazebo simulation to finish..." << std::endl;
     }
 
     ASSERT_EQ(fixture1.Server()->IterationCount(), plannedIterations);
@@ -99,6 +103,12 @@ TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
 
     // Check that DeviceRegistry has two devices, one for each Gazebo instance
     ASSERT_EQ(gzyarp::DeviceRegistry::getHandler()->getDevicesKeys().size(), 2);
+
+    // Print final joint positions
+    std::cerr << std::fixed << std::setprecision(6)
+              << "Final joint position simulation 1: " << jointPosition1 << std::endl;
+    std::cerr << std::fixed << std::setprecision(6)
+              << "Final joint position simulation 2: " << jointPosition2 << std::endl;
 }
 
 } // namespace test

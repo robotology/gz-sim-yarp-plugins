@@ -45,25 +45,21 @@
       </link>
     </model>
 
-    <model name="coupled_pendulum">
+    <model name="double_pendulum">
+      <joint name="fixed_base" type="fixed">
+        <parent>world</parent>
+        <child>base_link</child>
+      </joint>
       <link name='base_link'>
         <inertial>
           <pose>0 0 0 0 0 0</pose>
-          <mass>1000</mass>
-          <inertia>
-            <ixx>1</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>1</iyy>
-            <iyz>0</iyz>
-            <izz>1</izz>
-          </inertia>
+          <density>8000</density>
         </inertial>
         <collision name='base_link_fixed_joint_lump__base_collision'>
           <pose>0 0 1 0 0 0</pose>
           <geometry>
             <box>
-              <size>0.14999999999999999 0.14999999999999999 2.1499999999999999</size>
+              <size>0.15 0.15 2.15</size>
             </box>
           </geometry>
         </collision>
@@ -71,89 +67,81 @@
           <pose>0 0 1 0 0 0</pose>
           <geometry>
             <box>
-              <size>0.14999999999999999 0.14999999999999999 2.1499999999999999</size>
-            </box>
-          </geometry>
-        </visual>
-      </link>
-      <joint name='lower_joint' type='revolute'>
-        <pose relative_to='base_link'>0.14999999999999999 0 1.75 3.1415000000000002 0 0</pose>
-        <parent>base_link</parent>
-        <child>link2</child>
-        <axis>
-          <xyz>1 0 0</xyz>
-          <limit>
-            <lower>-5</lower>
-            <upper>5</upper>
-            <effort>100</effort>
-            <velocity>100</velocity>
-          </limit>
-          <dynamics>
-            <spring_reference>0</spring_reference>
-            <spring_stiffness>0</spring_stiffness>
-          </dynamics>
-        </axis>
-      </joint>
-      <link name='link2'>
-        <pose relative_to='lower_joint'>0 0 0 0 0 0</pose>
-        <inertial>
-          <pose>0 0 -0.90000000000000002 -0.30000000000000004 0 0</pose>
-          <mass>1</mass>
-          <inertia>
-            <ixx>1</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>1</iyy>
-            <iyz>0</iyz>
-            <izz>1</izz>
-          </inertia>
-        </inertial>
-        <visual name='link2_visual'>
-          <pose>0 0 -0.5 0 0 0</pose>
-          <geometry>
-            <box>
-              <size>0.14999999999999999 0.14999999999999999 1</size>
+              <size>0.15 0.15 2.15</size>
             </box>
           </geometry>
         </visual>
       </link>
       <joint name='upper_joint' type='revolute'>
-        <pose relative_to='base_link'>-0.14999999999999999 0 1.75 3.1415000000000002 0 0</pose>
+        <pose relative_to='base_link'>0.15 0 2 -1.5708 0 0</pose>
         <parent>base_link</parent>
         <child>link1</child>
         <axis>
           <xyz>1 0 0</xyz>
-          <limit>
-            <lower>-5</lower>
-            <upper>5</upper>
-            <effort>100</effort>
-            <velocity>100</velocity>
-          </limit>
           <dynamics>
+            <damping>0.0</damping>
             <spring_reference>0</spring_reference>
-            <spring_stiffness>0</spring_stiffness>
+            <spring_stiffness>0.0</spring_stiffness>
           </dynamics>
         </axis>
       </joint>
       <link name='link1'>
         <pose relative_to='upper_joint'>0 0 0 0 0 0</pose>
+        <self_collide>0</self_collide>
         <inertial>
-          <pose>0 0 -0.90000000000000002 0 0 0</pose>
-          <mass>1</mass>
-          <inertia>
-            <ixx>1</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>1</iyy>
-            <iyz>0</iyz>
-            <izz>1</izz>
-          </inertia>
+          <pose>0 0 0.5 0 0 0</pose>
+          <density>8000</density>
         </inertial>
-        <visual name='link1_visual'>
-          <pose>0 0 -0.5 0 0 0</pose>
+        <collision name='upper_joint_collision'>
+          <pose>0 0 0.5 0 0 0</pose>
           <geometry>
             <box>
-              <size>0.14999999999999999 0.14999999999999999 1</size>
+              <size>0.15 0.15 1.0</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name='upper_joint_visual'>
+          <pose>0 0 0.5 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.15 0.15 1.0</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <joint name='lower_joint' type='revolute'>
+        <pose relative_to='link1'>0.15 0 0.9 0 0 0</pose>
+        <parent>link1</parent>
+        <child>link2</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <dynamics>
+            <damping>0.0</damping>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0.0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link2'>
+        <pose relative_to='lower_joint'>0 0 0 0 0 0</pose>
+        <self_collide>0</self_collide>
+        <inertial>
+          <pose>0 0 0.5 0 0 0</pose>
+          <density>8000</density>
+        </inertial>
+        <collision name='lower_joint_collision'>
+          <pose>0 0 0.5 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.15 0.15 1.0</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name='lower_joint_visual'>
+          <pose>0 0 0.5 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.15 0.15 1.0</size>
             </box>
           </geometry>
         </visual>
@@ -161,20 +149,13 @@
 
       <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
         <yarpConfigurationFile>
-          ../../../tests/controlboard/conf/gazebo_controlboard_multiple_joints.ini
+          ../../../tests/controlboard/conf/gazebo_controlboard2.ini
         </yarpConfigurationFile>
         <initialConfiguration>0.0</initialConfiguration>
       </plugin>
       <!-- <plugin name='robotinterface' filename='libgazebo_yarp_robotinterface.so'>
       <yarpRobotInterfaceConfigurationFile>model://coupled_pendulum/conf/coupled_pendulum_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin> -->
-
-      <frame name='fake_base_fixed_joint' attached_to='base_link'>
-        <pose>0 0 0 0 0 0</pose>
-      </frame>
-      <frame name='base' attached_to='fake_base_fixed_joint'>
-        <pose>0 0 0 0 0 0</pose>
-      </frame>
     </model>
 
   </world>

@@ -1,7 +1,11 @@
 #include <DeviceRegistry.hh>
 
 #include <cstddef>
+#include <gz/sim/EntityComponentManager.hh>
+#include <iostream>
 #include <mutex>
+#include <ostream>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -131,10 +135,33 @@ yarp::dev::PolyDriver* DeviceRegistry::getDevice(const std::string& deviceDataba
 
 std::vector<std::string> DeviceRegistry::getDevicesKeys() const
 {
-    std::vector<std::string> keys;
-    for (auto&& [key, value] : m_devicesMap)
-        keys.push_back(key);
-    return keys;
+    {
+        std::lock_guard<std::mutex> lock(mutex());
+
+        std::vector<std::string> keys;
+        for (auto&& [key, value] : m_devicesMap)
+            keys.push_back(key);
+        return keys;
+    }
+}
+
+std::vector<std::string>
+DeviceRegistry::getDevicesKeys(const gz::sim::EntityComponentManager& ecm) const
+{
+    std::stringstream EcmPtrSs;
+    EcmPtrSs << &ecm;
+
+    {
+        std::lock_guard<std::mutex> lock(mutex());
+        std::cerr << "==================== ecm address: " << EcmPtrSs.str() << std::endl;
+        std::vector<std::string> keys;
+        for (auto&& [key, value] : m_devicesMap)
+        {
+            if (key.find(EcmPtrSs.str()) != std::string::npos)
+                keys.push_back(key);
+        }
+        return keys;
+    }
 }
 
 // Private methods
