@@ -6,15 +6,24 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <string>
+#include <vector>
 
+#include <gz/common/Console.hh>
+#include <gz/math/Vector3.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/TestFixture.hh>
+#include <gz/sim/Types.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/World.hh>
 #include <gz/sim/components/JointForceCmd.hh>
+#include <sdf/Element.hh>
 
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IEncoders.h>
@@ -56,7 +65,10 @@ protected:
                 EXPECT_NE(gz::sim::kNullEntity, modelEntity);
                 model = gz::sim::Model(modelEntity);
 
-                driver = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceScopedName);
+                auto deviceKeys = gzyarp::DeviceRegistry::getHandler()->getDevicesKeys();
+                ASSERT_EQ(deviceKeys.size(), 1);
+                driver = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceKeys[0]);
+
                 ASSERT_TRUE(driver != nullptr);
                 iPositionControl = nullptr;
                 ASSERT_TRUE(driver->view(iPositionControl));
