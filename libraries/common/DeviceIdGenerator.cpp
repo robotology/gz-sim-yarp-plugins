@@ -22,7 +22,6 @@ std::string DeviceIdGenerator::generateDeviceId(const Entity& entity,
     auto ecmPtr = &ecm;
     std::stringstream ss;
     ss << ecmPtr;
-    std::cerr << "==================== ecm address for generated id: " << ss.str() << std::endl;
     return ss.str() + "/" + scopedName + "/" + yarpDeviceName;
 }
 
