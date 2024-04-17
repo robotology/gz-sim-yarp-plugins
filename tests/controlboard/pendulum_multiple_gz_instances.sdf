@@ -45,7 +45,7 @@
       </link>
     </model>
 
-    <model name="double_pendulum">
+    <model name="triple_pendulum">
       <joint name="fixed_base" type="fixed">
         <parent>world</parent>
         <child>base_link</child>
@@ -56,24 +56,24 @@
           <density>8000</density>
         </inertial>
         <collision name='base_link_fixed_joint_lump__base_collision'>
-          <pose>0 0 1 0 0 0</pose>
+          <pose>0 0 1.5 0 0 0</pose>
           <geometry>
             <box>
-              <size>0.15 0.15 2.15</size>
+              <size>0.15 0.15 3.0</size>
             </box>
           </geometry>
         </collision>
         <visual name='base_link_fixed_joint_lump__base_visual'>
-          <pose>0 0 1 0 0 0</pose>
+          <pose>0 0 1.5 0 0 0</pose>
           <geometry>
             <box>
-              <size>0.15 0.15 2.15</size>
+              <size>0.15 0.15 3.0</size>
             </box>
           </geometry>
         </visual>
       </link>
-      <joint name='upper_joint' type='revolute'>
-        <pose relative_to='base_link'>0.15 0 2 -1.5708 0 0</pose>
+      <joint name='joint1' type='revolute'>
+        <pose relative_to='base_link'>0.15 0 3.0 -1.5708 0 0</pose>
         <parent>base_link</parent>
         <child>link1</child>
         <axis>
@@ -86,62 +86,25 @@
         </axis>
       </joint>
       <link name='link1'>
-        <pose relative_to='upper_joint'>0 0 0 0 0 0</pose>
+        <pose relative_to='joint1'>0 0 0 0 0 0</pose>
         <self_collide>0</self_collide>
         <inertial>
           <pose>0 0 0.5 0 0 0</pose>
           <density>8000</density>
         </inertial>
-        <collision name='upper_joint_collision'>
+        <collision name='link1_collision'>
           <pose>0 0 0.5 0 0 0</pose>
           <geometry>
             <box>
-              <size>0.15 0.15 1.0</size>
+              <size>0.15 0.15 1</size>
             </box>
           </geometry>
         </collision>
-        <visual name='upper_joint_visual'>
+        <visual name='link1_visual'>
           <pose>0 0 0.5 0 0 0</pose>
           <geometry>
             <box>
-              <size>0.15 0.15 1.0</size>
-            </box>
-          </geometry>
-        </visual>
-      </link>
-      <joint name='lower_joint' type='revolute'>
-        <pose relative_to='link1'>0.15 0 0.9 0 0 0</pose>
-        <parent>link1</parent>
-        <child>link2</child>
-        <axis>
-          <xyz>1 0 0</xyz>
-          <dynamics>
-            <damping>0.0</damping>
-            <spring_reference>0</spring_reference>
-            <spring_stiffness>0.0</spring_stiffness>
-          </dynamics>
-        </axis>
-      </joint>
-      <link name='link2'>
-        <pose relative_to='lower_joint'>0 0 0 0 0 0</pose>
-        <self_collide>0</self_collide>
-        <inertial>
-          <pose>0 0 0.5 0 0 0</pose>
-          <density>8000</density>
-        </inertial>
-        <collision name='lower_joint_collision'>
-          <pose>0 0 0.5 0 0 0</pose>
-          <geometry>
-            <box>
-              <size>0.15 0.15 1.0</size>
-            </box>
-          </geometry>
-        </collision>
-        <visual name='lower_joint_visual'>
-          <pose>0 0 0.5 0 0 0</pose>
-          <geometry>
-            <box>
-              <size>0.15 0.15 1.0</size>
+              <size>0.15 0.15 1</size>
             </box>
           </geometry>
         </visual>
@@ -149,13 +112,10 @@
 
       <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
         <yarpConfigurationFile>
-          ../../../tests/controlboard/conf/gazebo_controlboard2.ini
+          ../../../tests/controlboard/conf/gazebo_controlboard_multiple_instances.ini
         </yarpConfigurationFile>
         <initialConfiguration>0.0</initialConfiguration>
       </plugin>
-      <!-- <plugin name='robotinterface' filename='libgazebo_yarp_robotinterface.so'>
-      <yarpRobotInterfaceConfigurationFile>model://coupled_pendulum/conf/coupled_pendulum_nws.xml</yarpRobotInterfaceConfigurationFile>
-      </plugin> -->
     </model>
 
   </world>

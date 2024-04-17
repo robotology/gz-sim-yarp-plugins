@@ -82,7 +82,7 @@ protected:
                 EXPECT_NE(gz::sim::kNullEntity, jointEntity);
                 joint = gz::sim::Joint(jointEntity);
 
-                // Set joint in torque control mode
+                // Set joint in position control mode
                 ASSERT_TRUE(iControlMode->setControlMode(0, VOCAB_CM_POSITION));
 
                 // Print number of joint configured
