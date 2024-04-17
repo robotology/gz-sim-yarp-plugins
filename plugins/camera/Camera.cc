@@ -2,6 +2,7 @@
 #include <CameraShared.hh>
 #include <ConfigurationHelpers.hh>
 #include <DeviceIdGenerator.hh>
+#include <DeviceRegistry.hh>
 
 #include <cstddef>
 #include <cstring>

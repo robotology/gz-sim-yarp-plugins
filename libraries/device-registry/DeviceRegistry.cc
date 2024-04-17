@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <yarp/dev/PolyDriver.h>
@@ -51,8 +52,7 @@ bool DeviceRegistry::getDevicesAsPolyDriverList(
 
         // If the deviceDatabaseKey starts with the modelScopedName (device spawned by model
         // plugins), then it is eligible for insertion in the returned list
-        if ((deviceDatabaseKey.rfind(modelScopedName, 0)
-             == 0) /*|| (deviceDatabaseKey.rfind(worldName + "/" + modelScopedName, 0) == 0)*/)
+        if ((deviceDatabaseKey.find(modelScopedName, 0) != std::string::npos))
         {
             // Extract yarpDeviceName from deviceDatabaseKey
             yarpDeviceName = deviceDatabaseKey.substr(deviceDatabaseKey.find_last_of("/") + 1);
@@ -153,7 +153,6 @@ DeviceRegistry::getDevicesKeys(const gz::sim::EntityComponentManager& ecm) const
 
     {
         std::lock_guard<std::mutex> lock(mutex());
-        std::cerr << "==================== ecm address: " << EcmPtrSs.str() << std::endl;
         std::vector<std::string> keys;
         for (auto&& [key, value] : m_devicesMap)
         {

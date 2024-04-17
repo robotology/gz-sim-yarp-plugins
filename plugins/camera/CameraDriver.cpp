@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 #include <mutex>
 
 #include <string>
@@ -61,12 +62,6 @@ public:
     bool open(yarp::os::Searchable& config) override
     {
         std::string sensorScopedName(config.find(YarpCameraScopedName.c_str()).asString().c_str());
-
-        {
-            std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
-            m_sensorData->m_imageBuffer = new unsigned char[getRawBufferSize()];
-            memset(m_sensorData->m_imageBuffer, 0x00, getRawBufferSize());
-        }
 
         if (config.check("vertical_flip"))
             m_vertical_flip = true;
@@ -275,6 +270,18 @@ public:
     void setCameraData(::gzyarp::CameraData* dataPtr) override
     {
         m_sensorData = dataPtr;
+
+        // Now that we have a pointer to CameraData we can initialize the camera buffers
+        initializeCamera();
+    }
+
+    void initializeCamera()
+    {
+        {
+            std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
+            m_sensorData->m_imageBuffer = new unsigned char[getRawBufferSize()];
+            memset(m_sensorData->m_imageBuffer, 0x00, getRawBufferSize());
+        }
     }
 
 private:

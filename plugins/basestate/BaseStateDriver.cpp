@@ -59,12 +59,6 @@ public:
             m_baseLinkName = config.find("baseLink").asString().substr(pos + separator.size() - 1);
         }
 
-        if (!m_baseLinkData)
-        {
-            yError() << "Error, BaseState sensor was not found";
-            return false;
-        }
-
         return true;
     }
 

@@ -2,6 +2,7 @@
 #include <BaseStateShared.hh>
 #include <ConfigurationHelpers.hh>
 #include <DeviceIdGenerator.hh>
+#include <DeviceRegistry.hh>
 
 #include <memory>
 #include <mutex>
