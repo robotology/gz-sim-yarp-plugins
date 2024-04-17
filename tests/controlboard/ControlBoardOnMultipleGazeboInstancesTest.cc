@@ -41,7 +41,7 @@ namespace test
 
 TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
 {
-    auto plannedIterations = 10'000;
+    auto plannedIterations = 30'000;
     yarp::dev::PolyDriver* driver1;
     yarp::dev::PolyDriver* driver2;
     yarp::dev::IEncoders* iEncoders1 = nullptr;

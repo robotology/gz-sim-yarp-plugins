@@ -15,7 +15,6 @@ public:
     {
         auto deviceIds = DeviceRegistry::getHandler()->getDevicesKeys();
         std::vector<T*> devices{};
-        // Get the controlboard devices
         for (auto& deviceId : deviceIds)
         {
             auto polyDriver = DeviceRegistry::getHandler()->getDevice(deviceId);

@@ -38,11 +38,11 @@ TEST(ConfigurationParsingTest, LoadPluginsWithYarpConfigurationFile)
                                 gz::sim::EntityComponentManager& _ecm,
                                 gz::sim::EventManager& /*_eventMgr*/) {
         // Test Camera
-        // std::cerr << "Testing Camera configuration" << std::endl;
-        // auto cameraDrivers
-        //     = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::CameraDriver>();
-        // EXPECT_EQ(cameraDrivers.size(), 1);
-        // EXPECT_TRUE(cameraDrivers[0] != nullptr);
+        std::cerr << "Testing Camera configuration" << std::endl;
+        auto cameraDrivers
+            = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::CameraDriver>();
+        EXPECT_EQ(cameraDrivers.size(), 1);
+        EXPECT_TRUE(cameraDrivers[0] != nullptr);
 
         // Test ForceTorque
         std::cerr << "Testing FT configuration" << std::endl;

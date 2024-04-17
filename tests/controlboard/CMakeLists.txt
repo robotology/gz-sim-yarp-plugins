@@ -3,7 +3,7 @@ set(TESTS
   ControlBoardPositionDirectControlTest
   ControlBoardPositionControlTest
   ControlBoardCommonsTest
-  ControlBoardOnMultipleGazeboInstances
+  ControlBoardOnMultipleGazeboInstancesTest
 )
 
 foreach(TEST ${TESTS})
