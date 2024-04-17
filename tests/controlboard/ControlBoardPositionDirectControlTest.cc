@@ -68,10 +68,6 @@ protected:
                 EXPECT_NE(gz::sim::kNullEntity, modelEntity);
                 model = gz::sim::Model(modelEntity);
 
-                std::vector<yarp::dev::gzyarp::ControlBoardDriver*> cbDrivers
-                    = gzyarp::testing::TestHelpers::getDevicesOfType<
-                        yarp::dev::gzyarp::ControlBoardDriver>();
-                ASSERT_EQ(cbDrivers.size(), 1);
                 auto devicesKeys = DeviceRegistry::getHandler()->getDevicesKeys();
                 std::cerr << "Number of Devices: " << devicesKeys.size() << std::endl;
                 auto cbKey = devicesKeys.at(0);
@@ -162,13 +158,7 @@ TEST_F(ControlBoardPositionDirectFixture, CheckPositionTrackingUsingPendulumMode
         Finalize();
 
     int modeSet{};
-
-    int nJoints{};
-    iPositionDirectControl->getAxes(&nJoints);
-    std::cerr << "Number of joints: " << nJoints << std::endl;
-
     ASSERT_TRUE(iControlMode->getControlMode(0, &modeSet));
-    std::cerr << "Control mode set: " << modeSet << std::endl;
     ASSERT_TRUE(modeSet == VOCAB_CM_POSITION_DIRECT);
 
     // Setup simulation server, this will call the post-update callbacks.

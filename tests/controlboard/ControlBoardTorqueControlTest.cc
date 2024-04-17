@@ -1,18 +1,27 @@
 #include <DeviceRegistry.hh>
 
+#include <gtest/gtest-param-test.h>
 #include <gtest/gtest.h>
 
 #include <cmath>
 #include <iostream>
+#include <memory>
 #include <string>
 
+#include <gz/common/Console.hh>
+#include <gz/math/Vector3.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/TestFixture.hh>
+#include <gz/sim/Types.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/World.hh>
 #include <gz/sim/components/JointForceCmd.hh>
+#include <sdf/Element.hh>
 
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/ITorqueControl.h>
@@ -55,7 +64,10 @@ protected:
                 EXPECT_NE(gz::sim::kNullEntity, modelEntity);
                 model = gz::sim::Model(modelEntity);
 
-                driver = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceScopedName);
+                auto deviceKeys = gzyarp::DeviceRegistry::getHandler()->getDevicesKeys();
+                ASSERT_EQ(deviceKeys.size(), 1);
+                driver = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceKeys[0]);
+
                 ASSERT_TRUE(driver != nullptr);
                 iTorqueControl = nullptr;
                 ASSERT_TRUE(driver->view(iTorqueControl));
@@ -95,7 +107,6 @@ protected:
 
     // Get SDF model name from test parameter
     gz::sim::TestFixture testFixture;
-    std::string deviceScopedName = "model/single_pendulum/controlboard_plugin_device";
     double motorTorque{0.5};
     double linkMass{1};
     double linkLength{1.0};
