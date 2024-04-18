@@ -51,7 +51,7 @@ PRIVATE
 )
 
 
-# add_test(NAME ConfigurationParsingFromFileTest COMMAND ConfigurationParsingFromFileTest)
+add_test(NAME ConfigurationParsingFromFileTest COMMAND ConfigurationParsingFromFileTest)
 add_test(NAME ConfigurationParsingFromStringTest COMMAND ConfigurationParsingFromStringTest)
 add_test(NAME ConcurrentInstancesTest COMMAND ConcurrentInstancesTest)
 
@@ -61,8 +61,8 @@ list(APPEND _env_vars "LIBGL_ALWAYS_SOFTWARE=1"
   "GZ_SIM_RESOURCE_PATH=${GZ_SIM_RESOURCE_PATH}:${CMAKE_CURRENT_SOURCE_DIR}/.."
 )
 
-# set_tests_properties(ConfigurationParsingFromFileTest PROPERTIES
-#   ENVIRONMENT "${_env_vars}")
+set_tests_properties(ConfigurationParsingFromFileTest PROPERTIES
+  ENVIRONMENT "${_env_vars}")
 
 set_tests_properties(ConfigurationParsingFromStringTest PROPERTIES
   ENVIRONMENT "${_env_vars}")

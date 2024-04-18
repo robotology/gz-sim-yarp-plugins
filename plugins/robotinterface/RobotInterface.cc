@@ -1,7 +1,15 @@
 #include <ConfigurationHelpers.hh>
 #include <DeviceRegistry.hh>
 
+#include <memory>
+#include <sdf/Element.hh>
+#include <string>
+#include <vector>
+
 #include <gz/plugin/Register.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/System.hh>
 #include <gz/sim/Util.hh>
@@ -11,6 +19,7 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
+#include <yarp/robotinterface/Types.h>
 #include <yarp/robotinterface/XMLReader.h>
 
 using namespace gz;
@@ -80,7 +89,8 @@ public:
 
         yarp::dev::PolyDriverList externalDriverList;
 
-        DeviceRegistry::getHandler()->getDevicesAsPolyDriverList(scopedName(model.Entity(), _ecm),
+        DeviceRegistry::getHandler()->getDevicesAsPolyDriverList(_ecm,
+                                                                 scopedName(model.Entity(), _ecm),
                                                                  externalDriverList,
                                                                  m_deviceScopedNames);
 

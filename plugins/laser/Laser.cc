@@ -1,5 +1,5 @@
 #include <ConfigurationHelpers.hh>
-#include <DeviceIdGenerator.hh>
+#include <DeviceRegistry.hh>
 #include <LaserDriver.cpp>
 #include <LaserShared.hh>
 
@@ -58,7 +58,7 @@ public:
     {
         if (m_deviceRegistered)
         {
-            DeviceRegistry::getHandler()->removeDevice(m_deviceId);
+            DeviceRegistry::getHandler()->removeDevice(*ecm, m_deviceId);
             m_deviceRegistered = false;
         }
 
@@ -84,6 +84,8 @@ public:
                                                                                "",
                                                                                "LaserDriver"));
         ::yarp::os::Property driver_properties;
+
+        ecm = &_ecm;
 
         if (ConfigurationHelpers::loadPluginConfiguration(_sdf, driver_properties))
         {
@@ -141,10 +143,10 @@ public:
         }
         iLaserData->setLaserData(&laserData);
 
-        auto deviceName = driver_properties.find("yarpDeviceName").asString();
-        m_deviceId = DeviceIdGenerator::generateDeviceId(sensor, _ecm, deviceName);
+        auto yarpDeviceNamee = driver_properties.find("yarpDeviceName").asString();
 
-        if (!DeviceRegistry::getHandler()->setDevice(m_deviceId, &m_laserDriver))
+        if (!DeviceRegistry::getHandler()
+                 ->setDevice(_entity, _ecm, yarpDeviceNamee, &m_laserDriver, m_deviceId))
         {
             yError() << "gz-sim-yarp-laser-system: failed setting scopedDeviceName(=" << m_deviceId
                      << ")";
@@ -200,6 +202,7 @@ private:
     gz::transport::Node node;
     gz::msgs::LaserScan laserMsg;
     std::mutex laserMsgMutex;
+    EntityComponentManager* ecm;
 };
 
 } // namespace gzyarp

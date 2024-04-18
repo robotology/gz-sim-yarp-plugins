@@ -64,9 +64,9 @@ protected:
                 EXPECT_NE(gz::sim::kNullEntity, modelEntity);
                 model = gz::sim::Model(modelEntity);
 
-                auto deviceKeys = gzyarp::DeviceRegistry::getHandler()->getDevicesKeys();
+                auto deviceKeys = gzyarp::DeviceRegistry::getHandler()->getDevicesKeys(_ecm);
                 ASSERT_EQ(deviceKeys.size(), 1);
-                driver = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceKeys[0]);
+                EXPECT_TRUE(DeviceRegistry::getHandler()->getDevice(_ecm, deviceKeys[0], driver));
 
                 ASSERT_TRUE(driver != nullptr);
                 iTorqueControl = nullptr;

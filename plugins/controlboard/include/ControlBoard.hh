@@ -63,6 +63,7 @@ private:
     ControlBoardData m_controlBoardData;
     yarp::os::Network m_yarpNetwork;
     yarp::os::Property m_pluginParameters;
+    gz::sim::EntityComponentManager* m_ecm;
 
     enum class AngleUnitEnum
     {

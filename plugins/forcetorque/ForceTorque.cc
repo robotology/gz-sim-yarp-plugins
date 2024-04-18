@@ -1,5 +1,5 @@
 #include <ConfigurationHelpers.hh>
-#include <DeviceIdGenerator.hh>
+#include <DeviceRegistry.hh>
 #include <ForceTorqueDriver.cpp>
 
 #include <memory>
@@ -52,7 +52,7 @@ public:
     {
         if (m_deviceRegistered)
         {
-            DeviceRegistry::getHandler()->removeDevice(m_deviceId);
+            DeviceRegistry::getHandler()->removeDevice(*ecm, m_deviceId);
             m_deviceRegistered = false;
         }
 
@@ -72,6 +72,8 @@ public:
             yError() << "Yarp network does not seem to be available, is the yarpserver running?";
             return;
         }
+
+        ecm = &_ecm;
 
         std::string netWrapper = "analogServer";
         ::yarp::dev::Drivers::factory().add(
@@ -140,12 +142,14 @@ public:
         }
         ftData->setForceTorqueData(&forceTorqueData);
 
-        auto deviceName = driver_properties.find("yarpDeviceName").asString();
-        m_deviceId = DeviceIdGenerator::generateDeviceId(sensor, _ecm, deviceName);
-        if (!DeviceRegistry::getHandler()->setDevice(m_deviceId, &m_forceTorqueDriver))
+        auto yarpDeviceName = driver_properties.find("yarpDeviceName").asString();
+
+        if (!DeviceRegistry::getHandler()
+                 ->setDevice(_entity, _ecm, yarpDeviceName, &m_forceTorqueDriver, m_deviceId))
         {
-            yError() << "gz-sim-yarp-forcetorque-system: failed setting scopedDeviceName(="
-                     << m_deviceId << ")";
+            yError() << "gz-sim-yarp-forcetorque-system: failed setting device with "
+                        "scopedDeviceName(="
+                     << m_deviceId << ") into DeviceRegistry";
             return;
         }
         m_deviceRegistered = true;
@@ -197,6 +201,7 @@ private:
     gz::transport::Node node;
     gz::msgs::Wrench ftMsg;
     std::mutex ftMsgMutex;
+    EntityComponentManager* ecm;
 };
 
 } // namespace gzyarp

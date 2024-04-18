@@ -9,5 +9,5 @@ target_link_libraries(test-helpers
             YARP::YARP_dev
             YARP::YARP_os
             YARP::YARP_init
-            gz-sim-yarp-device-registry
+            gz-sim-yarp-plugins::gz-sim-yarp-device-registry
 )

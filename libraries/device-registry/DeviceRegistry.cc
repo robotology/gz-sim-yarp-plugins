@@ -1,7 +1,9 @@
 #include <DeviceRegistry.hh>
 
 #include <cstddef>
+#include <gz/sim/Entity.hh>
 #include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/Util.hh>
 #include <iostream>
 #include <mutex>
 #include <ostream>
@@ -32,151 +34,250 @@ DeviceRegistry* DeviceRegistry::getHandler()
     return s_handle;
 }
 
-bool DeviceRegistry::getDevicesAsPolyDriverList(
-    const std::string& modelScopedName,
-    yarp::dev::PolyDriverList& list,
-    std::vector<std::string>& deviceScopedNames /*, const std::string& worldName*/)
+bool DeviceRegistry::getDevicesAsPolyDriverList(const gz::sim::EntityComponentManager& ecm,
+                                                const std::string& modelScopedName,
+                                                yarp::dev::PolyDriverList& list,
+                                                std::vector<std::string>& deviceScopedNames) const
 {
     deviceScopedNames.resize(0);
-
     list = yarp::dev::PolyDriverList();
 
-    // This map contains only the yarpDeviceName that we actually added
-    // to the returned yarp::dev::PolyDriverList
-    std::unordered_map<std::string, std::string> inserted_yarpDeviceName2deviceDatabaseKey;
-
-    for (auto&& devicesMapElem : m_devicesMap)
     {
-        std::string deviceDatabaseKey = devicesMapElem.first;
-        std::string yarpDeviceName;
+        std::lock_guard<std::mutex> lock(mutex());
 
-        // If the deviceDatabaseKey starts with the modelScopedName (device spawned by model
-        // plugins), then it is eligible for insertion in the returned list
-        if ((deviceDatabaseKey.find(modelScopedName, 0) != std::string::npos))
+        // Check if the the gz instance has been already added to the map
+        std::string gzInstanceId = getGzInstanceId(ecm);
+        if (auto gzInstance_it = m_devicesMap.find(gzInstanceId);
+            gzInstance_it == m_devicesMap.end())
         {
-            // Extract yarpDeviceName from deviceDatabaseKey
-            yarpDeviceName = deviceDatabaseKey.substr(deviceDatabaseKey.find_last_of("/") + 1);
+            yError() << "Error in gzyarp::DeviceRegistry::getDevicesAsPolyDriverList: gz instance "
+                        "not found";
+            return false;
+        }
 
-            // Check if a device with the same yarpDeviceName was already inserted
-            auto got = inserted_yarpDeviceName2deviceDatabaseKey.find(yarpDeviceName);
+        auto& devicesMap = m_devicesMap.at(gzInstanceId);
 
-            // If not found, insert and continue
-            if (got == inserted_yarpDeviceName2deviceDatabaseKey.end())
+        for (auto&& [key, value] : devicesMap)
+        {
+            std::string deviceModelScopedName = getModelScopedName(key);
+            std::string yarpDeviceName = getYarpDeviceName(key);
+
+            if (deviceModelScopedName == modelScopedName)
             {
-                // If no name collision is found, insert and continue
-                inserted_yarpDeviceName2deviceDatabaseKey.insert(
-                    {yarpDeviceName, deviceDatabaseKey});
-                list.push(devicesMapElem.second, yarpDeviceName.c_str());
-                deviceScopedNames.push_back(deviceDatabaseKey);
-            } else
-            {
-                // If a name collision is found, print a clear error and return
-                yError() << "gzyarp::DeviceRegistry robotinterface getDevicesAsPolyDriverList "
-                            "error: ";
-                yError() << "two YARP devices with yarpDeviceName " << yarpDeviceName
-                         << " found in model " << modelScopedName;
-                yError() << "First instance: " << got->second;
-                yError() << "Second instance: " << deviceDatabaseKey;
-                yError() << "Please eliminate or rename one of the two instances. ";
-                list = yarp::dev::PolyDriverList();
-                deviceScopedNames.resize(0);
-                return false;
+                list.push(value, yarpDeviceName.c_str());
+                deviceScopedNames.push_back(key);
             }
         }
     }
     return true;
 }
 
-bool DeviceRegistry::setDevice(std::string deviceDatabaseKey, yarp::dev::PolyDriver* device2add)
+bool DeviceRegistry::setDevice(const gz::sim::Entity& entity,
+                               const gz::sim::EntityComponentManager& ecm,
+                               const std::string& yarpDeviceName,
+                               yarp::dev::PolyDriver* device2add,
+                               std::string& generatedDeviceDatabaseKey)
 {
     bool ret = false;
-    DevicesMap::iterator device = m_devicesMap.find(deviceDatabaseKey);
-    if (device != m_devicesMap.end())
+    generatedDeviceDatabaseKey = "";
+
+    if (!device2add)
     {
-        if (device->second == device2add)
-            ret = true;
-        else
-        {
-            yError() << " Error in gzyarp::DeviceRegistry while inserting a new yarp device "
-                        "pointer!";
-            yError() << " The name of the device is already present but the pointer does not match "
-                        "with the one already registered!";
-            yError() << " This should not happen, check the names are correct in your config file. "
-                        "Fatal error.";
-        }
-    } else
-    {
-        // device does not exists. Add to map
-        if (!m_devicesMap
-                 .insert(
-                     std::pair<std::string, yarp::dev::PolyDriver*>(deviceDatabaseKey, device2add))
-                 .second)
-        {
-            yError() << " Error in gzyarp::DeviceRegistry while inserting a new device pointer!";
-            ret = false;
-        } else
-            ret = true;
+        yError() << "Error in gzyarp::DeviceRegistry::setDevice: device2add is nullptr";
+        return false;
     }
-    return ret;
-}
 
-yarp::dev::PolyDriver* DeviceRegistry::getDevice(const std::string& deviceDatabaseKey) const
-{
-    yarp::dev::PolyDriver* tmp = NULL;
-
-    DevicesMap::const_iterator device = m_devicesMap.find(deviceDatabaseKey);
-    if (device != m_devicesMap.end())
-        tmp = device->second;
-    else
-        tmp = NULL;
-
-    return tmp;
-}
-
-std::vector<std::string> DeviceRegistry::getDevicesKeys() const
-{
     {
         std::lock_guard<std::mutex> lock(mutex());
 
-        std::vector<std::string> keys;
-        for (auto&& [key, value] : m_devicesMap)
-            keys.push_back(key);
-        return keys;
+        // Check if the the gz instance has been already added to the map
+        std::string gzInstanceId = getGzInstanceId(ecm);
+        if (auto gzInstance_it = m_devicesMap.find(gzInstanceId);
+            gzInstance_it == m_devicesMap.end())
+        {
+            // If not, add it
+            m_devicesMap.insert(
+                std::pair<std::string, std::unordered_map<std::string, yarp::dev::PolyDriver*>>(
+                    gzInstanceId, std::unordered_map<std::string, yarp::dev::PolyDriver*>{}));
+        }
+
+        // Check if the device has been already added to the map for the gz instance
+        std::string deviceDatabaseKey = generateDeviceId(entity, ecm, yarpDeviceName);
+        auto device_it = m_devicesMap[gzInstanceId].find(deviceDatabaseKey);
+        if (device_it == m_devicesMap[gzInstanceId].end())
+        {
+            // If not, add it
+            m_devicesMap[gzInstanceId].insert(
+                std::pair<std::string, yarp::dev::PolyDriver*>(deviceDatabaseKey, device2add));
+            generatedDeviceDatabaseKey = deviceDatabaseKey;
+
+            ret = true;
+        } else
+        {
+            if (device_it->second == device2add)
+            {
+                generatedDeviceDatabaseKey = deviceDatabaseKey;
+                ret = true;
+            } else
+            {
+
+                yError() << " Error in gzyarp::DeviceRegistry while inserting a new yarp "
+                            "device "
+                            "pointer!";
+                yError() << " The name of the device is already present but the pointer does "
+                            "not match "
+                            "with the one already registered!";
+                yError() << " This should not happen, check the names are correct in your "
+                            "config file. "
+                            "The device already in the map has model scoped name: "
+                         << getModelScopedName(device_it->first)
+                         << " and yarp device name: " << getYarpDeviceName(device_it->first)
+                         << ". "
+                            "The device you are trying to insert has model scoped name: "
+                         << getModelScopedName(deviceDatabaseKey)
+                         << " and yarp device name: " << getYarpDeviceName(deviceDatabaseKey)
+                         << ". "
+                            "Fatal error.";
+                ret = false;
+            }
+        }
     }
+
+    return ret;
+}
+
+bool DeviceRegistry::getDevice(const gz::sim::EntityComponentManager& ecm,
+                               const std::string& deviceDatabaseKey,
+                               yarp::dev::PolyDriver*& driver) const
+{
+    driver = nullptr;
+
+    {
+        std::lock_guard<std::mutex> lock(mutex());
+
+        // Check if the the gz instance exists the map
+        std::string gzInstanceId = getGzInstanceId(ecm);
+        if (auto gzInstance_it = m_devicesMap.find(gzInstanceId);
+            gzInstance_it == m_devicesMap.end())
+        {
+            yError() << "Error in gzyarp::DeviceRegistry::getDevice: gz instance not found";
+            return false;
+        }
+
+        // Check if the device exists in the map
+        if (auto device_it = m_devicesMap.at(gzInstanceId).find(deviceDatabaseKey);
+            device_it == m_devicesMap.at(gzInstanceId).end())
+        {
+            yError() << "Error in gzyarp::DeviceRegistry::getDevice: device not found";
+            return false;
+        }
+
+        driver = m_devicesMap.at(gzInstanceId).at(deviceDatabaseKey);
+
+        if (!driver)
+        {
+            yError() << "Error in gzyarp::DeviceRegistry::getDevice: driver is "
+                        "nullptr";
+            return false;
+        }
+    }
+
+    return true;
 }
 
 std::vector<std::string>
 DeviceRegistry::getDevicesKeys(const gz::sim::EntityComponentManager& ecm) const
 {
-    std::stringstream EcmPtrSs;
-    EcmPtrSs << &ecm;
+    std::vector<std::string> keys{};
 
     {
         std::lock_guard<std::mutex> lock(mutex());
-        std::vector<std::string> keys;
-        for (auto&& [key, value] : m_devicesMap)
+
+        // Check if the the gz instance exists the map
+        std::string gzInstanceId = getGzInstanceId(ecm);
+        if (auto gzInstance_it = m_devicesMap.find(gzInstanceId);
+            gzInstance_it == m_devicesMap.end())
         {
-            if (key.find(EcmPtrSs.str()) != std::string::npos)
-                keys.push_back(key);
+            yError() << "Error in gzyarp::DeviceRegistry::getDevicesKeys: gz instance not found";
+            return keys;
         }
-        return keys;
+
+        for (auto&& [key, value] : m_devicesMap.at(gzInstanceId))
+        {
+            keys.push_back(key);
+        }
     }
+
+    return keys;
+}
+
+bool DeviceRegistry::removeDevice(const gz::sim::EntityComponentManager& ecm,
+                                  const std::string& deviceDatabaseKey)
+{
+
+    {
+        std::lock_guard<std::mutex> lock(mutex());
+
+        // Check if the the gz instance exists the map
+        std::string gzInstanceId = getGzInstanceId(ecm);
+        if (auto gzInstance_it = m_devicesMap.find(gzInstanceId);
+            gzInstance_it == m_devicesMap.end())
+        {
+            yError() << "Error in gzyarp::DeviceRegistry::getDevicesKeys: gz instance not found";
+            return false;
+        }
+
+        // Check if the device exists in the map
+        if (auto device_it = m_devicesMap.at(gzInstanceId).find(deviceDatabaseKey);
+            device_it == m_devicesMap.at(gzInstanceId).end())
+        {
+            yError() << "Error in gzyarp::DeviceRegistry::getDevice: device not found";
+            return false;
+        } else
+        {
+            if (!device_it->second->close())
+            {
+                yError() << "Error in gzyarp::DeviceRegistry::removeDevice: device could not be "
+                            "closed";
+                return false;
+            }
+
+            m_devicesMap.at(gzInstanceId).erase(deviceDatabaseKey);
+        }
+    }
+    return true;
 }
 
 // Private methods
 
-void DeviceRegistry::removeDevice(const std::string& deviceDatabaseKey)
+std::string DeviceRegistry::generateDeviceId(const gz::sim::Entity& entity,
+                                             const gz::sim::EntityComponentManager& ecm,
+                                             const std::string& yarpDeviceName)
 {
-    DevicesMap::iterator device = m_devicesMap.find(deviceDatabaseKey);
-    if (device != m_devicesMap.end())
-    {
-        device->second->close();
-        m_devicesMap.erase(device);
-    } else
-    {
-        yError() << "Could not remove device " << deviceDatabaseKey << ". Device was not found";
-    }
-    return;
+    auto scopedName = gz::sim::scopedName(entity, ecm, "/");
+    return scopedName + "/" + yarpDeviceName;
+}
+
+std::string DeviceRegistry::getGzInstanceId(const gz::sim::EntityComponentManager& ecm)
+{
+    auto ecmPtr = &ecm;
+    std::stringstream ss;
+    ss << ecmPtr;
+    return ss.str();
+}
+
+std::string DeviceRegistry::getYarpDeviceName(const std::string& deviceDatabaseKey)
+{
+    // Extract yarpDeviceName from deviceDatabaseKey
+    std::string yarpDeviceName = deviceDatabaseKey.substr(deviceDatabaseKey.find_last_of("/") + 1);
+    return yarpDeviceName;
+}
+
+std::string DeviceRegistry::getModelScopedName(const std::string& deviceDatabaseKey)
+{
+    // Extract modelScopedName from deviceDatabaseKey
+    std::string modelScopedName = deviceDatabaseKey.substr(0, deviceDatabaseKey.find_last_of("/"));
+    return modelScopedName;
 }
 
 DeviceRegistry::DeviceRegistry()

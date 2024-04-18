@@ -1,7 +1,6 @@
 #include <CameraDriver.cpp>
 #include <CameraShared.hh>
 #include <ConfigurationHelpers.hh>
-#include <DeviceIdGenerator.hh>
 #include <DeviceRegistry.hh>
 
 #include <cstddef>
@@ -60,7 +59,7 @@ public:
     {
         if (m_deviceRegistered)
         {
-            DeviceRegistry::getHandler()->removeDevice(m_deviceId);
+            DeviceRegistry::getHandler()->removeDevice(*ecm, m_deviceId);
             m_deviceRegistered = false;
         }
 
@@ -82,6 +81,8 @@ public:
             yError() << "Yarp network does not seem to be available, is the yarpserver running?";
             return;
         }
+
+        ecm = &_ecm;
 
         ::yarp::dev::Drivers::factory().add(
             new ::yarp::dev::DriverCreatorOf<::yarp::dev::gzyarp::CameraDriver>("gazebo_camera",
@@ -162,10 +163,10 @@ public:
             return;
         }
 
-        auto deviceName = driver_properties.find("yarpDeviceName").asString();
-        m_deviceId = DeviceIdGenerator::generateDeviceId(sensor, _ecm, deviceName);
+        auto yarpDeviceName = driver_properties.find("yarpDeviceName").asString();
 
-        if (!DeviceRegistry::getHandler()->setDevice(m_deviceId, &m_cameraDriver))
+        if (!DeviceRegistry::getHandler()
+                 ->setDevice(_entity, _ecm, yarpDeviceName, &m_cameraDriver, m_deviceId))
         {
             yError() << "gz-sim-yarp-camera-system: failed setting scopedDeviceName(=" << m_deviceId
                      << ")";
@@ -222,6 +223,7 @@ private:
     gz::msgs::Image cameraMsg;
     std::mutex cameraMsgMutex;
     yarp::dev::IFrameGrabberImage* iFrameGrabberImage;
+    EntityComponentManager* ecm;
 };
 
 } // namespace gzyarp

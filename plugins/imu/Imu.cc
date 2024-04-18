@@ -1,5 +1,5 @@
 #include <ConfigurationHelpers.hh>
-#include <DeviceIdGenerator.hh>
+#include <DeviceRegistry.hh>
 #include <ImuDriver.cpp>
 #include <ImuShared.hh>
 
@@ -56,7 +56,7 @@ public:
     {
         if (m_deviceRegistered)
         {
-            DeviceRegistry::getHandler()->removeDevice(m_deviceId);
+            DeviceRegistry::getHandler()->removeDevice(*ecm, m_deviceId);
             m_deviceRegistered = false;
         }
 
@@ -77,6 +77,8 @@ public:
                                                                              "IMUDriver"));
 
         ::yarp::os::Property driver_properties;
+
+        ecm = &_ecm;
 
         if (ConfigurationHelpers::loadPluginConfiguration(_sdf, driver_properties))
         {
@@ -134,10 +136,10 @@ public:
         }
         iImuDataPtr->setImuData(&imuData);
 
-        auto deviceName = driver_properties.find("yarpDeviceName").asString();
-        m_deviceId = DeviceIdGenerator::generateDeviceId(sensor, _ecm, deviceName);
+        auto yarpDeviceName = driver_properties.find("yarpDeviceName").asString();
 
-        if (!DeviceRegistry::getHandler()->setDevice(m_deviceId, &m_imuDriver))
+        if (!DeviceRegistry::getHandler()
+                 ->setDevice(_entity, _ecm, yarpDeviceName, &m_imuDriver, m_deviceId))
         {
             yError() << "gz-sim-yarp-imu-system: failed setting scopedDeviceName(=" << m_deviceId
                      << ")";
@@ -202,6 +204,7 @@ private:
     gz::msgs::IMU imuMsg;
     std::mutex imuMsgMutex;
     yarp::os::Network m_yarpNetwork;
+    EntityComponentManager* ecm;
 };
 
 } // namespace gzyarp

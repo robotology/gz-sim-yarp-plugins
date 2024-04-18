@@ -1,7 +1,6 @@
 #include <BaseStateDriver.cpp>
 #include <BaseStateShared.hh>
 #include <ConfigurationHelpers.hh>
-#include <DeviceIdGenerator.hh>
 #include <DeviceRegistry.hh>
 
 #include <memory>
@@ -52,7 +51,7 @@ public:
     {
         if (m_deviceRegistered)
         {
-            DeviceRegistry::getHandler()->removeDevice(m_deviceId);
+            DeviceRegistry::getHandler()->removeDevice(*m_ecm, m_deviceId);
             m_deviceRegistered = false;
         }
 
@@ -69,6 +68,8 @@ public:
     {
 
         std::string netWrapper = "analogServer";
+
+        m_ecm = &_ecm;
 
         using BaseStateDriverCreator
             = ::yarp::dev::DriverCreatorOf<::yarp::dev::gzyarp::BaseStateDriver>;
@@ -97,7 +98,7 @@ public:
             return;
         }
 
-        std::string deviceName = driver_properties.find("yarpDeviceName").asString();
+        std::string yarpDeviceName = driver_properties.find("yarpDeviceName").asString();
         std::string baseLinkName = driver_properties.find("baseLink").asString();
 
         auto model = Model(_entity);
@@ -148,9 +149,8 @@ public:
         }
         iBaseStateData->setBaseStateData(&m_baseStateData);
 
-        m_deviceId = DeviceIdGenerator::generateDeviceId(m_baseLinkEntity, _ecm, deviceName);
-
-        if (!DeviceRegistry::getHandler()->setDevice(m_deviceId, &m_baseStateDriver))
+        if (!DeviceRegistry::getHandler()
+                 ->setDevice(_entity, _ecm, yarpDeviceName, &m_baseStateDriver, m_deviceId))
         {
             yError() << "gz-sim-yarp-basestate-system: failed setting scopedDeviceName(="
                      << m_deviceId << ")";
@@ -256,6 +256,7 @@ private:
     yarp::dev::PolyDriver m_baseStateDriver;
     BaseStateData m_baseStateData;
     yarp::os::Network m_yarpNetwork;
+    EntityComponentManager* m_ecm;
 };
 
 } // namespace gzyarp

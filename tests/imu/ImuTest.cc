@@ -35,7 +35,8 @@ protected:
                                     gz::sim::EntityComponentManager& _ecm,
                                     gz::sim::EventManager& /*_eventMgr*/) {
             auto imuDrivers
-                = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::ImuDriver>();
+                = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::ImuDriver>(
+                    _ecm);
             ASSERT_TRUE(imuDrivers.size() == 1);
             driver = imuDrivers[0];
             ASSERT_TRUE(driver != nullptr);

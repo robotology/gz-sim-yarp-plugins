@@ -1,8 +1,9 @@
 #pragma once
 
-#include <map>
+#include <gz/sim/Entity.hh>
 #include <mutex>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <yarp/dev/PolyDriver.h>
@@ -18,28 +19,42 @@ class DeviceRegistry
 public:
     static DeviceRegistry* getHandler();
 
-    bool getDevicesAsPolyDriverList(
-        const std::string& modelScopedName,
-        yarp::dev::PolyDriverList& list,
-        std::vector<std::string>& deviceScopedNames /*, const std::string& worldName*/);
+    bool getDevicesAsPolyDriverList(const gz::sim::EntityComponentManager& ecm,
+                                    const std::string& modelScopedName,
+                                    yarp::dev::PolyDriverList& list,
+                                    std::vector<std::string>& deviceScopedNames) const;
 
-    bool setDevice(std::string deviceDatabaseKey, yarp::dev::PolyDriver* device2add);
+    bool setDevice(const gz::sim::Entity& entity,
+                   const gz::sim::EntityComponentManager& ecm,
+                   const std::string& yarpDeviceName,
+                   yarp::dev::PolyDriver* device2add,
+                   std::string& generatedDeviceDatabaseKey);
 
-    yarp::dev::PolyDriver* getDevice(const std::string& deviceDatabaseKey) const;
+    bool getDevice(const gz::sim::EntityComponentManager& ecm,
+                   const std::string& deviceDatabaseKey,
+                   yarp::dev::PolyDriver*& driver) const;
 
-    void removeDevice(const std::string& deviceDatabaseKey);
+    bool
+    removeDevice(const gz::sim::EntityComponentManager& ecm, const std::string& deviceDatabaseKey);
 
-    std::vector<std::string> getDevicesKeys() const;
-
-    // Return only the devices that belong to simulation having the ecm passed as argument
     std::vector<std::string> getDevicesKeys(const gz::sim::EntityComponentManager& ecm) const;
 
 private:
+    static std::string generateDeviceId(const gz::sim::Entity& entity,
+                                        const gz::sim::EntityComponentManager& ecm,
+                                        const std::string& yarpDeviceName);
+
+    static std::string getGzInstanceId(const gz::sim::EntityComponentManager& ecm);
+
+    static std::string getYarpDeviceName(const std::string& deviceDatabaseKey);
+
+    static std::string getModelScopedName(const std::string& deviceDatabaseKey);
+
     DeviceRegistry();
     static DeviceRegistry* s_handle;
     static std::mutex& mutex();
-    typedef std::map<std::string, yarp::dev::PolyDriver*> DevicesMap;
-    DevicesMap m_devicesMap; // map of known yarp devices
+    std::unordered_map<std::string, std::unordered_map<std::string, yarp::dev::PolyDriver*>>
+        m_devicesMap; // map of known yarp devices
 };
 
 } // namespace gzyarp

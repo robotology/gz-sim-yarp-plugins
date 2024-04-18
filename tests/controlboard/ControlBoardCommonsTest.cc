@@ -71,7 +71,7 @@ TEST(ControlBoardCommonsTest, ConfigureMultipleControlBoards)
                                 const std::shared_ptr<const sdf::Element>& /*_sdf*/,
                                 gz::sim::EntityComponentManager& _ecm,
                                 gz::sim::EventManager& /*_eventMgr*/) {
-        deviceIds = DeviceRegistry::getHandler()->getDevicesKeys();
+        deviceIds = DeviceRegistry::getHandler()->getDevicesKeys(_ecm);
         // print the device ids
         for (auto& deviceId : deviceIds)
         {
@@ -81,7 +81,8 @@ TEST(ControlBoardCommonsTest, ConfigureMultipleControlBoards)
         // Get the controlboard devices
         for (auto& deviceId : deviceIds)
         {
-            auto deviceDriver = DeviceRegistry::getHandler()->getDevice(deviceId);
+            yarp::dev::PolyDriver* deviceDriver = nullptr;
+            EXPECT_TRUE(DeviceRegistry::getHandler()->getDevice(_ecm, deviceId, deviceDriver));
             yarp::dev::gzyarp::ControlBoardDriver* cbDriver = nullptr;
             auto viewOk = deviceDriver->view(cbDriver);
             if (viewOk && cbDriver)
@@ -110,14 +111,21 @@ TEST(ControlBoardCommonsTest, JointPositionLimitsForMultipleJoints)
 
     gz::common::Console::SetVerbosity(4);
     gz::sim::TestFixture testFixture{sdfPath};
+
+    testFixture.OnConfigure([&](const gz::sim::Entity& _worldEntity,
+                                const std::shared_ptr<const sdf::Element>& /*_sdf*/,
+                                gz::sim::EntityComponentManager& _ecm,
+                                gz::sim::EventManager& /*_eventMgr*/) {
+        auto deviceIds = DeviceRegistry::getHandler()->getDevicesKeys(_ecm);
+        ASSERT_TRUE(deviceIds.size() == 1);
+
+        yarp::dev::PolyDriver* driver = nullptr;
+        EXPECT_TRUE(DeviceRegistry::getHandler()->getDevice(_ecm, deviceIds[0], driver));
+        ASSERT_TRUE(driver != nullptr);
+        ASSERT_TRUE(driver->view(iControlLimits));
+    });
+
     testFixture.Finalize();
-
-    auto deviceIds = DeviceRegistry::getHandler()->getDevicesKeys();
-    ASSERT_TRUE(deviceIds.size() == 1);
-
-    driver = DeviceRegistry::getHandler()->getDevice(deviceIds[0]);
-    ASSERT_TRUE(driver != nullptr);
-    ASSERT_TRUE(driver->view(iControlLimits));
 
     auto expectedJointMaxLimits = std::vector<double>{200.0, 10.0};
     auto expectedJointMinLimits = std::vector<double>{-200.0, -10.0};

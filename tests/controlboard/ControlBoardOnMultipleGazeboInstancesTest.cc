@@ -72,7 +72,7 @@ TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
                          gz::sim::EventManager& /*_eventMgr*/) {
             auto deviceIds = gzyarp::DeviceRegistry::getHandler()->getDevicesKeys(_ecm);
             ASSERT_TRUE(deviceIds.size() == 1);
-            driver1 = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceIds[0]);
+            EXPECT_TRUE(DeviceRegistry::getHandler()->getDevice(_ecm, deviceIds[0], driver1));
             ASSERT_TRUE(driver1 != nullptr);
             iEncoders1 = nullptr;
             ASSERT_TRUE(driver1->view(iEncoders1));
@@ -102,7 +102,7 @@ TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
                          gz::sim::EventManager& /*_eventMgr*/) {
             auto deviceIds = gzyarp::DeviceRegistry::getHandler()->getDevicesKeys(_ecm);
             ASSERT_TRUE(deviceIds.size() == 1);
-            driver2 = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceIds[0]);
+            EXPECT_TRUE(DeviceRegistry::getHandler()->getDevice(_ecm, deviceIds[0], driver2));
             ASSERT_TRUE(driver2 != nullptr);
             iEncoders2 = nullptr;
             ASSERT_TRUE(driver2->view(iEncoders2));
@@ -152,9 +152,6 @@ TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
         std::cerr << "Motion done simulation 2 in " << iterationsToCompleteMotion2 << " iterations"
                   << std::endl;
     }
-
-    // Check that DeviceRegistry has two devices, one for each Gazebo instance
-    ASSERT_EQ(gzyarp::DeviceRegistry::getHandler()->getDevicesKeys().size(), 2);
 
     // Print final joint positions
     std::cerr << std::fixed << std::setprecision(10)

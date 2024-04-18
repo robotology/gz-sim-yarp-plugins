@@ -68,10 +68,10 @@ protected:
                 EXPECT_NE(gz::sim::kNullEntity, modelEntity);
                 model = gz::sim::Model(modelEntity);
 
-                auto devicesKeys = DeviceRegistry::getHandler()->getDevicesKeys();
+                auto devicesKeys = DeviceRegistry::getHandler()->getDevicesKeys(_ecm);
                 std::cerr << "Number of Devices: " << devicesKeys.size() << std::endl;
                 auto cbKey = devicesKeys.at(0);
-                driver = DeviceRegistry::getHandler()->getDevice(cbKey);
+                EXPECT_TRUE(DeviceRegistry::getHandler()->getDevice(_ecm, devicesKeys[0], driver));
                 std::cerr << "Driver key: " << cbKey << std::endl;
                 ASSERT_TRUE(driver != nullptr);
                 iPositionDirectControl = nullptr;

@@ -40,35 +40,37 @@ TEST(ConfigurationParsingTest, LoadPluginsWithYarpConfigurationString)
         // Test Camera
         std::cerr << "Testing Camera configuration" << std::endl;
         auto cameraDrivers
-            = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::CameraDriver>();
+            = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::CameraDriver>(_ecm);
         EXPECT_EQ(cameraDrivers.size(), 1);
         EXPECT_TRUE(cameraDrivers[0] != nullptr);
 
         // Test ForceTorque
         std::cerr << "Testing FT configuration" << std::endl;
         auto ftDrivers
-            = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::ForceTorqueDriver>();
+            = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::ForceTorqueDriver>(
+                _ecm);
         EXPECT_EQ(ftDrivers.size(), 1);
         EXPECT_TRUE(ftDrivers[0] != nullptr);
 
         // Test Imu
         std::cerr << "Testing Imu configuration" << std::endl;
         auto imuDrivers
-            = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::ImuDriver>();
+            = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::ImuDriver>(_ecm);
         EXPECT_EQ(imuDrivers.size(), 1);
         EXPECT_TRUE(imuDrivers[0] != nullptr);
 
         // Test Laser
         std::cerr << "Testing Laser configuration" << std::endl;
         auto laserDrivers
-            = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::LaserDriver>();
+            = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::LaserDriver>(_ecm);
         EXPECT_EQ(laserDrivers.size(), 1);
         EXPECT_TRUE(laserDrivers[0] != nullptr);
 
         // Test basestate
         std::cerr << "Testing BaseState configuration" << std::endl;
         auto bsDrivers
-            = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::BaseStateDriver>();
+            = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::BaseStateDriver>(
+                _ecm);
         EXPECT_EQ(bsDrivers.size(), 1);
         EXPECT_TRUE(bsDrivers[0] != nullptr);
 

@@ -1,7 +1,15 @@
 #include <chrono>
+#include <memory>
+#include <string>
+
 #include <gz/plugin/Register.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/System.hh>
+#include <gz/sim/Types.hh>
 #include <gz/sim/Util.hh>
+#include <sdf/Element.hh>
 
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
@@ -16,8 +24,6 @@ using namespace systems;
 
 using yarp::os::Bottle;
 using yarp::os::BufferedPort;
-using yarp::os::Log;
-using yarp::os::Network;
 
 namespace gzyarp
 {
