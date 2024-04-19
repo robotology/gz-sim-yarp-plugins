@@ -12,9 +12,9 @@ TEST(ConcurrentInstancesTest, StartConcurrentGazeboInstancesOfDifferentModels)
 {
     auto plannedIterations = 1'000;
 
-    gz::sim::TestFixture fixture1("../../../tests/controlboard/"
+    gz::sim::TestFixture fixture1("../../../tests/commons/"
                                   "dummy_sphere.sdf");
-    gz::sim::TestFixture fixture2("../../../tests/controlboard/"
+    gz::sim::TestFixture fixture2("../../../tests/commons/"
                                   "dummy_box.sdf");
     gz::common::Console::SetVerbosity(4);
 
