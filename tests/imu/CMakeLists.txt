@@ -1,6 +1,7 @@
 add_executable(ImuTest ImuTest.cc)
 target_link_libraries(ImuTest
   PRIVATE GTest::gtest_main
+          test-helpers
   PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
   PRIVATE
@@ -8,6 +9,7 @@ target_link_libraries(ImuTest
         YARP::YARP_os
         YARP::YARP_init
         gz-sim-yarp-device-registry
+        gz-sim-yarp-imu-system
 )
 add_test(NAME ImuTest
          COMMAND ImuTest)

@@ -1,7 +1,9 @@
-#include <BaseStateDataSingleton.hh>
+#include <BaseStateShared.hh>
 #include <DeviceRegistry.hh>
 
+#include <cstddef>
 #include <mutex>
+#include <string>
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAnalogSensor.h>
@@ -9,6 +11,9 @@
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
+#include <yarp/os/Searchable.h>
+#include <yarp/os/Stamp.h>
+#include <yarp/sig/Vector.h>
 
 namespace yarp
 {
@@ -26,7 +31,8 @@ const unsigned YarpBaseStateChannelsNumber = 18; // The BaseState sensor has 18 
 
 class yarp::dev::gzyarp::BaseStateDriver : public yarp::dev::DeviceDriver,
                                            public yarp::dev::IAnalogSensor,
-                                           public yarp::dev::IPreciselyTimed
+                                           public yarp::dev::IPreciselyTimed,
+                                           public ::gzyarp::IBaseStateData
 {
 public:
     BaseStateDriver()
@@ -37,7 +43,7 @@ public:
     }
 
     // DeviceDriver
-    virtual bool open(yarp::os::Searchable& config)
+    bool open(yarp::os::Searchable& config) override
     {
 
         std::string m_modelScopedName(
@@ -53,25 +59,15 @@ public:
             m_baseLinkName = config.find("baseLink").asString().substr(pos + separator.size() - 1);
         }
 
-        m_baseLinkData
-            = ::gzyarp::BaseStateDataSingleton::getBaseStateDataHandler()->getBaseStateData(
-                m_modelScopedName);
-
-        if (!m_baseLinkData)
-        {
-            yError() << "Error, BaseState sensor was not found";
-            return false;
-        }
-
         return true;
     }
 
-    virtual bool close()
+    bool close() override
     {
         return true;
     }
 
-    int read(yarp::sig::Vector& out)
+    int read(yarp::sig::Vector& out) override
     {
         if (out.size() != YarpBaseStateChannelsNumber)
         {
@@ -102,7 +98,7 @@ public:
         return AS_OK;
     }
 
-    yarp::os::Stamp getLastInputStamp()
+    yarp::os::Stamp getLastInputStamp() override
     {
         std::lock_guard<std::mutex> lock(m_baseLinkData->mutex);
 
@@ -114,37 +110,44 @@ public:
         return m_baseLinkData->simTimestamp;
     }
 
-    int calibrateChannel(int ch, double v)
+    int calibrateChannel(int ch, double v) override
     {
         return AS_OK;
     }
 
-    int calibrateChannel(int ch)
+    int calibrateChannel(int ch) override
     {
         return AS_OK;
     }
 
-    int calibrateSensor(const yarp::sig::Vector& value)
+    int calibrateSensor(const yarp::sig::Vector& value) override
     {
         return AS_OK;
     }
 
-    int calibrateSensor()
+    int calibrateSensor() override
     {
         return AS_OK;
     }
 
-    int getChannels()
+    int getChannels() override
     {
         return AS_OK;
     }
 
-    int getState(int ch)
+    int getState(int ch) override
     {
         return AS_OK;
+    }
+
+    // IBaseStateData
+
+    void setBaseStateData(::gzyarp::BaseStateData* baseLinkData) override
+    {
+        m_baseLinkData = baseLinkData;
     }
 
 private:
-    BaseStateData* m_baseLinkData;
+    ::gzyarp::BaseStateData* m_baseLinkData;
     std::string m_baseLinkName;
 };

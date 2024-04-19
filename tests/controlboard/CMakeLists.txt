@@ -3,6 +3,13 @@ set(TESTS
   ControlBoardPositionDirectControlTest
   ControlBoardPositionControlTest
   ControlBoardCommonsTest
+  ControlBoardOnMultipleGazeboInstancesTest
+)
+
+set(_env_vars)
+list(APPEND _env_vars "LIBGL_ALWAYS_SOFTWARE=1"
+  "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-controlboard-system>"
+  "GZ_SIM_RESOURCE_PATH=${GZ_SIM_RESOURCE_PATH}:${CMAKE_CURRENT_SOURCE_DIR}/.."
 )
 
 foreach(TEST ${TESTS})
@@ -10,6 +17,7 @@ foreach(TEST ${TESTS})
 
   target_link_libraries(${TEST}
     PRIVATE GTest::gtest_main
+            test-helpers
     PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
     PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
     PRIVATE
@@ -18,13 +26,12 @@ foreach(TEST ${TESTS})
       YARP::YARP_init
       gz-sim-yarp-commons
       gz-sim-yarp-device-registry
-      gz-sim-yarp-controlboard-singleton
-  )
+      gz-sim-yarp-controlboard-system)
 
   add_test(NAME ${TEST}
        COMMAND ${TEST})
 
   set_tests_properties(${TEST} PROPERTIES
-    ENVIRONMENT "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-controlboard-singleton>")
+    ENVIRONMENT "${_env_vars}")
     
 endforeach()

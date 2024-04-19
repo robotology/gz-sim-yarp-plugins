@@ -103,9 +103,9 @@
       </plugin>
 
       <!-- ROBOT INTERFACE PLUGIN -->
-      <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
+      <!-- <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
         <yarpRobotInterfaceConfigurationFile>model://commons/conf/camera_nws.xml</yarpRobotInterfaceConfigurationFile>
-      </plugin>
+      </plugin> -->
 
       <link name="link_1">
         <visual name="visual">
@@ -177,7 +177,6 @@
           <always_on>true</always_on>
           <visualize>true</visualize>
           <update_rate>30</update_rate>
-
         </sensor>
       </joint>
 

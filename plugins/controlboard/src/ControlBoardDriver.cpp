@@ -1,7 +1,6 @@
 #include <ControlBoardDriver.hh>
 
 #include <ControlBoardData.hh>
-#include <ControlBoardDataSingleton.hh>
 
 #include <cmath>
 #include <cstddef>
@@ -12,7 +11,9 @@
 #include <yarp/dev/IAxisInfo.h>
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IInteractionMode.h>
+#include <yarp/dev/IPidControl.h>
 #include <yarp/dev/ITorqueControl.h>
+#include <yarp/dev/PidEnums.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Property.h>
@@ -34,10 +35,6 @@ bool ControlBoardDriver::open(yarp::os::Searchable& config)
     pluginParameters.fromString(config.toString().c_str());
 
     m_controlBoardId = pluginParameters.find(YarpControlBoardScopedName).asString();
-
-    m_controlBoardData
-        = ::gzyarp::ControlBoardDataSingleton::getControlBoardHandler()->getControlBoardData(
-            m_controlBoardId);
 
     return true;
 }
@@ -1732,6 +1729,13 @@ bool ControlBoardDriver::getEncodersTimed(double* encs, double* time)
     }
 
     return true;
+}
+
+// IControlBoardData
+
+void ControlBoardDriver::setControlBoardData(::gzyarp::ControlBoardData* controlBoardData)
+{
+    m_controlBoardData = controlBoardData;
 }
 
 } // namespace gzyarp

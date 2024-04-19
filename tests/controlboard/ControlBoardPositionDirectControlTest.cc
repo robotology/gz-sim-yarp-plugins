@@ -1,12 +1,25 @@
 #include <Common.hh>
+#include <ControlBoardDriver.hh>
 #include <DeviceRegistry.hh>
+#include <TestHelpers.hh>
 
 #include <gtest/gtest.h>
 
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <memory>
+#include <numeric>
 #include <string>
+#include <vector>
+
+#include <gz/common/Console.hh>
+#include <gz/math/Vector3.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
+#include <gz/sim/Types.hh>
+#include <sdf/Element.hh>
 
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Link.hh>
@@ -30,7 +43,7 @@ namespace gzyarp
 namespace test
 {
 
-class ControlBoardPositionDirectFixture : public testing::Test
+class ControlBoardPositionDirectFixture : public ::testing::Test
 {
 protected:
     // void SetUp() override
@@ -55,7 +68,11 @@ protected:
                 EXPECT_NE(gz::sim::kNullEntity, modelEntity);
                 model = gz::sim::Model(modelEntity);
 
-                driver = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceScopedName);
+                auto devicesKeys = DeviceRegistry::getHandler()->getDevicesKeys(_ecm);
+                std::cerr << "Number of Devices: " << devicesKeys.size() << std::endl;
+                auto cbKey = devicesKeys.at(0);
+                EXPECT_TRUE(DeviceRegistry::getHandler()->getDevice(_ecm, devicesKeys[0], driver));
+                std::cerr << "Driver key: " << cbKey << std::endl;
                 ASSERT_TRUE(driver != nullptr);
                 iPositionDirectControl = nullptr;
                 ASSERT_TRUE(driver->view(iPositionDirectControl));
@@ -84,7 +101,6 @@ protected:
 
     // Get SDF model name from test parameter
     gz::sim::TestFixture testFixture;
-    std::string deviceScopedName = "model/single_pendulum/controlboard_plugin_device";
     double linkMass{1};
     double linkLength{1.0};
     double linkInertiaAtLinkEnd{0.3352}; // Computed with parallel axis theorem
@@ -142,18 +158,19 @@ TEST_F(ControlBoardPositionDirectFixture, CheckPositionTrackingUsingPendulumMode
         Finalize();
 
     int modeSet{};
-    iControlMode->getControlMode(0, &modeSet);
+    ASSERT_TRUE(iControlMode->getControlMode(0, &modeSet));
     ASSERT_TRUE(modeSet == VOCAB_CM_POSITION_DIRECT);
 
     // Setup simulation server, this will call the post-update callbacks.
     // It also calls pre-update and update callbacks if those are being used.
     testFixture.Server()->Run(true, plannedIterations, false);
-
+    std::cerr << "Simulation completed" << std::endl;
     // Final assertions
     EXPECT_TRUE(configured);
     // Verify that the post update function was called 1000 times
     EXPECT_EQ(plannedIterations, iterations);
     // Verify that the average tracking error is within the accepted tolerance
+    std::cerr << "Tracking error vector size: " << trackingErrors.size() << std::endl;
     auto avgTrackgingError = std::accumulate(trackingErrors.begin(), trackingErrors.end(), 0.0)
                              / trackingErrors.size();
     std::cerr << "Average tracking error: " << avgTrackgingError << std::endl;

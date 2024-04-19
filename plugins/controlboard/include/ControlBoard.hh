@@ -2,10 +2,12 @@
 
 #include <ControlBoardData.hh>
 
+#include <cstddef>
 #include <memory>
 #include <string>
 
 #include <gz/msgs/joint_wrench.pb.h>
+#include <gz/msgs/wrench.pb.h>
 #include <gz/sim/Entity.hh>
 #include <gz/sim/EntityComponentManager.hh>
 #include <gz/sim/EventManager.hh>
@@ -14,8 +16,10 @@
 #include <gz/sim/Types.hh>
 #include <sdf/Element.hh>
 
+#include <vector>
 #include <yarp/dev/ControlBoardPid.h>
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/os/Bottle.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Property.h>
 
@@ -53,12 +57,13 @@ public:
 private:
     bool m_deviceRegistered;
     std::string m_robotScopedName;
-    std::string m_deviceScopedName;
+    std::string m_deviceId;
     gz::sim::Entity m_modelEntity;
     yarp::dev::PolyDriver m_controlBoardDriver;
     ControlBoardData m_controlBoardData;
     yarp::os::Network m_yarpNetwork;
     yarp::os::Property m_pluginParameters;
+    gz::sim::EntityComponentManager* m_ecm;
 
     enum class AngleUnitEnum
     {

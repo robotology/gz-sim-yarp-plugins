@@ -1,20 +1,36 @@
 #include <BaseStateDriver.cpp>
+#include <BaseStateShared.hh>
 #include <ConfigurationHelpers.hh>
+#include <DeviceRegistry.hh>
 
+#include <memory>
+#include <mutex>
+#include <string>
+
+#include <gz/math/Pose3.hh>
+#include <gz/math/Vector3.hh>
 #include <gz/plugin/Register.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/Sensor.hh>
 #include <gz/sim/System.hh>
+#include <gz/sim/Types.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/transport/Node.hh>
+#include <sdf/Element.hh>
 
+#include <yarp/dev/Drivers.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
+#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
+#include <yarp/os/Property.h>
 
 using namespace gz;
 using namespace sim;
@@ -35,7 +51,7 @@ public:
     {
         if (m_deviceRegistered)
         {
-            DeviceRegistry::getHandler()->removeDevice(m_deviceScopedName);
+            DeviceRegistry::getHandler()->removeDevice(*m_ecm, m_deviceId);
             m_deviceRegistered = false;
         }
 
@@ -43,16 +59,17 @@ public:
         {
             m_baseStateDriver.close();
         }
-        BaseStateDataSingleton::getBaseStateDataHandler()->removeBaseLink(m_baseLinkScopedName);
     }
 
-    virtual void Configure(const Entity& _entity,
-                           const std::shared_ptr<const sdf::Element>& _sdf,
-                           EntityComponentManager& _ecm,
-                           EventManager& /*_eventMgr*/) override
+    void Configure(const Entity& _entity,
+                   const std::shared_ptr<const sdf::Element>& _sdf,
+                   EntityComponentManager& _ecm,
+                   EventManager& /*_eventMgr*/) override
     {
 
         std::string netWrapper = "analogServer";
+
+        m_ecm = &_ecm;
 
         using BaseStateDriverCreator
             = ::yarp::dev::DriverCreatorOf<::yarp::dev::gzyarp::BaseStateDriver>;
@@ -81,7 +98,7 @@ public:
             return;
         }
 
-        std::string deviceName = driver_properties.find("yarpDeviceName").asString();
+        std::string yarpDeviceName = driver_properties.find("yarpDeviceName").asString();
         std::string baseLinkName = driver_properties.find("baseLink").asString();
 
         auto model = Model(_entity);
@@ -111,17 +128,6 @@ public:
 
         driver_properties.put(YarpBaseStateScopedName.c_str(), m_baseLinkScopedName.c_str());
 
-        if (!driver_properties.check("yarpDeviceName"))
-        {
-            yError() << "gz-sim-yarp-basestate-system : missing yarpDeviceName parameter for "
-                        "device "
-                     << m_baseLinkScopedName;
-            return;
-        }
-
-        // Insert the pointer in the singleton handler for retrieving it in the yarp driver
-        BaseStateDataSingleton::getBaseStateDataHandler()->setBaseStateData(&(m_baseStateData));
-
         driver_properties.put("device", "gazebo_basestate");
         driver_properties.put("robot", m_baseLinkScopedName);
 
@@ -132,17 +138,26 @@ public:
             return;
         }
 
-        m_deviceScopedName
-            = m_baseLinkScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
+        IBaseStateData* iBaseStateData = nullptr;
+        auto viewOk = m_baseStateDriver.view(iBaseStateData);
 
-        if (!DeviceRegistry::getHandler()->setDevice(m_deviceScopedName, &m_baseStateDriver))
+        if (!viewOk || !iBaseStateData)
+        {
+            yError() << "gz-sim-yarp-basestate-system Plugin failed: error in getting "
+                        "IBaseStateData interface";
+            return;
+        }
+        iBaseStateData->setBaseStateData(&m_baseStateData);
+
+        if (!DeviceRegistry::getHandler()
+                 ->setDevice(_entity, _ecm, yarpDeviceName, &m_baseStateDriver, m_deviceId))
         {
             yError() << "gz-sim-yarp-basestate-system: failed setting scopedDeviceName(="
-                     << m_deviceScopedName << ")";
+                     << m_deviceId << ")";
             return;
         }
         m_deviceRegistered = true;
-        yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
+        yInfo() << "Registered YARP device with instance name:" << m_deviceId;
     }
 
     virtual void PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm) override
@@ -235,12 +250,13 @@ public:
 private:
     bool m_deviceRegistered;
     std::string m_baseLinkScopedName;
-    std::string m_deviceScopedName;
+    std::string m_deviceId;
     Entity m_baseLinkEntity;
     Link m_baseLink;
     yarp::dev::PolyDriver m_baseStateDriver;
     BaseStateData m_baseStateData;
     yarp::os::Network m_yarpNetwork;
+    EntityComponentManager* m_ecm;
 };
 
 } // namespace gzyarp

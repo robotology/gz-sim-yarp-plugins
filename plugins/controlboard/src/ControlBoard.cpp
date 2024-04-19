@@ -2,18 +2,23 @@
 
 #include <Common.hh>
 #include <ConfigurationHelpers.hh>
-#include <ControlBoardDataSingleton.hh>
+#include <ControlBoardData.hh>
 #include <ControlBoardDriver.hh>
+#include <ControlBoardTrajectory.hh>
 #include <DeviceRegistry.hh>
 
+#include <cmath>
 #include <cstddef>
 #include <cstdlib>
 #include <exception>
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <gz/math/Vector3.hh>
@@ -57,7 +62,7 @@ ControlBoard::~ControlBoard()
 {
     if (m_deviceRegistered)
     {
-        DeviceRegistry::getHandler()->removeDevice(m_deviceScopedName);
+        DeviceRegistry::getHandler()->removeDevice(*m_ecm, m_deviceId);
         m_deviceRegistered = false;
     }
 
@@ -65,8 +70,6 @@ ControlBoard::~ControlBoard()
     {
         m_controlBoardDriver.close();
     }
-    ControlBoardDataSingleton::getControlBoardHandler()->removeControlBoard(
-        m_controlBoardData.controlBoardId);
 }
 
 void ControlBoard::Configure(const Entity& _entity,
@@ -80,6 +83,8 @@ void ControlBoard::Configure(const Entity& _entity,
         new ControlBoardDriverCreator("gazebo_controlboard", "", "ControlBoardDriver"));
 
     bool wipe = false;
+
+    m_ecm = &_ecm;
 
     if (ConfigurationHelpers::loadPluginConfiguration(_sdf, m_pluginParameters))
     {
@@ -97,27 +102,18 @@ void ControlBoard::Configure(const Entity& _entity,
         return;
     }
 
-    std::string deviceName = m_pluginParameters.find("yarpDeviceName").asString();
+    std::string yarpDeviceName = m_pluginParameters.find("yarpDeviceName").asString();
 
     m_robotScopedName = gz::sim::scopedName(_entity, _ecm, "/");
     yDebug() << "gz-sim-yarp-controlboard-system : robot scoped name: " << m_robotScopedName;
-
-    m_deviceScopedName
-        = m_robotScopedName + "/" + m_pluginParameters.find("yarpDeviceName").asString();
-    yDebug() << "gz-sim-yarp-controlboard-system : device scoped name: " << m_deviceScopedName;
+    yDebug() << "gz-sim-yarp-controlboard-system : yarpDeviceName: " << yarpDeviceName;
 
     m_modelEntity = _entity;
-
-    m_controlBoardData.controlBoardId = m_deviceScopedName;
 
     m_pluginParameters.put(yarp::dev::gzyarp::YarpControlBoardScopedName.c_str(),
                            m_robotScopedName.c_str());
 
-    // Insert the pointer in the singleton handler for retrieving it in the yarp driver
-    ControlBoardDataSingleton::getControlBoardHandler()->setControlBoardData(&(m_controlBoardData));
-
     m_pluginParameters.put("device", "gazebo_controlboard");
-    m_pluginParameters.put("controlBoardId", m_deviceScopedName);
 
     if (_sdf->HasElement("initialConfiguration"))
     {
@@ -134,12 +130,24 @@ void ControlBoard::Configure(const Entity& _entity,
         return;
     }
 
-    if (!DeviceRegistry::getHandler()->setDevice(m_deviceScopedName, &m_controlBoardDriver))
+    if (!DeviceRegistry::getHandler()
+             ->setDevice(_entity, _ecm, yarpDeviceName, &m_controlBoardDriver, m_deviceId))
     {
         yError() << "gz-sim-yarp-basestate-system: failed setting scopedDeviceName(="
-                 << m_deviceScopedName << ")";
+                 << m_robotScopedName << ")";
         return;
     }
+
+    IControlBoardData* iControlBoardData = nullptr;
+    auto viewOk = m_controlBoardDriver.view(iControlBoardData);
+
+    if (!viewOk || !iControlBoardData)
+    {
+        yError() << "gz-sim-yarp-controlboard-system Plugin failed: error in getting "
+                    "IControlBoardData interface";
+        return;
+    }
+    iControlBoardData->setControlBoardData(&m_controlBoardData);
 
     if (!setJointProperties(_ecm))
     {
@@ -149,7 +157,7 @@ void ControlBoard::Configure(const Entity& _entity,
 
     resetPositionsAndTrajectoryGenerators(_ecm);
 
-    yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
+    yInfo() << "Registered YARP device with instance name:" << m_deviceId;
     m_deviceRegistered = true;
 }
 

@@ -1,23 +1,37 @@
 #include <ConfigurationHelpers.hh>
+#include <DeviceRegistry.hh>
 #include <ImuDriver.cpp>
+#include <ImuShared.hh>
+
+#include <memory>
+#include <mutex>
+#include <string>
 
 #include <gz/msgs/details/imu.pb.h>
 #include <gz/plugin/Register.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/Sensor.hh>
 #include <gz/sim/System.hh>
+#include <gz/sim/Types.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/components/Imu.hh>
 #include <gz/sim/components/Name.hh>
 #include <gz/sim/components/ParentEntity.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/transport/Node.hh>
+#include <sdf/Element.hh>
 
+#include <yarp/dev/Drivers.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
+#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
+#include <yarp/os/Property.h>
 
 using namespace gz;
 using namespace sim;
@@ -42,13 +56,12 @@ public:
     {
         if (m_deviceRegistered)
         {
-            DeviceRegistry::getHandler()->removeDevice(m_deviceScopedName);
+            DeviceRegistry::getHandler()->removeDevice(*ecm, m_deviceId);
             m_deviceRegistered = false;
         }
 
         if (m_imuDriver.isValid())
             m_imuDriver.close();
-        ImuDataSingleton::getHandler()->removeSensor(sensorScopedName);
     }
 
     virtual void Configure(const Entity& _entity,
@@ -65,6 +78,8 @@ public:
 
         ::yarp::os::Property driver_properties;
 
+        ecm = &_ecm;
+
         if (ConfigurationHelpers::loadPluginConfiguration(_sdf, driver_properties))
         {
             if (!driver_properties.check("sensorName"))
@@ -75,6 +90,11 @@ public:
             if (!driver_properties.check("parentLinkName"))
             {
                 yError() << "gz-sim-yarp-imu-system : missing parentLinkName parameter";
+                return;
+            }
+            if (!driver_properties.check("yarpDeviceName"))
+            {
+                yError() << "gz-sim-yarp-imu-system : missing yarpDeviceName parameter";
                 return;
             }
             yInfo() << "gz-sim-yarp-imu-system: configuration of sensor "
@@ -97,15 +117,6 @@ public:
         this->imuData.sensorScopedName = sensorScopedName;
 
         driver_properties.put(YarpIMUScopedName.c_str(), sensorScopedName.c_str());
-        if (!driver_properties.check("yarpDeviceName"))
-        {
-            yError() << "gz-sim-yarp-imu-system : missing yarpDeviceName parameter for device"
-                     << sensorScopedName;
-            return;
-        }
-
-        // Insert the pointer in the singleton handler for retriving it in the yarp driver
-        ImuDataSingleton::getHandler()->setSensor(&(this->imuData));
 
         driver_properties.put("device", "gazebo_imu");
         driver_properties.put("sensor_name", sensorName);
@@ -115,17 +126,28 @@ public:
             return;
         }
 
-        m_deviceScopedName
-            = sensorScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
+        IImuData* iImuDataPtr = nullptr;
+        auto viewOk = m_imuDriver.view(iImuDataPtr);
 
-        if (!DeviceRegistry::getHandler()->setDevice(m_deviceScopedName, &m_imuDriver))
+        if (!viewOk || !iImuDataPtr)
         {
-            yError() << "gz-sim-yarp-imu-system: failed setting scopedDeviceName(="
-                     << m_deviceScopedName << ")";
+            yError() << "gz-sim-yarp-imu-system: failed to get IImuData interface";
             return;
         }
+        iImuDataPtr->setImuData(&imuData);
+
+        auto yarpDeviceName = driver_properties.find("yarpDeviceName").asString();
+
+        if (!DeviceRegistry::getHandler()
+                 ->setDevice(_entity, _ecm, yarpDeviceName, &m_imuDriver, m_deviceId))
+        {
+            yError() << "gz-sim-yarp-imu-system: failed setting scopedDeviceName(=" << m_deviceId
+                     << ")";
+            return;
+        }
+
         m_deviceRegistered = true;
-        yInfo() << "Registered YARP device with instance name:" << m_deviceScopedName;
+        yInfo() << "Registered YARP device with instance name:" << m_deviceId;
     }
     virtual void PreUpdate(const UpdateInfo& _info, EntityComponentManager& _ecm) override
     {
@@ -173,15 +195,16 @@ public:
 private:
     Entity sensor;
     yarp::dev::PolyDriver m_imuDriver;
-    std::string m_deviceScopedName;
+    std::string m_deviceId;
     std::string sensorScopedName;
     bool m_deviceRegistered;
-    ImuData imuData;
+    ::gzyarp::ImuData imuData;
     bool imuInitialized;
     gz::transport::Node node;
     gz::msgs::IMU imuMsg;
     std::mutex imuMsgMutex;
     yarp::os::Network m_yarpNetwork;
+    EntityComponentManager* ecm;
 };
 
 } // namespace gzyarp

@@ -1,5 +1,3 @@
-add_subdirectory(singleton)
-
 add_library(gz-sim-yarp-laser-system SHARED Laser.cc LaserDriver.cpp)
 
 target_include_directories(gz-sim-yarp-laser-system
@@ -15,7 +13,6 @@ target_link_libraries(gz-sim-yarp-laser-system
     YARP::YARP_os
     YARP::YARP_init
     gz-sim-yarp-device-registry
-    gz-sim-yarp-laser-singleton
     gz-sim-yarp-commons)
 
 # Add install target

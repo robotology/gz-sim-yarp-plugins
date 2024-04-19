@@ -1,8 +1,18 @@
+#include <chrono>
+#include <cmath>
+#include <cstddef>
+#include <thread>
+
 #include <gtest/gtest.h>
+
+#include <gz/common/Console.hh>
 #include <gz/sim/TestFixture.hh>
+
 #include <yarp/dev/IRangefinder2D.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Network.h>
+#include <yarp/os/Property.h>
+#include <yarp/sig/Vector.h>
 
 TEST(LaserTest, PluginTest)
 {

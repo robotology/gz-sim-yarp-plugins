@@ -3,6 +3,8 @@
 #include <ControlBoardTrajectory.hh>
 
 #include <chrono>
+#include <cstddef>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <mutex>
@@ -64,12 +66,19 @@ class ControlBoardData
 {
 public:
     std::mutex mutex;
-    std::string controlBoardId;
     std::vector<JointProperties> joints;
     yarp::os::Stamp simTime;
 
     // TODO (xela95): read this value from configuration file
     std::chrono::milliseconds controlUpdatePeriod = std::chrono::milliseconds(1);
+};
+
+class IControlBoardData
+{
+public:
+    virtual void setControlBoardData(ControlBoardData*) = 0;
+
+    virtual ~IControlBoardData(){};
 };
 
 } // namespace gzyarp

@@ -1,10 +1,26 @@
 #include <DeviceRegistry.hh>
+#include <ImuDriver.cpp>
+#include <TestHelpers.hh>
 
 #include <gtest/gtest.h>
+
+#include <chrono>
+#include <cstddef>
+#include <memory>
+#include <string>
+#include <thread>
+
+#include <gz/common/Console.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/TestFixture.hh>
+#include <sdf/Element.hh>
+
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Network.h>
+#include <yarp/sig/Vector.h>
 
 class ImuFixture : public testing::Test
 {
@@ -18,7 +34,11 @@ protected:
                                     const std::shared_ptr<const sdf::Element>& /*_sdf*/,
                                     gz::sim::EntityComponentManager& _ecm,
                                     gz::sim::EventManager& /*_eventMgr*/) {
-            driver = gzyarp::DeviceRegistry::getHandler()->getDevice(deviceScopedName);
+            auto imuDrivers
+                = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::gzyarp::ImuDriver>(
+                    _ecm);
+            ASSERT_TRUE(imuDrivers.size() == 1);
+            driver = imuDrivers[0];
             ASSERT_TRUE(driver != nullptr);
             ASSERT_TRUE(driver->view(igyroscope));
             ASSERT_TRUE(driver->view(iorientation));
@@ -31,7 +51,7 @@ protected:
     gz::sim::TestFixture testFixture;
     std::string deviceScopedName = "model/sensor_box/link/link_1/sensor/imu_sensor/"
                                    "imu_plugin_device";
-    yarp::dev::PolyDriver* driver;
+    yarp::dev::gzyarp::ImuDriver* driver;
     yarp::dev::IThreeAxisGyroscopes* igyroscope = nullptr;
     yarp::dev::IOrientationSensors* iorientation = nullptr;
     yarp::dev::IThreeAxisLinearAccelerometers* iaccelerometer = nullptr;

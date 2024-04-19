@@ -1,22 +1,40 @@
 #include <CameraDriver.cpp>
+#include <CameraShared.hh>
 #include <ConfigurationHelpers.hh>
+#include <DeviceRegistry.hh>
 
+#include <cstddef>
+#include <cstring>
+#include <memory>
+#include <mutex>
+#include <string>
+
+#include <gz/msgs/details/image.pb.h>
 #include <gz/plugin/Register.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/Sensor.hh>
 #include <gz/sim/System.hh>
+#include <gz/sim/Types.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/components/Camera.hh>
 #include <gz/sim/components/Name.hh>
 #include <gz/sim/components/ParentEntity.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/transport/Node.hh>
+#include <sdf/Element.hh>
 
+#include <yarp/dev/Drivers.h>
+#include <yarp/dev/IFrameGrabberImage.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
+#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
+#include <yarp/os/Property.h>
 
 using namespace gz;
 using namespace sim;
@@ -41,7 +59,7 @@ public:
     {
         if (m_deviceRegistered)
         {
-            DeviceRegistry::getHandler()->removeDevice(m_deviceScopedName);
+            DeviceRegistry::getHandler()->removeDevice(*ecm, m_deviceId);
             m_deviceRegistered = false;
         }
 
@@ -49,7 +67,6 @@ public:
         {
             m_cameraDriver.close();
         }
-        CameraDataSingleton::getHandler()->removeSensor(sensorScopedName);
         yarp::os::Network::fini();
     }
 
@@ -64,6 +81,8 @@ public:
             yError() << "Yarp network does not seem to be available, is the yarpserver running?";
             return;
         }
+
+        ecm = &_ecm;
 
         ::yarp::dev::Drivers::factory().add(
             new ::yarp::dev::DriverCreatorOf<::yarp::dev::gzyarp::CameraDriver>("gazebo_camera",
@@ -81,6 +100,11 @@ public:
             if (!driver_properties.check("parentLinkName"))
             {
                 yError() << "gz-sim-yarp-camera-system : missing parentLinkName parameter";
+                return;
+            }
+            if (!driver_properties.check("yarpDeviceName"))
+            {
+                yError() << "gz-sim-yarp-camera-system : missing yarpDeviceName parameter";
                 return;
             }
             yInfo() << "gz-sim-yarp-camera-system: configuration of sensor "
@@ -110,15 +134,6 @@ public:
         this->cameraData.sensorScopedName = sensorScopedName;
 
         driver_properties.put(YarpCameraScopedName.c_str(), sensorScopedName.c_str());
-        if (!driver_properties.check("yarpDeviceName"))
-        {
-            yError() << "gz-sim-yarp-camera-system : missing yarpDeviceName parameter for device"
-                     << sensorScopedName;
-            return;
-        }
-
-        // Insert the pointer in the singleton handler for retriving it in the yarp driver
-        CameraDataSingleton::getHandler()->setSensor(&(this->cameraData));
 
         driver_properties.put("device", "gazebo_camera");
         driver_properties.put("sensor_name", sensorName);
@@ -130,6 +145,17 @@ public:
             return;
         }
 
+        ICameraData* iCameraData = nullptr;
+        auto viewOk = m_cameraDriver.view(iCameraData);
+
+        if (!viewOk || !iCameraData)
+        {
+            yError() << "gz-sim-yarp-camera-system Plugin failed: error in getting "
+                        "ICameraData interface";
+            return;
+        }
+        iCameraData->setCameraData(&cameraData);
+
         m_cameraDriver.view(iFrameGrabberImage);
         if (iFrameGrabberImage == NULL)
         {
@@ -137,19 +163,19 @@ public:
             return;
         }
 
-        m_deviceScopedName
-            = sensorScopedName + "/" + driver_properties.find("yarpDeviceName").asString();
+        auto yarpDeviceName = driver_properties.find("yarpDeviceName").asString();
 
-        if (!DeviceRegistry::getHandler()->setDevice(m_deviceScopedName, &m_cameraDriver))
+        if (!DeviceRegistry::getHandler()
+                 ->setDevice(_entity, _ecm, yarpDeviceName, &m_cameraDriver, m_deviceId))
         {
-            yError() << "gz-sim-yarp-camera-system: failed setting scopedDeviceName(="
-                     << m_deviceScopedName << ")";
+            yError() << "gz-sim-yarp-camera-system: failed setting scopedDeviceName(=" << m_deviceId
+                     << ")";
             return;
         }
         this->m_deviceRegistered = true;
         this->cameraInitialized = false;
         yInfo() << "gz-sim-yarp-camera-system: Registered YARP device with instance name:"
-                << m_deviceScopedName;
+                << m_deviceId;
     }
 
     virtual void PreUpdate(const UpdateInfo& _info, EntityComponentManager& _ecm) override
@@ -188,7 +214,7 @@ public:
 private:
     Entity sensor;
     yarp::dev::PolyDriver m_cameraDriver;
-    std::string m_deviceScopedName;
+    std::string m_deviceId;
     std::string sensorScopedName;
     bool m_deviceRegistered;
     CameraData cameraData;
@@ -197,6 +223,7 @@ private:
     gz::msgs::Image cameraMsg;
     std::mutex cameraMsgMutex;
     yarp::dev::IFrameGrabberImage* iFrameGrabberImage;
+    EntityComponentManager* ecm;
 };
 
 } // namespace gzyarp
