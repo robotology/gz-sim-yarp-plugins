@@ -66,7 +66,6 @@ class ControlBoardData
 {
 public:
     std::mutex mutex;
-    std::string controlBoardId;
     std::vector<JointProperties> joints;
     yarp::os::Stamp simTime;
 

@@ -110,13 +110,10 @@ void ControlBoard::Configure(const Entity& _entity,
 
     m_modelEntity = _entity;
 
-    // m_controlBoardData.controlBoardId = m_deviceId;
-
     m_pluginParameters.put(yarp::dev::gzyarp::YarpControlBoardScopedName.c_str(),
                            m_robotScopedName.c_str());
 
     m_pluginParameters.put("device", "gazebo_controlboard");
-    // m_pluginParameters.put("controlBoardId", m_deviceId);
 
     if (_sdf->HasElement("initialConfiguration"))
     {

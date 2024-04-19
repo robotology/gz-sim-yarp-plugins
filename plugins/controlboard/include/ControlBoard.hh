@@ -3,11 +3,11 @@
 #include <ControlBoardData.hh>
 
 #include <cstddef>
-#include <gz/msgs/details/wrench.pb.h>
 #include <memory>
 #include <string>
 
 #include <gz/msgs/joint_wrench.pb.h>
+#include <gz/msgs/wrench.pb.h>
 #include <gz/sim/Entity.hh>
 #include <gz/sim/EntityComponentManager.hh>
 #include <gz/sim/EventManager.hh>
