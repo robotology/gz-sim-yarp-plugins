@@ -27,7 +27,6 @@ target_link_libraries(gz-sim-yarp-controlboard-system
     YARP::YARP_init
     gz-sim-yarp-commons
     gz-sim-yarp-device-registry
-    gz-sim-yarp-commons
 )
 
 # Add install target
