@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -40,12 +41,10 @@ class ControlBoardTorqueControlFixture : public testing::TestWithParam<std::stri
 protected:
     // void SetUp() override
     ControlBoardTorqueControlFixture()
-        : testFixture{"../../../tests/controlboard/" + GetParam()}
+        : testFixture{(std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / GetParam()).string()}
     {
         std::cerr << "========== Test Parameter: " << GetParam() << std::endl;
         gz::common::Console::SetVerbosity(4);
-
-        // testFixture = gz::sim::TestFixture{"../../../tests/controlboard/" + GetParam()};
 
         testFixture.
             // Use configure callback to get values at startup

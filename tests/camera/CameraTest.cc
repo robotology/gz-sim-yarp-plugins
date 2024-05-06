@@ -1,8 +1,19 @@
 #include <gtest/gtest.h>
+
+#include <chrono>
+#include <cstddef>
+#include <filesystem>
+#include <thread>
+
+#include <gz/common/Console.hh>
 #include <gz/sim/TestFixture.hh>
+
 #include <yarp/dev/FrameGrabberInterfaces.h>
+#include <yarp/dev/IFrameGrabberImage.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Network.h>
+#include <yarp/os/Property.h>
+#include <yarp/sig/Image.h>
 
 TEST(CameraTest, PluginTest)
 {
@@ -12,7 +23,8 @@ TEST(CameraTest, PluginTest)
     gz::common::Console::SetVerbosity(4);
 
     // Instantiate test fixture
-    gz::sim::TestFixture fixture("../../../tests/camera/model.sdf");
+    auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model.sdf";
+    gz::sim::TestFixture fixture(modelPath.string());
 
     int iterations = 1000;
 
@@ -80,7 +92,8 @@ TEST(CameraTest, HorizontalFlip)
     gz::common::Console::SetVerbosity(4);
 
     // Instantiate test fixture
-    gz::sim::TestFixture fixture("../../../tests/camera/model_hor_flip.sdf");
+    auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model_hor_flip.sdf";
+    gz::sim::TestFixture fixture(modelPath.string());
 
     int iterations = 1000;
     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
@@ -147,7 +160,8 @@ TEST(CameraTest, VerticalFlip)
     gz::common::Console::SetVerbosity(4);
 
     // Instantiate test fixture
-    gz::sim::TestFixture fixture("../../../tests/camera/model_ver_flip.sdf");
+    auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model_ver_flip.sdf";
+    gz::sim::TestFixture fixture(modelPath.string());
 
     int iterations = 1000;
     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
@@ -214,7 +228,8 @@ TEST(CameraTest, HorizontalVerticalFlip)
     gz::common::Console::SetVerbosity(4);
 
     // Instantiate test fixture
-    gz::sim::TestFixture fixture("../../../tests/camera/model_hor_ver_flip.sdf");
+    auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model_hor_ver_flip.sdf";
+    gz::sim::TestFixture fixture(modelPath.string());
 
     int iterations = 1000;
     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);

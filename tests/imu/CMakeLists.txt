@@ -19,3 +19,5 @@ list(APPEND _env_vars "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-i
 
 set_tests_properties(ImuTest PROPERTIES
   ENVIRONMENT "${_env_vars}")
+
+target_compile_definitions(ImuTest PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <chrono>
+#include <filesystem>
 #include <iostream>
 #include <ostream>
 #include <thread>
@@ -12,10 +13,10 @@ TEST(ConcurrentInstancesTest, StartConcurrentGazeboInstancesOfDifferentModels)
 {
     auto plannedIterations = 1'000;
 
-    gz::sim::TestFixture fixture1("../../../tests/commons/"
-                                  "dummy_sphere.sdf");
-    gz::sim::TestFixture fixture2("../../../tests/commons/"
-                                  "dummy_box.sdf");
+    gz::sim::TestFixture fixture1(
+        (std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "dummy_sphere.sdf").string());
+    gz::sim::TestFixture fixture2(
+        (std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "dummy_box.sdf").string());
     gz::common::Console::SetVerbosity(4);
 
     fixture1.Finalize();

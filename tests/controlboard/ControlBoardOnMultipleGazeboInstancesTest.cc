@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <filesystem>
 #include <gtest/gtest.h>
 #include <iomanip>
 #include <ios>
@@ -59,10 +60,12 @@ TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
     unsigned int iterationsToCompleteMotion1 = 0;
     unsigned int iterationsToCompleteMotion2 = 0;
 
-    gz::sim::TestFixture fixture1("../../../tests/controlboard/"
-                                  "pendulum_multiple_gz_instances.sdf");
-    gz::sim::TestFixture fixture2("../../../tests/controlboard/"
-                                  "pendulum_multiple_gz_instances.sdf");
+    gz::sim::TestFixture fixture1(
+        (std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "pendulum_multiple_gz_instances.sdf")
+            .string());
+    gz::sim::TestFixture fixture2(
+        (std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "pendulum_multiple_gz_instances.sdf")
+            .string());
     gz::common::Console::SetVerbosity(4);
 
     fixture1

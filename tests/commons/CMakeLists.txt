@@ -69,3 +69,7 @@ set_tests_properties(ConfigurationParsingFromStringTest PROPERTIES
 
 set_tests_properties(ConcurrentInstancesTest PROPERTIES
   ENVIRONMENT "${_env_vars}")
+
+target_compile_definitions(ConfigurationParsingFromFileTest PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+target_compile_definitions(ConfigurationParsingFromStringTest PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+target_compile_definitions(ConcurrentInstancesTest PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

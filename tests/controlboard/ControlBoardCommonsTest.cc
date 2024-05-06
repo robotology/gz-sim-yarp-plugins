@@ -4,9 +4,7 @@
 
 #include <gtest/gtest.h>
 
-#include <gz/sim/EntityComponentManager.hh>
-#include <gz/sim/EventManager.hh>
-#include <gz/sim/Util.hh>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <sdf/Element.hh>
@@ -15,9 +13,12 @@
 
 #include <gz/common/Console.hh>
 #include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/EventManager.hh>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/TestFixture.hh>
+#include <gz/sim/Util.hh>
 #include <gz/sim/World.hh>
 
 #include <yarp/dev/IControlLimits.h>
@@ -35,9 +36,10 @@ namespace test
 // Checks that the control board can be configured without initial conditions
 TEST(ControlBoardCommonsTest, ConfigureControlBoardWithoutInitialCondition)
 {
-    std::string modelSdfName = "pendulum_no_initial_configuration.sdf";
+    auto modelPath
+        = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "pendulum_no_initial_configuration.sdf";
+    gz::sim::TestFixture testFixture(modelPath.string());
 
-    gz::sim::TestFixture testFixture{"../../../tests/controlboard/" + modelSdfName};
     gz::common::Console::SetVerbosity(4);
 
     testFixture.Finalize();
@@ -46,9 +48,10 @@ TEST(ControlBoardCommonsTest, ConfigureControlBoardWithoutInitialCondition)
 // Checks that the control board can be configured without initial conditions
 TEST(ControlBoardCommonsTest, ConfigureControlBoardWithInitialCondition)
 {
-    std::string modelSdfName = "pendulum_with_initial_configuration.sdf";
+    auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR)
+                     / "pendulum_with_initial_configuration.sdf";
+    gz::sim::TestFixture testFixture(modelPath.string());
 
-    gz::sim::TestFixture testFixture{"../../../tests/controlboard/" + modelSdfName};
     gz::common::Console::SetVerbosity(4);
 
     testFixture.Finalize();
@@ -57,15 +60,15 @@ TEST(ControlBoardCommonsTest, ConfigureControlBoardWithInitialCondition)
 // Check that multiple control board can be congfigured for the same robot model
 TEST(ControlBoardCommonsTest, ConfigureMultipleControlBoards)
 {
-    std::string modelSdfName = "coupled_pendulum_two_controlboards.sdf";
-    std::string sdfPath = std::string("../../../tests/controlboard/") + modelSdfName;
+    auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR)
+                     / "coupled_pendulum_two_controlboards.sdf";
+    gz::sim::TestFixture testFixture(modelPath.string());
 
     bool configured = false;
     std::vector<std::string> deviceIds;
     std::vector<yarp::dev::gzyarp::ControlBoardDriver*> controlBoards;
 
     gz::common::Console::SetVerbosity(4);
-    gz::sim::TestFixture testFixture{sdfPath};
 
     testFixture.OnConfigure([&](const gz::sim::Entity& _worldEntity,
                                 const std::shared_ptr<const sdf::Element>& /*_sdf*/,
@@ -102,15 +105,16 @@ TEST(ControlBoardCommonsTest, ConfigureMultipleControlBoards)
 // Check that joint position limits are read correctly from yarp configuration
 TEST(ControlBoardCommonsTest, JointPositionLimitsForMultipleJoints)
 {
-    std::string modelSdfName = "coupled_pendulum_two_joints_single_controlboard.sdf";
-    std::string sdfPath = std::string("../../../tests/controlboard/") + modelSdfName;
+    auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR)
+                     / "coupled_pendulum_two_joints_single_controlboard.sdf";
+    gz::sim::TestFixture testFixture(modelPath.string());
+
     std::string deviceScopedName = "model/coupled_pendulum/controlboard_plugin_device";
     yarp::dev::PolyDriver* driver;
     yarp::dev::IControlLimits* iControlLimits = nullptr;
     IControlBoardData* iControlBoardData = nullptr;
 
     gz::common::Console::SetVerbosity(4);
-    gz::sim::TestFixture testFixture{sdfPath};
 
     testFixture.OnConfigure([&](const gz::sim::Entity& _worldEntity,
                                 const std::shared_ptr<const sdf::Element>& /*_sdf*/,

@@ -33,5 +33,8 @@ foreach(TEST ${TESTS})
 
   set_tests_properties(${TEST} PROPERTIES
     ENVIRONMENT "${_env_vars}")
+
+  target_compile_definitions(${TEST} PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
     
 endforeach()
