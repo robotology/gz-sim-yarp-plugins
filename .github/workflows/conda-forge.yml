@@ -67,14 +67,14 @@ jobs:
     - name: Print used environment
       shell: bash -l {0}
       run: |
-        micromamba list
+        conda list --explicit
         env
 
     - name: Configure
       shell: bash -l {0}
       run: |
         mkdir -p build
-        cd build    
+        cd build
         cmake -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
               -DBUILD_TESTING:BOOL=ON ..
 
@@ -82,15 +82,15 @@ jobs:
       shell: bash -l {0}
       run: |
         cd build
-        cmake --build . --config ${{ matrix.build_type }} 
+        cmake --build . --config ${{ matrix.build_type }}
 
     - name: Test_ubuntu
       if: contains(matrix.os, 'ubuntu')
       shell: bash -l {0}
       run: |
         cd build
-        ctest -E "^LaserTest|^CameraTest|^ImuTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} . 
-  
+        ctest -E "^LaserTest|^CameraTest|^ImuTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
+
     - name: Test_macos
       if: contains(matrix.os, 'macos')
       shell: bash -l {0}
