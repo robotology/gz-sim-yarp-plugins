@@ -8,7 +8,7 @@ on:
   pull_request:
   schedule:
   # * is a special character in YAML so you have to quote this string
-  # Execute a "nightly" build at 2 AM UTC 
+  # Execute a "nightly" build at 2 AM UTC
   - cron:  '0 2 * * *'
 
 jobs:
@@ -26,11 +26,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-        
+
     # Print environment variables to simplify development and debugging
     - name: Environment Variables
       run: env
-        
+
     # ============
     # DEPENDENCIES
     # ============
@@ -63,7 +63,7 @@ jobs:
         mkdir -p build
         cd build
         cmake -GNinja -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install/deps ..
-        cmake --build . --config ${{ matrix.build_type }} --target install 
+        cmake --build . --config ${{ matrix.build_type }} --target install
         # YARP
         cd ${GITHUB_WORKSPACE}
         git clone https://github.com/robotology/yarp
@@ -73,12 +73,12 @@ jobs:
         cd build
         cmake -GNinja -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install/deps -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install/deps ..
         cmake --build . --config ${{ matrix.build_type }} --target install
-        
+
     - name: Configure Environment variables for Source-based Dependencies
       run: |
         # Configure environment
         echo "YARP_DATA_DIRS=${GITHUB_WORKSPACE}/install/deps/share/yarp" >> $GITHUB_ENV
- 
+
     # ===================
     # CMAKE-BASED PROJECT
     # ===================
@@ -87,14 +87,14 @@ jobs:
       shell: bash
       run: |
         mkdir -p build
-        cd build    
+        cd build
         cmake -GNinja -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install/deps -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
               -DCMAKE_CXX_FLAGS_DEBUG="--coverage -g -O0" -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install -DBUILD_TESTING:BOOL=ON ..
 
     - name: Build
       run: |
         cd build
-        cmake --build . --config ${{ matrix.build_type }} 
+        cmake --build . --config ${{ matrix.build_type }}
 
     - name: Test (Release)
       if: contains(matrix.build_type, 'Release')
@@ -108,24 +108,8 @@ jobs:
       run: |
         cd build
         # So high until-pass as a mitigation for https://github.com/robotology/gz-sim-yarp-plugins/issues/75
-        ctest -T Test -T Coverage --repeat until-pass:20 --output-on-failure -C ${{ matrix.build_type }} . 
-      
-    - name: Generate a code coverage report
-      if: contains(matrix.build_type, 'Debug')
-      uses: threeal/gcovr-action@main
-      with:
-        excludes: |
-          build/*
-          install/*
-        # fail-under-line: 80
-    
-    - name: Upload coverage reports to Codecov
-      if: contains(matrix.build_type, 'Debug')
-      uses: codecov/codecov-action@v4
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        ctest -T Test -T Coverage --repeat until-pass:20 --output-on-failure -C ${{ matrix.build_type }} .
 
-    
     - name: Install
       run: |
         cd build
