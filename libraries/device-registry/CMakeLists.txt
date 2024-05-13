@@ -9,7 +9,7 @@ target_compile_features(gz-sim-yarp-device-registry PRIVATE cxx_std_17)
 
 target_link_libraries(gz-sim-yarp-device-registry
         PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
-        PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+        PUBLIC gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
         PRIVATE YARP::YARP_os
         PRIVATE YARP::YARP_init
         PUBLIC  YARP::YARP_dev)
