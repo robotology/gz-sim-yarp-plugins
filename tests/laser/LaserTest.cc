@@ -1,6 +1,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstddef>
+#include <filesystem>
 #include <thread>
 
 #include <gtest/gtest.h>
@@ -22,7 +23,8 @@ TEST(LaserTest, PluginTest)
     gz::common::Console::SetVerbosity(4);
 
     // Instantiate test fixture
-    gz::sim::TestFixture fixture("../../../tests/laser/model.sdf");
+    auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model.sdf";
+    gz::sim::TestFixture fixture(modelPath.string());
 
     int iterations = 1000;
     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);

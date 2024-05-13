@@ -6,6 +6,7 @@
 
 #include <chrono>
 #include <cstddef>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <thread>
@@ -26,7 +27,7 @@ class ImuFixture : public testing::Test
 {
 protected:
     ImuFixture()
-        : testFixture{"../../../tests/imu/model.sdf"}
+        : testFixture{(std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model.sdf").string()}
     {
         gz::common::Console::SetVerbosity(4);
 

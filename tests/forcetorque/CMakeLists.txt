@@ -13,3 +13,5 @@ list(APPEND _env_vars "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-f
 
 set_tests_properties(ForceTorqueTest PROPERTIES
   ENVIRONMENT "${_env_vars}")
+
+target_compile_definitions(ForceTorqueTest PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

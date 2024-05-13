@@ -9,6 +9,7 @@
 #include <gz/sim/TestFixture.hh>
 #include <sdf/Element.hh>
 
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -26,13 +27,13 @@ TEST(ConfigurationParsingTest, LoadPluginsWithYarpConfigurationFile)
 {
     using namespace std::chrono_literals;
 
-    std::string modelSdfName = "model_configuration_file.sdf";
-    std::string sdfPath = std::string("../../../tests/commons/") + modelSdfName;
+    auto modelPath
+        = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model_configuration_file.sdf";
+    gz::sim::TestFixture testFixture(modelPath.string());
+
     yarp::os::NetworkBase::setLocalMode(true);
     gz::common::Console::SetVerbosity(4);
     gz::sim::EntityComponentManager* ecm;
-
-    gz::sim::TestFixture testFixture{sdfPath};
 
     testFixture.OnConfigure([&](const gz::sim::Entity& _worldEntity,
                                 const std::shared_ptr<const sdf::Element>& /*_sdf*/,

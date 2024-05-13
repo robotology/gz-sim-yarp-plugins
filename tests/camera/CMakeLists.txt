@@ -13,3 +13,5 @@ list(APPEND _env_vars "LIBGL_ALWAYS_SOFTWARE=1")
 
 set_tests_properties(CameraTest PROPERTIES
   ENVIRONMENT "${_env_vars}")
+
+target_compile_definitions(CameraTest PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

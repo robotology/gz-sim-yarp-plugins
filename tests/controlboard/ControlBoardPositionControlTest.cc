@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -45,7 +46,9 @@ class ControlBoardPositionFixture : public testing::Test
 protected:
     // void SetUp() override
     ControlBoardPositionFixture()
-        : testFixture{"../../../tests/controlboard/pendulum_joint_relative_to_parent_link.sdf"}
+        : testFixture{(std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR)
+                       / "pendulum_joint_relative_to_parent_link.sdf")
+                          .string()}
     {
         gz::common::Console::SetVerbosity(4);
 

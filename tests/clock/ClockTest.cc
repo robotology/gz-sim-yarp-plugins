@@ -1,5 +1,12 @@
 #include <gtest/gtest.h>
+
+#include <chrono>
+#include <filesystem>
+#include <thread>
+
+#include <gz/common/Console.hh>
 #include <gz/sim/TestFixture.hh>
+
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Network.h>
@@ -11,7 +18,9 @@ TEST(ClockTest, GetSimulationTimeFromClockPort)
     // Maximum verbosity helps with debugging
     gz::common::Console::SetVerbosity(4);
     // Instantiate test fixture
-    gz::sim::TestFixture fixture("../../../tests/clock/model.sdf");
+    auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model.sdf";
+    gz::sim::TestFixture fixture(modelPath.string());
+
     const int iterations = 1000;
     const int deltaTns = 1e6; // 1ms
     const int tolerance = 1e6; // 1ms
