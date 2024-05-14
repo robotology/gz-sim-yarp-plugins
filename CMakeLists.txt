@@ -56,7 +56,7 @@ Install_basic_package_files(${PROJECT_NAME}
                             COMPATIBILITY AnyNewerVersion
                             VARS_PREFIX ${PROJECT_NAME}
                             NO_CHECK_REQUIRED_COMPONENTS_MACRO
-                            DEPENDENCIES "YARP")
+                            DEPENDENCIES "YARP" "gz-sim${GZ_SIM_VER}")
 
 # Add the uninstall target
 include(AddUninstallTarget)
