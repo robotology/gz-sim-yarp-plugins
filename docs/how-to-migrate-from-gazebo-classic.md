@@ -3,11 +3,11 @@
 ## Table of Contents
 
 - [Introduction](#introduction)
-- [Update of the robot model](update-of-the-robot-model)
-- [Update of plugins configurations](update-of-plugins-configuration)
-- [World set up](world-set-up)
-- [Environment variables](environment-variables)
-- [Examples of projects with Modern Gazebo support](examples-of-projects-with-modern-gazebo-support)
+- [Update of the robot model](#update-of-the-robot-model)
+- [Update of plugins configurations](#update-of-plugins-configuration)
+- [World set up](#world-set-up)
+- [Environment variables](#environment-variables)
+- [Examples of projects with Modern Gazebo support](#examples-of-projects-with-modern-gazebo-support)
 
 ## Introduction
 
