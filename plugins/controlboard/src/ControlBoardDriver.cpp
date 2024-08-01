@@ -252,7 +252,18 @@ bool ControlBoardDriver::setControlMode(const int j, const int mode)
         return false;
     }
 
-    m_controlBoardData->joints.at(j).controlMode = (mode == VOCAB_CM_FORCE_IDLE) ? VOCAB_CM_IDLE
+       // If joint is in hw fault, only a force idle command can recover it
+    if (m_controlBoardData->joints.at(j).controlMode == VOCAB_CM_HW_FAULT && mode != VOCAB_CM_FORCE_IDLE){
+        return true;
+    }
+
+    if (mode == VOCAB_CM_FORCE_IDLE)
+    {
+        // Clean the fault status and set control mode to idle
+        mode = VOCAB_CM_IDLE;
+    }
+
+    m_controlBoardData->joints.at(j).controlMode = mode;
                                                                                  : mode;
 
     return true;
