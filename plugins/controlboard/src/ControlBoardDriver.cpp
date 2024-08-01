@@ -252,7 +252,8 @@ bool ControlBoardDriver::setControlMode(const int j, const int mode)
         return false;
     }
 
-    m_controlBoardData->joints.at(j).controlMode = mode;
+    m_controlBoardData->joints.at(j).controlMode = (mode == VOCAB_CM_FORCE_IDLE) ? VOCAB_CM_IDLE
+                                                                                 : mode;
 
     return true;
 }
