@@ -233,6 +233,8 @@ bool ControlBoardDriver::setControlMode(const int j, const int mode)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
+    int desired_mode = mode;
+
     if (j < 0 || j >= m_controlBoardData->joints.size())
     {
         yError() << "Error while setting control mode: joint index out of range";
@@ -252,7 +254,20 @@ bool ControlBoardDriver::setControlMode(const int j, const int mode)
         return false;
     }
 
-    m_controlBoardData->joints.at(j).controlMode = mode;
+    // If joint is in hw fault, only a force idle command can recover it
+    if (m_controlBoardData->joints.at(j).controlMode == VOCAB_CM_HW_FAULT
+        && mode != VOCAB_CM_FORCE_IDLE)
+    {
+        return true;
+    }
+
+    if (mode == VOCAB_CM_FORCE_IDLE)
+    {
+        // Clean the fault status and set control mode to idle
+        desired_mode = VOCAB_CM_IDLE;
+    }
+
+    m_controlBoardData->joints.at(j).controlMode = desired_mode;
 
     return true;
 }
