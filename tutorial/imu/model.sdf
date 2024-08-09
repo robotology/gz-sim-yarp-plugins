@@ -100,7 +100,7 @@
         </sensor>
       </link>
       <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
-        <yarpRobotInterfaceConfigurationFile>IMU_nws.xml</yarpRobotInterfaceConfigurationFile>
+        <yarpRobotInterfaceConfigurationFile>model://imu/IMU_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
     </model>
   </world>

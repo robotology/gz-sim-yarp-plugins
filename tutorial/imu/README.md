@@ -7,10 +7,19 @@
   yarp server
   ~~~
 - 2nd terminal:
-  ~~~
-  cd tutorial/imu
-  gz sim model.sdf
-  ~~~
+  - Update the `GZ_SIM_RESOURCE_PATH` environment variable to point to the `tutorial` folder:
+
+    ~~~
+    export GZ_SIM_RESOURCE_PATH = $GZ_SIM_RESOURCE_PATH:<path-to-tutorial-folder>
+    ~~~
+
+  - Then, launch Gazebo:
+
+    ~~~
+    cd <path-to-tutorial-folder>/imu
+    gz sim model.sdf
+    ~~~
+
 - 3rd terminal:
   ~~~
   yarp name list
@@ -49,7 +58,7 @@ Print the topic that correspond to the IMU sensor:
 ```
 gz topic -e -t <imu_topic_name>
 ```
-where you should substitute `<imu_topic_name>` with the topic of the IMU name.    
+where you should substitute `<imu_topic_name>` with the topic of the IMU name.
 Youl should see an output like this:
 ```
 header {
