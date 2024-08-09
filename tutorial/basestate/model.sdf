@@ -87,9 +87,8 @@
         <yarpConfigurationString>(yarpDeviceName basestate_plugin_device) (baseLink link_1)</yarpConfigurationString>
       </plugin>
       <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
-        <yarpRobotInterfaceConfigurationFile>basestate_nws.xml</yarpRobotInterfaceConfigurationFile>
+        <yarpRobotInterfaceConfigurationFile>model://basestate/basestate_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
     </model>
-    
   </world>
 </sdf>
