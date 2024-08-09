@@ -132,7 +132,7 @@
           </geometry>
         </collision>
       </link>
-      
+
       <joint name="joint_01" type="fixed">
         <parent>world</parent>
         <child>link_1</child>
@@ -149,7 +149,7 @@
         </sensor>
       </joint>
       <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
-        <yarpRobotInterfaceConfigurationFile>../../../tests/forcetorque/forcetorque_nws.xml</yarpRobotInterfaceConfigurationFile>
+        <yarpRobotInterfaceConfigurationFile>model://forcetorque_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
     </model>
   </world>

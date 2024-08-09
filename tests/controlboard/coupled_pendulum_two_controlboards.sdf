@@ -161,13 +161,13 @@
 
       <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
         <yarpConfigurationFile>
-          ../../../tests/controlboard/conf/gazebo_controlboard.ini
+          model://conf/gazebo_controlboard.ini
         </yarpConfigurationFile>
         <initialConfiguration>0.0</initialConfiguration>
       </plugin>
       <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
         <yarpConfigurationFile>
-          ../../../tests/controlboard/conf/gazebo_controlboard2.ini
+          model://conf/gazebo_controlboard2.ini
         </yarpConfigurationFile>
         <initialConfiguration>0.0</initialConfiguration>
       </plugin>

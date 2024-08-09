@@ -7,10 +7,19 @@
   yarp server
   ~~~
 - 2nd terminal:
-  ~~~
-  cd tutorial/forcetorque/model_one_sensor
-  gz sim model.sdf
-  ~~~
+  - Update the `GZ_SIM_RESOURCE_PATH` environment variable to point to the `tutorial` folder:
+
+    ~~~
+    export GZ_SIM_RESOURCE_PATH = $GZ_SIM_RESOURCE_PATH:<path-to-tutorial-folder>
+    ~~~
+
+  - Then, launch Gazebo:
+
+    ~~~
+    cd <path-to-tutorial-folder>/forcetorque/model_one_sensor
+    gz sim model.sdf
+    ~~~
+
 - 3rd terminal:
   ~~~
   yarp name list
@@ -48,7 +57,7 @@ Print the topic that correspond to the FT sensor:
 ```
 gz topic -e -t <ft_topic_name>
 ```
-where you should substitute `<ft_topic_name>` with the topic of the FT name.    
+where you should substitute `<ft_topic_name>` with the topic of the FT name.
 Youl should see an output like this:
 ```
 header {
@@ -71,7 +80,7 @@ torque {
 }
 ...
 ```
-We have 3 values for force and 3 values for torque (if the value is 0, it is not present).  
+We have 3 values for force and 3 values for torque (if the value is 0, it is not present).
 In this case, it is possible to see that the force measure make sense as the weight of the link is 10 Kg, and the acceleration of gravity is 9.8, so the measure norm on the Z axis is correctly -9.8*10 = -98.
 
 If you try to interact with the model, for example in Gazebo GUI by dropping a cylinder on top of it, you can see how the values of the FT sensor change:

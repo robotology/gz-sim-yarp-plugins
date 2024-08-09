@@ -9,11 +9,18 @@
   ~~~
 
 - 2nd terminal:
+  - Update the `GZ_SIM_RESOURCE_PATH` environment variable to point to the `tutorial` folder:
 
-  ~~~
-  cd tutorial/basestate
-  gz sim model.sdf
-  ~~~
+    ~~~
+    export GZ_SIM_RESOURCE_PATH = $GZ_SIM_RESOURCE_PATH:<path-to-tutorial-folder>
+    ~~~
+
+  - Then, launch Gazebo:
+
+    ~~~
+    cd <path-to-tutorial-folder>/basestate
+    gz sim model.sdf
+    ~~~
 
 - 3rd terminal:
 

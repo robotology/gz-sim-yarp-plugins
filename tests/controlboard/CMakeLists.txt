@@ -9,7 +9,7 @@ set(TESTS
 set(_env_vars)
 list(APPEND _env_vars "LIBGL_ALWAYS_SOFTWARE=1"
   "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-controlboard-system>"
-  "GZ_SIM_RESOURCE_PATH=${GZ_SIM_RESOURCE_PATH}:${CMAKE_CURRENT_SOURCE_DIR}/.."
+  "GZ_SIM_RESOURCE_PATH=${GZ_SIM_RESOURCE_PATH}:${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
 foreach(TEST ${TESTS})
@@ -36,5 +36,5 @@ foreach(TEST ${TESTS})
 
   target_compile_definitions(${TEST} PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
-    
+
 endforeach()

@@ -134,7 +134,7 @@
             </link>
             <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
                 <yarpConfigurationFile>
-                    ../../../tests/controlboard/conf/gazebo_controlboard.ini
+                    model://conf/gazebo_controlboard.ini
                 </yarpConfigurationFile>
             </plugin>
         </model>

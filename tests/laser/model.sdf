@@ -66,7 +66,7 @@
 
     <model name="laser_model">
       <plugin name="gzyarp::Laser" filename="gz-sim-yarp-laser-system">
-        <yarpConfigurationFile>../../../tests/laser/laser.ini</yarpConfigurationFile>
+        <yarpConfigurationFile>model://laser.ini</yarpConfigurationFile>
       </plugin>
       <static>true</static>
       <pose>0 0 0.1 0 0 0</pose>
@@ -107,7 +107,7 @@
         </sensor>
       </link>
       <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
-        <yarpRobotInterfaceConfigurationFile>../../../tests/laser/laser_nws.xml</yarpRobotInterfaceConfigurationFile>
+        <yarpRobotInterfaceConfigurationFile>model://laser_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
     </model>
 
@@ -117,13 +117,13 @@
       <link name="link">
         <inertial>
           <mass>1.0</mass>
-          <inertia> 
-            <ixx>0.083</ixx>       
-            <ixy>0.0</ixy>         
-            <ixz>0.0</ixz>         
-            <iyy>0.083</iyy>       
-            <iyz>0.0</iyz>         
-            <izz>0.083</izz>    
+          <inertia>
+            <ixx>0.083</ixx>
+            <ixy>0.0</ixy>
+            <ixz>0.0</ixz>
+            <iyy>0.083</iyy>
+            <iyz>0.0</iyz>
+            <izz>0.083</izz>
           </inertia>
         </inertial>
         <collision name="collision">

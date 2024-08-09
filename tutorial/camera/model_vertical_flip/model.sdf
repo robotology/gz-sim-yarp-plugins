@@ -96,7 +96,7 @@
         </sensor>
       </link>
       <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
-        <yarpRobotInterfaceConfigurationFile>camera_nws.xml</yarpRobotInterfaceConfigurationFile>
+        <yarpRobotInterfaceConfigurationFile>model://camera/model_vertical_flip/camera_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
     </model>
 
@@ -136,6 +136,6 @@
         </visual>
       </link>
     </model>
-    
+
   </world>
 </sdf>

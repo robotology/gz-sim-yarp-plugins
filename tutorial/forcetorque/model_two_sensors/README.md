@@ -7,10 +7,19 @@
     yarp server
     ~~~
 - 2nd terminal:
+  - Update the `GZ_SIM_RESOURCE_PATH` environment variable to point to the `tutorial` folder:
+
     ~~~
-    cd tutorial/forcetorque/model_two_sensors
+    export GZ_SIM_RESOURCE_PATH = $GZ_SIM_RESOURCE_PATH:<path-to-tutorial-folder>
+    ~~~
+
+  - Then, launch Gazebo:
+
+    ~~~
+    cd <path-to-tutorial-folder>/forcetorque/model_two_sensors
     gz sim model2sensors.sdf
     ~~~
+
 - 3rd terminal:
     The output of the command `yarp name list` is:
     ~~~

@@ -107,7 +107,7 @@
         </sensor>
       </link>
       <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
-        <yarpRobotInterfaceConfigurationFile>laser_nws.xml</yarpRobotInterfaceConfigurationFile>
+        <yarpRobotInterfaceConfigurationFile>model://laser/laser_nws.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
     </model>
   </world>
