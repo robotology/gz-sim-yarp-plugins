@@ -65,8 +65,8 @@
     </model>
 
     <include>
-      <uri>model.sdf</uri>
+      <uri>model://single_pendulum/model.sdf</uri>
     </include>
 
   </world>
-</sdf> 
+</sdf>
