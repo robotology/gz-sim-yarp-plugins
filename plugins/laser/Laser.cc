@@ -73,11 +73,6 @@ public:
                            EventManager& /*_eventMgr*/) override
     {
         yarp::os::Network::init();
-        if (!yarp::os::Network::checkNetwork())
-        {
-            yError() << "Yarp network does not seem to be available, is the yarpserver running?";
-            return;
-        }
 
         ::yarp::dev::Drivers::factory().add(
             new ::yarp::dev::DriverCreatorOf<::yarp::dev::gzyarp::LaserDriver>("gazebo_laser",
