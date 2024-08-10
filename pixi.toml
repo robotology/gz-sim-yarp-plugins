@@ -1,0 +1,51 @@
+[project]
+name = "gz-sim-yarp-plugins"
+# As this version is currently ignored, we do not
+# waste effort in mantain it in synch with the value
+# specified in CMakeLists.txt
+version = "0.0.0"
+description = "YARP plugins for Modern Gazebo (gz-sim). "
+authors = ["Alessandro Croci <alessandro.croci@iit.it", "Silvio Traversaro <silvio.traversaro@iit.it>"]
+channels = ["conda-forge"]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64", "win-64"]
+
+[activation.env]
+CMAKE_INSTALL_PREFIX = "$CONDA_PREFIX"
+GZ_SIM_SYSTEM_PLUGIN_PATH = "$CONDA_PREFIX/lib"
+
+[target.win-64.activation.env]
+CMAKE_INSTALL_PREFIX = "%CONDA_PREFIX%\\Library"
+GZ_SIM_SYSTEM_PLUGIN_PATH = "%CONDA_PREFIX%\\Library\\bin"
+
+[tasks]
+
+configure = { cmd = [
+    "cmake",
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DCMAKE_INSTALL_PREFIX=$CMAKE_INSTALL_PREFIX",
+    "-DBUILD_TESTING:BOOL=ON",
+    # Use the cross-platform Ninja generator
+    "-G",
+    "Ninja",
+    # The source is in the root directory
+    "-S",
+    ".",
+    # We wanna build in the .build directory
+    "-B",
+    ".build",
+]}
+
+build = { cmd = "cmake --build .build --config Release", depends_on = ["configure"] }
+test = { cmd = "ctest --test-dir .build --build-config Release --output-on-failure", depends_on = ["build"] }
+install = { cmd = ["cmake", "--install", ".build", "--config", "Release"], depends_on = ["build"] }
+uninstall = { cmd = ["cmake", "--build", ".build", "--target", "uninstall"]}
+
+[dependencies]
+libgz-sim8 = "*"
+yarp = "*"
+ycm-cmake-modules = "*"
+cmake = "*"
+ninja = "*"
+pkg-config = "*"
+compilers = "*"
+gtest = "*"
