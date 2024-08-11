@@ -8,7 +8,6 @@
 
 #include <string>
 #include <yarp/dev/DeviceDriver.h>
-#include <yarp/dev/FrameGrabberInterfaces.h>
 #include <yarp/dev/IFrameGrabberImage.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>

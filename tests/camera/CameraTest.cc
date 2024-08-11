@@ -8,7 +8,6 @@
 #include <gz/common/Console.hh>
 #include <gz/sim/TestFixture.hh>
 
-#include <yarp/dev/FrameGrabberInterfaces.h>
 #include <yarp/dev/IFrameGrabberImage.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Network.h>
