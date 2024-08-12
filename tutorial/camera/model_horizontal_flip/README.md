@@ -7,10 +7,19 @@
   yarp server
   ~~~
 - 2nd terminal:
-  ~~~
-  cd tutorial/camera/model_horizontal_flip
-  gz sim model.sdf
-  ~~~
+  - Update the `GZ_SIM_RESOURCE_PATH` environment variable to point to the `tutorial` folder:
+
+    ~~~
+    export GZ_SIM_RESOURCE_PATH = $GZ_SIM_RESOURCE_PATH:<path-to-tutorial-folder>
+    ~~~
+
+  - Then, launch Gazebo:
+
+    ~~~
+    cd <path-to-tutorial-folder>/camera/model_horizontal_flip
+    gz sim model.sdf
+    ~~~
+
 - 3rd terminal:
   ~~~
   yarpview

@@ -161,7 +161,7 @@
 
       <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
         <yarpConfigurationFile>
-          ../../../tests/controlboard/conf/gazebo_controlboard_multiple_joints.ini
+          model://conf/gazebo_controlboard_multiple_joints.ini
         </yarpConfigurationFile>
         <initialConfiguration>0.0</initialConfiguration>
       </plugin>

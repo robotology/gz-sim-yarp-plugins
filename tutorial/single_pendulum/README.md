@@ -9,11 +9,18 @@
   ~~~
 
 - 2nd terminal:
+  - Update the `GZ_SIM_RESOURCE_PATH` environment variable to point to the `tutorial` folder:
 
-  ~~~bash
-  cd tutorial/single_pendulum
-  gz sim model.sdf
-  ~~~
+    ~~~
+    export GZ_SIM_RESOURCE_PATH = $GZ_SIM_RESOURCE_PATH:<path-to-tutorial-folder>
+    ~~~
+
+  - Then, launch Gazebo:
+
+    ~~~
+    cd <path-to-tutorial-folder>/single_pendulum
+    gz sim single_pendulum_world.sdf
+    ~~~
 
   The Gazebo GUI will open and the single pendulum should be already spawned in the scene.
 
@@ -27,7 +34,7 @@
   ~~~
 
   The [yarpmotorgui](https://www.yarp.it/latest/group__yarpmotorgui.html) interface will open and it should automatically prompt you to select the `/singlePendulumGazebo/body` part.
-  
+
   Click Ok.
 
   ![yarpmotorgui_select_part](https://github.com/robotology/gz-sim-yarp-plugins/assets/57228872/5f962770-b08e-4f30-9990-5b2940da5811)

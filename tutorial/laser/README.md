@@ -7,10 +7,19 @@
   yarp server
   ~~~
 - 2nd terminal:
-  ~~~
-  cd tutorial/laser
-  gz sim model.sdf
-  ~~~
+  - Update the `GZ_SIM_RESOURCE_PATH` environment variable to point to the `tutorial` folder:
+
+    ~~~
+    export GZ_SIM_RESOURCE_PATH = $GZ_SIM_RESOURCE_PATH:<path-to-tutorial-folder>
+    ~~~
+
+  - Then, launch Gazebo:
+
+    ~~~
+    cd <path-to-tutorial-folder>/laser
+    gz sim model.sdf
+    ~~~
+
 - 3rd terminal:
   ~~~
   yarp name list
@@ -45,7 +54,7 @@ Print the topic that correspond to the Laser sensor, in this case:
 ```
 gz topic -e -t <laser_topic_name>
 ```
-where you should substitute `<laser_topic_name>` with the topic of the Laser name (in this case  `gz topic -e -t /world/sensors/model/laser_model/link/link_1/sensor/laser_sensor/scan`).    
+where you should substitute `<laser_topic_name>` with the topic of the Laser name (in this case  `gz topic -e -t /world/sensors/model/laser_model/link/link_1/sensor/laser_sensor/scan`).
 Youl should see an output like this:
 ```
 header {
