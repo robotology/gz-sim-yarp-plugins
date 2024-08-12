@@ -72,12 +72,6 @@ public:
                            EventManager& /*_eventMgr*/) override
     {
         yarp::os::Network::init();
-        if (!yarp::os::Network::checkNetwork())
-        {
-            yError() << "gz-sim-yarp-robotinterface-system : yarp network does not seem to be "
-                        "available, is the yarpserver running?";
-            return;
-        }
         auto model = Model(_entity);
 
         if (!loadYarpRobotInterfaceConfigurationFile(_sdf, _ecm, model))

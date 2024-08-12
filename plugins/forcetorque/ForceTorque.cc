@@ -67,11 +67,6 @@ public:
                            EventManager& /*_eventMgr*/) override
     {
         yarp::os::Network::init();
-        if (!yarp::os::Network::checkNetwork())
-        {
-            yError() << "Yarp network does not seem to be available, is the yarpserver running?";
-            return;
-        }
 
         ecm = &_ecm;
 
