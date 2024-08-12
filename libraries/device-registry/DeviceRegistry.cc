@@ -242,6 +242,7 @@ bool DeviceRegistry::removeDevice(const gz::sim::EntityComponentManager& ecm,
                 return false;
             }
 
+            m_deviceRemovedEvent(deviceDatabaseKey);
             m_devicesMap.at(gzInstanceId).erase(deviceDatabaseKey);
         }
     }
