@@ -123,12 +123,7 @@ public:
         auto sdfSensor = _ecm.ComponentData<components::Camera>(sensor).value().Element();
         auto sdfImage = sdfSensor.get()->GetElement("camera").get()->GetElement("image").get();
 
-        cameraData.m_height = sdfImage->Get<int>("height");
-        cameraData.m_width = sdfImage->Get<int>("width");
-        cameraData.m_bufferSize = 3 * cameraData.m_width * cameraData.m_height;
-
-        sensorScopedName = scopedName(this->sensor, _ecm);
-        this->cameraData.sensorScopedName = sensorScopedName;
+        cameraData.init(sdfImage->Get<int>("width"), sdfImage->Get<int>("height"), sensorScopedName);
 
         driver_properties.put(YarpCameraScopedName.c_str(), sensorScopedName.c_str());
 
