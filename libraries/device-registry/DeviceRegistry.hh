@@ -66,9 +66,6 @@ private:
     static std::mutex& mutex();
     std::unordered_map<std::string, std::unordered_map<std::string, yarp::dev::PolyDriver*>>
         m_devicesMap; // map of known yarp devices Updated upstream
-
-    // Number of gz-sim-yarp-plugins YARP devices not loaded correctly for a given ecm
-    std::unordered_map<std::string, std::size_t> m_nrOfGzSimYARPPluginsNotSuccessfullyLoaded;
     // Event for when a device is removed
     gz::common::EventT<void (std::string)> m_deviceRemovedEvent;
 };
