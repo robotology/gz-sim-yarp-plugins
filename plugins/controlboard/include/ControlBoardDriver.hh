@@ -65,7 +65,7 @@ public:
     bool getEncoders(double* encs) override;
     bool getEncoderSpeed(int j, double* sp) override;
     bool getEncoderSpeeds(double* spds) override;
-    bool getEncoderAcceleration(int j, double* spds) override;
+    bool getEncoderAcceleration(int j, double* acc) override;
     bool getEncoderAccelerations(double* accs) override;
     bool getEncodersTimed(double* encs, double* time) override;
     bool getEncoderTimed(int j, double* encs, double* time) override;

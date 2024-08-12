@@ -1681,18 +1681,28 @@ bool ControlBoardDriver::getEncoderSpeeds(double* spds)
     return true;
 }
 
-bool ControlBoardDriver::getEncoderAcceleration(int j, double* spds)
+bool ControlBoardDriver::getEncoderAcceleration(int j, double* acc)
 {
-    // TODO
-
+    if (acc && j >= 0 && static_cast<size_t>(j) < m_controlBoardData->joints.size())
+    {
+        *acc = 0.0;
+        return true;
+    }
     return false;
 }
 
 bool ControlBoardDriver::getEncoderAccelerations(double* accs)
 {
-    // TODO
-
-    return false;
+    if (!accs)
+        return false;
+    for (unsigned int i = 0; i < m_controlBoardData->joints.size(); ++i)
+    {
+        if (!ControlBoardDriver::getEncoderAcceleration(i, &accs[i]))
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool ControlBoardDriver::getEncoderTimed(int j, double* encs, double* time)
