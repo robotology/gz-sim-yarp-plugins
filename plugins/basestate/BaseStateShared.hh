@@ -22,7 +22,7 @@ class IBaseStateData
 public:
     virtual void setBaseStateData(BaseStateData*) = 0;
 
-    virtual ~IBaseStateData(){};
+    virtual ~IBaseStateData() {};
 };
 
 } // namespace gzyarp

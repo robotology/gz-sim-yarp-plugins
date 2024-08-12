@@ -22,7 +22,7 @@ class ICameraData
 public:
     virtual void setCameraData(CameraData* dataPtr) = 0;
 
-    virtual ~ICameraData(){};
+    virtual ~ICameraData() {};
 };
 
 } // namespace gzyarp

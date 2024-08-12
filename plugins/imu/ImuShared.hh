@@ -20,7 +20,7 @@ class IImuData
 public:
     virtual void setImuData(ImuData* dataPtr) = 0;
 
-    virtual ~IImuData(){};
+    virtual ~IImuData() {};
 };
 
 } // namespace gzyarp
