@@ -39,6 +39,7 @@ build = { cmd = "cmake --build .build --config Release", depends_on = ["configur
 test = { cmd = "ctest --test-dir .build --build-config Release --output-on-failure", depends_on = ["build"] }
 install = { cmd = ["cmake", "--install", ".build", "--config", "Release"], depends_on = ["build"] }
 uninstall = { cmd = ["cmake", "--build", ".build", "--target", "uninstall"]}
+cpp-fmt = "fd --extension h --extension hh --extension hpp --extension c --extension cc --extension cpp --exec clang-format -i --verbose"
 
 [dependencies]
 libgz-sim8 = "*"
@@ -49,3 +50,5 @@ ninja = "*"
 pkg-config = "*"
 compilers = "*"
 gtest = "*"
+fd-find = "*"
+clang-format = "18.*"

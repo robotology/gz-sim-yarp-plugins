@@ -78,7 +78,7 @@ class IControlBoardData
 public:
     virtual void setControlBoardData(ControlBoardData*) = 0;
 
-    virtual ~IControlBoardData(){};
+    virtual ~IControlBoardData() {};
 };
 
 } // namespace gzyarp

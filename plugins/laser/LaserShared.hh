@@ -20,7 +20,7 @@ class ILaserData
 public:
     virtual void setLaserData(LaserData* dataPtr) = 0;
 
-    virtual ~ILaserData(){};
+    virtual ~ILaserData() {};
 };
 
 } // namespace gzyarp

@@ -18,7 +18,7 @@ class IForceTorqueData
 public:
     virtual void setForceTorqueData(ForceTorqueData*) = 0;
 
-    virtual ~IForceTorqueData(){};
+    virtual ~IForceTorqueData() {};
 };
 
 } // namespace gzyarp
