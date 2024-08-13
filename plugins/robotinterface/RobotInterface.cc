@@ -1,12 +1,14 @@
 #include <ConfigurationHelpers.hh>
 #include <DeviceRegistry.hh>
 
+#include <functional>
 #include <memory>
 #include <sdf/Element.hh>
 #include <string>
 #include <vector>
 
 #include <gz/common/Event.hh>
+#include <gz/common/events/Types.hh>
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Entity.hh>
 #include <gz/sim/EntityComponentManager.hh>

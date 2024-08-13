@@ -1,6 +1,7 @@
 #pragma once
 
 #include <gz/common/Event.hh>
+#include <gz/common/events/Types.hh>
 #include <gz/sim/Entity.hh>
 
 #include <mutex>
