@@ -50,26 +50,14 @@ PRIVATE
   gz-sim-yarp-device-registry
 )
 
+macro(gsyp_add_common_test testname)
+    add_test(NAME ${testname} COMMAND ${testname})
+    set_tests_properties(${testname} PROPERTIES
+      ENVIRONMENT "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-device-registry>"
+      ENVIRONMENT_MODIFICATION "GZ_SIM_RESOURCE_PATH=path_list_append:${CMAKE_CURRENT_SOURCE_DIR}/..")
+    target_compile_definitions(${testname} PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+endmacro()
 
-add_test(NAME ConfigurationParsingFromFileTest COMMAND ConfigurationParsingFromFileTest)
-add_test(NAME ConfigurationParsingFromStringTest COMMAND ConfigurationParsingFromStringTest)
-add_test(NAME ConcurrentInstancesTest COMMAND ConcurrentInstancesTest)
-
-set(_env_vars)
-list(APPEND _env_vars "LIBGL_ALWAYS_SOFTWARE=1"
-  "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-device-registry>"
-  "GZ_SIM_RESOURCE_PATH=${GZ_SIM_RESOURCE_PATH}:${CMAKE_CURRENT_SOURCE_DIR}/.."
-)
-
-set_tests_properties(ConfigurationParsingFromFileTest PROPERTIES
-  ENVIRONMENT "${_env_vars}")
-
-set_tests_properties(ConfigurationParsingFromStringTest PROPERTIES
-  ENVIRONMENT "${_env_vars}")
-
-set_tests_properties(ConcurrentInstancesTest PROPERTIES
-  ENVIRONMENT "${_env_vars}")
-
-target_compile_definitions(ConfigurationParsingFromFileTest PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-target_compile_definitions(ConfigurationParsingFromStringTest PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-target_compile_definitions(ConcurrentInstancesTest PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+gsyp_add_common_test(ConfigurationParsingFromFileTest)
+gsyp_add_common_test(ConfigurationParsingFromStringTest)
+gsyp_add_common_test(ConcurrentInstancesTest)
