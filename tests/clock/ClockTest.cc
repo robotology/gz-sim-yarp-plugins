@@ -20,6 +20,7 @@ TEST(ClockTest, GetSimulationTimeFromClockPort)
     // Instantiate test fixture
     auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model.sdf";
     gz::sim::TestFixture fixture(modelPath.string());
+    fixture.Finalize();
 
     const int iterations = 1000;
     const int deltaTns = 1e6; // 1ms

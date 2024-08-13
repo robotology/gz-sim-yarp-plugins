@@ -6,12 +6,6 @@ set(TESTS
   ControlBoardOnMultipleGazeboInstancesTest
 )
 
-set(_env_vars)
-list(APPEND _env_vars "LIBGL_ALWAYS_SOFTWARE=1"
-  "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-controlboard-system>"
-  "GZ_SIM_RESOURCE_PATH=${GZ_SIM_RESOURCE_PATH}:${CMAKE_CURRENT_SOURCE_DIR}"
-)
-
 foreach(TEST ${TESTS})
   add_executable(${TEST} ${TEST}.cc)
 
@@ -32,7 +26,8 @@ foreach(TEST ${TESTS})
        COMMAND ${TEST})
 
   set_tests_properties(${TEST} PROPERTIES
-    ENVIRONMENT "${_env_vars}")
+    ENVIRONMENT "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-controlboard-system>"
+    ENVIRONMENT_MODIFICATION "GZ_SIM_RESOURCE_PATH=path_list_append:${CMAKE_CURRENT_SOURCE_DIR}")
 
   target_compile_definitions(${TEST} PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 

@@ -24,6 +24,7 @@ TEST(CameraTest, PluginTest)
     // Instantiate test fixture
     auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model.sdf";
     gz::sim::TestFixture fixture(modelPath.string());
+    fixture.Finalize();
 
     int iterations = 1000;
 
@@ -93,6 +94,7 @@ TEST(CameraTest, HorizontalFlip)
     // Instantiate test fixture
     auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model_hor_flip.sdf";
     gz::sim::TestFixture fixture(modelPath.string());
+    fixture.Finalize();
 
     int iterations = 1000;
     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
@@ -161,6 +163,7 @@ TEST(CameraTest, VerticalFlip)
     // Instantiate test fixture
     auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model_ver_flip.sdf";
     gz::sim::TestFixture fixture(modelPath.string());
+    fixture.Finalize();
 
     int iterations = 1000;
     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
@@ -229,6 +232,7 @@ TEST(CameraTest, HorizontalVerticalFlip)
     // Instantiate test fixture
     auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model_hor_ver_flip.sdf";
     gz::sim::TestFixture fixture(modelPath.string());
+    fixture.Finalize();
 
     int iterations = 1000;
     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);

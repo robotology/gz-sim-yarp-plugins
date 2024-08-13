@@ -50,12 +50,3 @@
     () () () () () (((0.0 0.0 -98.0 0.0 0.0 0.0) 8.68900000000000005684)) () () () ()
     () () () () () (((0.0 0.0 -98.0 0.0 0.0 0.0) 8.77299999999999968736)) () () () ()
     ~~~
-
-If you are using Linux on WSLg and you have the following error
-~~~
-OGRE EXCEPTION(9:UnimplementedException):  in GL3PlusTextureGpu::copyTo at ./RenderSystems/GL3Plus/src/OgreGL3PlusTextureGpu.cpp (line 685)
-~~~
-try forcing software rendering:
-~~~
-export LIBGL_ALWAYS_SOFTWARE=1
-~~~

@@ -36,15 +36,6 @@ Finally start the simulation in Gazebo. The output is:
 ...
 ~~~
 
-If you are using Linux on WSLg and you have the following error
-~~~
-OGRE EXCEPTION(9:UnimplementedException):  in GL3PlusTextureGpu::copyTo at ./RenderSystems/GL3Plus/src/OgreGL3PlusTextureGpu.cpp (line 685)
-~~~
-try forcing software rendering:
-~~~
-export LIBGL_ALWAYS_SOFTWARE=1
-~~~
-
 ## Run model in Gazebo without YARP integration
 Run the model:
 ```
@@ -92,5 +83,3 @@ linear_acceleration {
 }
 ...
 ```
-
-
