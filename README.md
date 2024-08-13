@@ -76,6 +76,11 @@ models
 > [!WARNING]
 > It is possible, but strongly discouraged, to specify the location of a `yarpConfigurationFile` using absolute paths or paths relative to the current working directory: the former approach is not portable, while the latter only works if the library is loaded from the directory it was intended to be loaded from.
 
+## Tools
+
+This repository also contain some helper executable tools:
+* [`gz-sim-yarp-plugins-check-model`](./tools/gz-sim-yarp-plugins-check-model/README.md): Tool to automatically check if a world or a model that uses gz-sim-yarp-plugins is able to load correctly.
+
 ## Run Tests
 
 To run the tests, just configure the project with the `BUILD_TESTING` option, and run `ctest`:
