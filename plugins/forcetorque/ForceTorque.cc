@@ -68,6 +68,8 @@ public:
     {
         yarp::os::Network::init();
 
+        gzyarp::PluginConfigureHelper configureHelper(_ecm);
+
         ecm = &_ecm;
 
         std::string netWrapper = "analogServer";
@@ -147,6 +149,8 @@ public:
                      << m_deviceId << ") into DeviceRegistry";
             return;
         }
+
+        configureHelper.setConfigureIsSuccessful(true);
         m_deviceRegistered = true;
         yInfo() << "Registered YARP device with instance name:" << m_deviceId;
     }

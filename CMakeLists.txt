@@ -14,6 +14,12 @@ set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 gz_find_package(gz-sim8 REQUIRED)
 set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
 
+option(GZ_SIM_YARP_PLUGINS_BUILD_TOOLS "If enabled, build command line helper tools" ON)
+
+if(GZ_SIM_YARP_PLUGINS_BUILD_TOOLS)
+    find_package(CLI11 REQUIRED)
+endif()
+
 # Defines the CMAKE_INSTALL_LIBDIR, CMAKE_INSTALL_BINDIR and many other useful macros.
 # See https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
 include(GNUInstallDirs)
@@ -47,6 +53,10 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 add_subdirectory(libraries)
 add_subdirectory(plugins)
+
+if(GZ_SIM_YARP_PLUGINS_BUILD_TOOLS)
+    add_subdirectory(tools)
+endif()
 
 # Create and install CMake configuration files for this project that are
 # necessary for other projects to call find_package(gz-sim-yarp-plugins).

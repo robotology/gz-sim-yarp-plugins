@@ -8,3 +8,7 @@ add_subdirectory(clock)
 add_subdirectory(controlboard)
 add_subdirectory(commons)
 add_subdirectory(test-helpers)
+
+if(GZ_SIM_YARP_PLUGINS_BUILD_TOOLS)
+    add_subdirectory(gz-sim-yarp-plugins-check-model)
+endif()

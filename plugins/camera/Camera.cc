@@ -77,6 +77,8 @@ public:
     {
         yarp::os::Network::init();
 
+        gzyarp::PluginConfigureHelper configureHelper(_ecm);
+
         ecm = &_ecm;
 
         ::yarp::dev::Drivers::factory().add(
@@ -169,6 +171,7 @@ public:
         }
         this->m_deviceRegistered = true;
         this->cameraInitialized = false;
+        configureHelper.setConfigureIsSuccessful(true);
         yInfo() << "gz-sim-yarp-camera-system: Registered YARP device with instance name:"
                 << m_deviceId;
     }

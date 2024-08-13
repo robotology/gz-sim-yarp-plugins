@@ -11,3 +11,4 @@ dependencies:
   - yarp
   - gtest
   - cmake-package-check
+  - cli11

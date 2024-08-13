@@ -8,7 +8,8 @@ target_link_libraries(gz-sim-yarp-clock-system
   PRIVATE
     YARP::YARP_dev
     YARP::YARP_os
-    YARP::YARP_init)
+    YARP::YARP_init
+    gz-sim-yarp-device-registry)
 
 # Add install target
 install(TARGETS gz-sim-yarp-clock-system)

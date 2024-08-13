@@ -22,6 +22,20 @@
 namespace gzyarp
 {
 
+PluginConfigureHelper::~PluginConfigureHelper()
+{
+    if (!m_configureSuccessful)
+    {
+        DeviceRegistry::getHandler()->incrementNrOfGzSimYARPPluginsNotSuccessfullyLoaded(*m_pecm);
+    }
+}
+
+void PluginConfigureHelper::setConfigureIsSuccessful(bool success)
+{
+    m_configureSuccessful = success;
+    return;
+}
+
 DeviceRegistry* DeviceRegistry::getHandler()
 {
     std::lock_guard<std::mutex> lock(mutex());
@@ -294,6 +308,43 @@ std::mutex& DeviceRegistry::mutex()
 {
     static std::mutex s_mutex;
     return s_mutex;
+}
+
+std::size_t DeviceRegistry::getNrOfGzSimYARPPluginsNotSuccessfullyLoaded(const gz::sim::EntityComponentManager& ecm) const
+{
+    auto it = m_nrOfGzSimYARPPluginsNotSuccessfullyLoaded.find(getGzInstanceId(ecm));
+
+    if (it == m_nrOfGzSimYARPPluginsNotSuccessfullyLoaded.end())
+    {
+        return 0;
+    } else
+    {
+        return it->second;
+    }
+}
+
+std::size_t DeviceRegistry::getTotalNrOfGzSimYARPPluginsNotSuccessfullyLoaded() const
+{
+    std::size_t ret = 0;
+    for (const auto& pair : m_nrOfGzSimYARPPluginsNotSuccessfullyLoaded) {
+        ret += pair.second;
+    }
+    return ret;
+}
+
+void DeviceRegistry::incrementNrOfGzSimYARPPluginsNotSuccessfullyLoaded(const gz::sim::EntityComponentManager& ecm)
+{
+    std::string ecmid = getGzInstanceId(ecm);
+    auto it = m_nrOfGzSimYARPPluginsNotSuccessfullyLoaded.find(getGzInstanceId(ecm));
+
+    if (it == m_nrOfGzSimYARPPluginsNotSuccessfullyLoaded.end())
+    {
+        m_nrOfGzSimYARPPluginsNotSuccessfullyLoaded[ecmid] = 1;
+    }
+    else
+    {
+        m_nrOfGzSimYARPPluginsNotSuccessfullyLoaded[ecmid] = m_nrOfGzSimYARPPluginsNotSuccessfullyLoaded[ecmid] + 1;
+    }
 }
 
 } // namespace gzyarp

@@ -60,7 +60,7 @@ If you are using an apt-based distribution such as Ubuntu and you want to use ap
 
 ```bash
 sudo apt-get update
-sudo apt-get install lsb-release wget gnupg cmake pkg-config ninja-build build-essential libgtest-dev
+sudo apt-get install lsb-release wget gnupg cmake pkg-config ninja-build build-essential libcli11-dev libgtest-dev
 ```
 
 and then install Gazebo Harmonic:
