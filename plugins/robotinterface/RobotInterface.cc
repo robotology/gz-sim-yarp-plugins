@@ -1,11 +1,14 @@
 #include <ConfigurationHelpers.hh>
 #include <DeviceRegistry.hh>
 
+#include <functional>
 #include <memory>
 #include <sdf/Element.hh>
 #include <string>
 #include <vector>
 
+#include <gz/common/Event.hh>
+#include <gz/common/events/Types.hh>
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Entity.hh>
 #include <gz/sim/EntityComponentManager.hh>
@@ -62,8 +65,21 @@ public:
                 yError() << "gz-sim-yarp-robotinterface-system: impossible  to run phase "
                             "ActionPhaseShutdown in robotinterface";
             }
+            m_connection.reset();
             m_robotInterfaceCorrectlyStarted = false;
         }
+    }
+
+    void OnDeviceRemoved(std::string removeDeviceRegistryDatabaseKey)
+    {
+        // Check if deviceRegistryDatabaseKey is among the one passed to this instance of gz_yarp_robotinterface
+        // If yes, close the robotinterface to avoid crashes due to access to a device that is being deleted
+        for (auto&& usedDeviceScopedName: m_deviceScopedNames) {
+            if (removeDeviceRegistryDatabaseKey == usedDeviceScopedName) {
+                CloseRobotInterface();
+            }
+        }
+        return;
     }
 
     virtual void Configure(const Entity& _entity,
@@ -105,11 +121,17 @@ public:
             return;
         }
         m_robotInterfaceCorrectlyStarted = true;
+        // If the robotinterface started correctly, add a callback to ensure that it is closed as
+        // soon that an external device passed to it is deleted
+        m_connection =
+            DeviceRegistry::getHandler()->connectDeviceRemoved(
+                std::bind(&RobotInterface::OnDeviceRemoved, this, std::placeholders::_1));
     }
 
 private:
     yarp::robotinterface::XMLReaderResult m_xmlRobotInterfaceResult;
     std::vector<std::string> m_deviceScopedNames;
+    gz::common::ConnectionPtr m_connection;
     bool m_robotInterfaceCorrectlyStarted;
 
     bool loadYarpRobotInterfaceConfigurationFile(const std::shared_ptr<const sdf::Element>& _sdf,

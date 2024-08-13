@@ -1,9 +1,10 @@
 #include <DeviceRegistry.hh>
 
-#include <cstddef>
 #include <gz/sim/Entity.hh>
 #include <gz/sim/EntityComponentManager.hh>
 #include <gz/sim/Util.hh>
+
+#include <cstddef>
 #include <iostream>
 #include <mutex>
 #include <ostream>
@@ -242,6 +243,7 @@ bool DeviceRegistry::removeDevice(const gz::sim::EntityComponentManager& ecm,
                 return false;
             }
 
+            m_deviceRemovedEvent(deviceDatabaseKey);
             m_devicesMap.at(gzInstanceId).erase(deviceDatabaseKey);
         }
     }

@@ -1,6 +1,9 @@
 #pragma once
 
+#include <gz/common/Event.hh>
+#include <gz/common/events/Types.hh>
 #include <gz/sim/Entity.hh>
+
 #include <mutex>
 #include <string>
 #include <unordered_map>
@@ -37,6 +40,15 @@ public:
     bool
     removeDevice(const gz::sim::EntityComponentManager& ecm, const std::string& deviceDatabaseKey);
 
+    /**
+     * Add a callback when a device is removed, i.e. removeDevice is called.
+     */
+    template<typename T>
+    gz::common::ConnectionPtr connectDeviceRemoved(T _subscriber)
+    {
+        return m_deviceRemovedEvent.Connect(_subscriber);
+    }
+
     std::vector<std::string> getDevicesKeys(const gz::sim::EntityComponentManager& ecm) const;
 
 private:
@@ -54,7 +66,9 @@ private:
     static DeviceRegistry* s_handle;
     static std::mutex& mutex();
     std::unordered_map<std::string, std::unordered_map<std::string, yarp::dev::PolyDriver*>>
-        m_devicesMap; // map of known yarp devices
+        m_devicesMap; // map of known yarp devices Updated upstream
+    // Event for when a device is removed
+    gz::common::EventT<void (std::string)> m_deviceRemovedEvent;
 };
 
 } // namespace gzyarp
