@@ -90,6 +90,8 @@ public:
         yarp::os::Network::init();
         auto model = Model(_entity);
 
+        gzyarp::PluginConfigureHelper configureHelper(_ecm);
+
         if (!loadYarpRobotInterfaceConfigurationFile(_sdf, _ecm, model))
         {
             yError("gz-sim-yarp-robotinterface-system : Error loading robotinterface configuration "
@@ -120,6 +122,8 @@ public:
             m_xmlRobotInterfaceResult.robot.enterPhase(yarp::robotinterface::ActionPhaseShutdown);
             return;
         }
+
+        configureHelper.setConfigureIsSuccessful(true);
         m_robotInterfaceCorrectlyStarted = true;
         // If the robotinterface started correctly, add a callback to ensure that it is closed as
         // soon that an external device passed to it is deleted

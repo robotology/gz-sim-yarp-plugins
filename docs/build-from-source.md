@@ -25,7 +25,7 @@ in addition to the usual dependencies used to configure, compile and test C++ pa
 If you are using conda (or mamba), the dependencies of `gz-sim-yarp-plugins` can be installed with:
 
 ```bash
-conda install -c conda-forge libgz-sim8 yarp ycm-cmake-modules cmake ninja pkg-config cmake compilers gtest
+conda install -c conda-forge libgz-sim8 yarp ycm-cmake-modules cmake ninja pkg-config cmake compilers gtest cli11
 ```
 
 This command should be executed in a terminal with the environment activated.
@@ -60,7 +60,7 @@ If you are using an apt-based distribution such as Ubuntu and you want to use ap
 
 ```bash
 sudo apt-get update
-sudo apt-get install lsb-release wget gnupg cmake pkg-config ninja-build build-essential libgtest-dev
+sudo apt-get install lsb-release wget gnupg cmake pkg-config ninja-build build-essential libcli11-dev libgtest-dev
 ```
 
 and then install Gazebo Harmonic:
@@ -115,3 +115,10 @@ export GZ_SIM_SYSTEM_PLUGIN_PATH=${GZ_SIM_SYSTEM_PLUGIN_PATH}:<install_location>
 ~~~
 
 where `<install_location>` is the directory passed to `CMAKE_INSTALL_PREFIX` during the CMake configuration.
+
+To ensure that the tools are found, instead you need to add their location to the `PATH`:
+
+~~~
+export PATH=${PATH}:<install_location>/bin
+~~~
+

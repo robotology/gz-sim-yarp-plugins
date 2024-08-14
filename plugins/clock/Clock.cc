@@ -1,3 +1,5 @@
+#include <DeviceRegistry.hh>
+
 #include <chrono>
 #include <memory>
 #include <string>
@@ -49,12 +51,16 @@ public:
     {
         if (!m_initialized)
         {
+            gzyarp::PluginConfigureHelper configureHelper(_ecm);
+
             m_initialized = true;
             if (!m_clockPort.open(m_portName))
             {
                 yError() << "Failed to open port" << m_portName;
                 return;
             }
+
+            configureHelper.setConfigureIsSuccessful(true);
             yInfo() << "gz-sim-yarp-clock-system plugin initialized.";
         }
     }

@@ -84,6 +84,8 @@ void ControlBoard::Configure(const Entity& _entity,
 
     bool wipe = false;
 
+    gzyarp::PluginConfigureHelper configureHelper(_ecm);
+
     m_ecm = &_ecm;
 
     if (ConfigurationHelpers::loadPluginConfiguration(_sdf, m_pluginParameters))
@@ -157,6 +159,7 @@ void ControlBoard::Configure(const Entity& _entity,
 
     resetPositionsAndTrajectoryGenerators(_ecm);
 
+    configureHelper.setConfigureIsSuccessful(true);
     yInfo() << "Registered YARP device with instance name:" << m_deviceId;
     m_deviceRegistered = true;
 }

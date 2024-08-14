@@ -78,6 +78,8 @@ public:
 
         ::yarp::os::Property driver_properties;
 
+        gzyarp::PluginConfigureHelper configureHelper(_ecm);
+
         ecm = &_ecm;
 
         if (ConfigurationHelpers::loadPluginConfiguration(_sdf, driver_properties))
@@ -146,6 +148,7 @@ public:
             return;
         }
 
+        configureHelper.setConfigureIsSuccessful(true);
         m_deviceRegistered = true;
         yInfo() << "Registered YARP device with instance name:" << m_deviceId;
     }

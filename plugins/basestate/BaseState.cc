@@ -69,6 +69,8 @@ public:
 
         std::string netWrapper = "analogServer";
 
+        gzyarp::PluginConfigureHelper configureHelper(_ecm);
+
         m_ecm = &_ecm;
 
         using BaseStateDriverCreator
@@ -156,6 +158,8 @@ public:
                      << m_deviceId << ")";
             return;
         }
+
+        configureHelper.setConfigureIsSuccessful(true);
         m_deviceRegistered = true;
         yInfo() << "Registered YARP device with instance name:" << m_deviceId;
     }

@@ -5,6 +5,7 @@
 
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Value.h>
+
 namespace gzyarp
 {
 constexpr double pi = 3.1415926535897932384626433;
