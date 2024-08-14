@@ -76,8 +76,6 @@ public:
 
     bool close() override
     {
-        delete[] m_sensorData->m_imageBuffer;
-        m_sensorData->m_imageBuffer = 0;
         return true;
     }
 
@@ -269,18 +267,6 @@ public:
     void setCameraData(::gzyarp::CameraData* dataPtr) override
     {
         m_sensorData = dataPtr;
-
-        // Now that we have a pointer to CameraData we can initialize the camera buffers
-        initializeCamera();
-    }
-
-    void initializeCamera()
-    {
-        {
-            std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
-            m_sensorData->m_imageBuffer = new unsigned char[getRawBufferSize()];
-            memset(m_sensorData->m_imageBuffer, 0x00, getRawBufferSize());
-        }
     }
 
 private:
