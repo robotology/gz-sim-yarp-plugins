@@ -108,9 +108,7 @@ jobs:
       run: |
         cd build
         # So high until-pass as a mitigation for https://github.com/robotology/gz-sim-yarp-plugins/issues/75
-        # For some reason gz-sim-yarp-plugins-check-model-tutorial-forcetorque-model-two-sensors fails only in apt CI in Debug,
-        # let's just skip it
-        ctest -E "^gz-sim-yarp-plugins-check-model-tutorial-forcetorque-model-two-sensors"  -T Test -T Coverage --repeat until-pass:20 --output-on-failure -C ${{ matrix.build_type }} .
+        ctest -T Test -T Coverage --repeat until-pass:20 --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Install
       run: |
