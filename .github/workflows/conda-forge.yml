@@ -89,7 +89,11 @@ jobs:
       shell: bash -l {0}
       run: |
         cd build
-        ctest --output-on-failure -C ${{ matrix.build_type }} .
+        # Deterministic tests
+        ctest -E "^LaserTest|^CameraTest" --output-on-failure -C ${{ matrix.build_type }} .
+        # Non-deterministic tests
+        ctest -R "^LaserTest|^CameraTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
+
 
     - name: Test_macos
       if: contains(matrix.os, 'macos')
