@@ -196,7 +196,7 @@ private:
     std::string sensorScopedName;
     bool m_deviceRegistered;
     ForceTorqueData forceTorqueData;
-    bool ftInitialized;
+    bool ftInitialized{false};
     gz::transport::Node node;
     gz::msgs::Wrench ftMsg;
     std::mutex ftMsgMutex;
