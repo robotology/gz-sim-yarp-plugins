@@ -197,7 +197,7 @@ private:
     std::string sensorScopedName;
     bool m_deviceRegistered;
     LaserData laserData;
-    bool laserInitialized;
+    bool laserInitialized{false};
     gz::transport::Node node;
     gz::msgs::LaserScan laserMsg;
     std::mutex laserMsgMutex;

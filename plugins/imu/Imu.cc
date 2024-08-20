@@ -202,7 +202,7 @@ private:
     std::string sensorScopedName;
     bool m_deviceRegistered;
     ::gzyarp::ImuData imuData;
-    bool imuInitialized;
+    bool imuInitialized{false};
     gz::transport::Node node;
     gz::msgs::IMU imuMsg;
     std::mutex imuMsgMutex;
