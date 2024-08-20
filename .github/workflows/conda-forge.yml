@@ -91,6 +91,7 @@ jobs:
         cd build
         # LaserTest and CameraTest are failing on conda-forge on Ubuntu: https://github.com/robotology/gz-sim-yarp-plugins/issues/196
         sudo apt install libegl-dev libegl-mesa0 libegl1
+        ldd $CONDA_PREFIX/lib/OGRE-Next/RenderSystem_GL3Plus.so
         ctest --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Test_macos
