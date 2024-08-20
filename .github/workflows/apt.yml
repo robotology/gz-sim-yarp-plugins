@@ -100,15 +100,20 @@ jobs:
       if: contains(matrix.build_type, 'Release')
       run: |
         cd build
-        # So high until-pass as a mitigation for https://github.com/robotology/gz-sim-yarp-plugins/issues/75
-        ctest -E "^ImuTest" --repeat until-pass:20 --output-on-failure -C ${{ matrix.build_type }} .
+        # Deterministic tests
+        ctest -E "^ConcurrentInstancesTest|^ControlBoardOnMultipleGazeboInstancesTest|^CameraTest" --output-on-failure -C ${{ matrix.build_type }} .
+        # Non-deterministic tests
+        ctest -R "^ConcurrentInstancesTest|^ControlBoardOnMultipleGazeboInstancesTest|^CameraTest" --repeat until-pass:10  --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Test (Debug)
       if: contains(matrix.build_type, 'Debug')
       run: |
         cd build
-        # So high until-pass as a mitigation for https://github.com/robotology/gz-sim-yarp-plugins/issues/75
-        ctest -T Test -T Coverage --repeat until-pass:20 --output-on-failure -C ${{ matrix.build_type }} .
+        # Deterministic tests
+        ctest -E "^ConcurrentInstancesTest|^ControlBoardOnMultipleGazeboInstancesTest|^CameraTest"  -T Test -T Coverage --output-on-failure -C ${{ matrix.build_type }} .
+        # Non-deterministic tests
+        ctest -R "^ConcurrentInstancesTest|^ControlBoardOnMultipleGazeboInstancesTest|^CameraTest" -T Test -T Coverage --repeat until-pass:10 --output-on-failure -C ${{ matrix.build_type }} .
+
 
     - name: Install
       run: |
