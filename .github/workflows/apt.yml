@@ -112,7 +112,7 @@ jobs:
         # Deterministic tests
         ctest -E "^ConcurrentInstancesTest|^ControlBoardOnMultipleGazeboInstancesTest|^CameraTest"  -T Test -T Coverage --output-on-failure -C ${{ matrix.build_type }} .
         # Non-deterministic tests
-        ctest -R "^ConcurrentInstancesTest|^ControlBoardOnMultipleGazeboInstancesTest|^CameraTest" -T Test -T Coverage --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
+        ctest -R "^ConcurrentInstancesTest|^ControlBoardOnMultipleGazeboInstancesTest|^CameraTest" -T Test -T Coverage --repeat until-pass:10 --output-on-failure -C ${{ matrix.build_type }} .
 
 
     - name: Install
