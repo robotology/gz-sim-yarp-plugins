@@ -90,7 +90,8 @@ jobs:
       run: |
         cd build
         # LaserTest and CameraTest are failing on conda-forge on Ubuntu: https://github.com/robotology/gz-sim-yarp-plugins/issues/196
-        ctest -E "^LaserTest|^CameraTest" --output-on-failure -C ${{ matrix.build_type }} .
+        export LIBGL_ALWAYS_SOFTWARE=true
+        ctest --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Test_macos
       if: contains(matrix.os, 'macos')
