@@ -89,15 +89,14 @@ jobs:
       shell: bash -l {0}
       run: |
         cd build
-        ctest -E "^LaserTest|^CameraTest|^ImuTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
+        ctest --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Test_macos
       if: contains(matrix.os, 'macos')
       shell: bash -l {0}
       run: |
         cd build
-        # ImuTest, ForceTorqueTest are skipped due to https://github.com/robotology/gz-sim-yarp-plugins/issues/54
-        ctest -E "^LaserTest|^CameraTest|^ImuTest|^ForceTorqueTest|^ControlBoardCommonsTest" --repeat until-pass:5 --output-on-failure -C ${{ matrix.build_type }} .
+        ctest --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Install
       run: |
