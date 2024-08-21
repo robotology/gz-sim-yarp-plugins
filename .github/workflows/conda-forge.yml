@@ -84,16 +84,8 @@ jobs:
         cd build
         cmake --build . --config ${{ matrix.build_type }}
 
-    - name: Test_ubuntu
-      if: contains(matrix.os, 'ubuntu')
-      shell: bash -l {0}
-      run: |
-        cd build
-        # LaserTest and CameraTest are failing on conda-forge on Ubuntu: https://github.com/robotology/gz-sim-yarp-plugins/issues/196
-        ctest -E "^LaserTest|^CameraTest" --output-on-failure -C ${{ matrix.build_type }} .
-
-    - name: Test_macos
-      if: contains(matrix.os, 'macos')
+    - name: Test
+      if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
       shell: bash -l {0}
       run: |
         cd build
