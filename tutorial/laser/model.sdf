@@ -66,7 +66,7 @@
 
     <model name="laser_model">
       <plugin name="gzyarp::Laser" filename="gz-sim-yarp-laser-system">
-        <yarpConfigurationFile>laser.ini</yarpConfigurationFile>
+        <yarpConfigurationFile>model://laser/laser.ini</yarpConfigurationFile>
       </plugin>
       <static>true</static>
       <pose>0 0 0.1 0 0 0</pose>
