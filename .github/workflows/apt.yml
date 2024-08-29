@@ -101,18 +101,18 @@ jobs:
       run: |
         cd build
         # Deterministic tests
-        ctest -E "^ConcurrentInstancesTest|^ControlBoardOnMultipleGazeboInstancesTest|^CameraTest" --output-on-failure -C ${{ matrix.build_type }} .
+        ctest -E "^CameraTest" --output-on-failure -C ${{ matrix.build_type }} .
         # Non-deterministic tests
-        ctest -R "^ConcurrentInstancesTest|^ControlBoardOnMultipleGazeboInstancesTest|^CameraTest" --repeat until-pass:10  --output-on-failure -C ${{ matrix.build_type }} .
+        ctest -R "^CameraTest" --repeat until-pass:10  --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Test (Debug)
       if: contains(matrix.build_type, 'Debug')
       run: |
         cd build
         # Deterministic tests
-        ctest -E "^ConcurrentInstancesTest|^ControlBoardOnMultipleGazeboInstancesTest|^CameraTest"  -T Test -T Coverage --output-on-failure -C ${{ matrix.build_type }} .
+        ctest -E "^CameraTest"  -T Test -T Coverage --output-on-failure -C ${{ matrix.build_type }} .
         # Non-deterministic tests
-        ctest -R "^ConcurrentInstancesTest|^ControlBoardOnMultipleGazeboInstancesTest|^CameraTest" -T Test -T Coverage --repeat until-pass:10 --output-on-failure -C ${{ matrix.build_type }} .
+        ctest -R "^CameraTest" -T Test -T Coverage --repeat until-pass:10 --output-on-failure -C ${{ matrix.build_type }} .
 
 
     - name: Install

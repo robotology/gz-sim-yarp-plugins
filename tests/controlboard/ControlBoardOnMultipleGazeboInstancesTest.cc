@@ -60,14 +60,11 @@ TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
     unsigned int iterationsToCompleteMotion1 = 0;
     unsigned int iterationsToCompleteMotion2 = 0;
 
+    gz::common::Console::SetVerbosity(4);
+
     gz::sim::TestFixture fixture1(
         (std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "pendulum_multiple_gz_instances.sdf")
             .string());
-    gz::sim::TestFixture fixture2(
-        (std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "pendulum_multiple_gz_instances.sdf")
-            .string());
-    gz::common::Console::SetVerbosity(4);
-
     fixture1
         .OnConfigure([&](const gz::sim::Entity& _worldEntity,
                          const std::shared_ptr<const sdf::Element>& /*_sdf*/,
@@ -98,6 +95,13 @@ TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
             })
         .Finalize();
 
+    // Workaround for https://github.com/robotology/gz-sim-yarp-plugins/issues/201
+    // Remove if and once https://github.com/gazebosim/gz-physics/pull/675 is merged
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    gz::sim::TestFixture fixture2(
+        (std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "pendulum_multiple_gz_instances.sdf")
+            .string());
     fixture2
         .OnConfigure([&](const gz::sim::Entity& _worldEntity,
                          const std::shared_ptr<const sdf::Element>& /*_sdf*/,
@@ -132,8 +136,13 @@ TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
     iPositionControl1->positionMove(0, refPosition1);
     iPositionControl2->positionMove(0, refPosition2);
 
-    ASSERT_TRUE(fixture1.Server()->Run(false, plannedIterations, false));
-    ASSERT_TRUE(fixture2.Server()->Run(false, plannedIterations, false));
+    // First do a step blocked to workaround https://github.com/robotology/gz-sim-yarp-plugins/issues/20
+    // Remove if and once https://github.com/gazebosim/gz-physics/pull/675 is merged
+    ASSERT_TRUE(fixture1.Server()->Run(/*blocking=*/true, 1, /*paused=*/false));
+    ASSERT_TRUE(fixture2.Server()->Run(/*blocking=*/true, 1, /*paused=*/false));
+
+    ASSERT_TRUE(fixture1.Server()->Run(/*blocking=*/false, plannedIterations-1, /*paused=*/false));
+    ASSERT_TRUE(fixture2.Server()->Run(/*blocking=*/false, plannedIterations-1, /*paused=*/false));
 
     while (fixture1.Server()->Running() || fixture2.Server()->Running())
     {
