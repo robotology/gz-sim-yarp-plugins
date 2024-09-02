@@ -2,6 +2,9 @@
 
 #include <chrono>
 #include <filesystem>
+#include <iostream>
+#include <memory>
+#include <string>
 #include <thread>
 
 #include <gz/common/Console.hh>
@@ -11,6 +14,8 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Network.h>
+
+#include "process.hpp"
 
 TEST(ClockTest, GetSimulationTimeFromClockPort)
 {
@@ -56,7 +61,17 @@ TEST(ClockTest, SimulationStartsIfYARPClockAlreadySet)
     // Set YARP_CLOCK to /clock and check if test works
     yarp::conf::environment::set_string("YARP_CLOCK", "/clock");
 
-    yarp::os::NetworkBase::setLocalMode(true);
+    // In this case we do not use setLocalMode as we need to
+    // ensure that the low level of YARP behave like in the case
+    // of when the user uses them, i.e. using an external yarpserver
+    std::string yarpserverLocation = YARP_SERVER_LOCATION;
+    std::cerr << "ClockTest: launching yarpserver from " << YARP_SERVER_LOCATION << std::endl;
+
+    std::string command = yarpserverLocation + " --write";
+    std::unique_ptr<TinyProcessLib::Process> yarpserverProcess
+        = std::make_unique<TinyProcessLib::Process>(command);
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+
     // Maximum verbosity helps with debugging
     gz::common::Console::SetVerbosity(4);
     // Instantiate test fixture
@@ -73,4 +88,7 @@ TEST(ClockTest, SimulationStartsIfYARPClockAlreadySet)
     // ASSERT
     // Check if the /clock port has been correctly created
     EXPECT_TRUE(yarp::os::NetworkBase::exists("/clock")) << "Error: /clock port does not exist";
+
+    // Close yarpserver
+    yarpserverProcess->kill();
 }
