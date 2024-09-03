@@ -13,12 +13,14 @@
 #include <gz/sim/Util.hh>
 #include <sdf/Element.hh>
 
+#include <thread>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Port.h>
+#include <yarp/os/Time.h>
 
 using namespace gz;
 using namespace sim;
@@ -53,6 +55,21 @@ public:
         {
             gzyarp::PluginConfigureHelper configureHelper(_ecm);
 
+            // To avoid deadlock during initialization if YARP_CLOCK is set,
+            // if the YARP network is not initialized we always initialize
+            // it with system clock, and then we switch back to the default clock later
+            bool networkIsNotInitialized = !yarp::os::NetworkBase::isNetworkInitialized();
+
+            if (networkIsNotInitialized)
+            {
+                m_network = std::make_unique<yarp::os::Network>(yarp::os::YARP_CLOCK_SYSTEM);
+                m_resetYARPClockAfterPortCreation = true;
+            } else
+            {
+                m_network = std::make_unique<yarp::os::Network>();
+                m_resetYARPClockAfterPortCreation = false;
+            }
+
             m_initialized = true;
             if (!m_clockPort.open(m_portName))
             {
@@ -70,6 +87,19 @@ public:
         if (_info.paused)
         {
             return;
+        }
+
+        // As the port is now created and contains streams data,
+        // if necessary reset the YARP clock to YARP_CLOCK_DEFAULT
+        // Unfortunately, the yarpClockInit blocks on the port until it
+        // receives data, so we need to launch it in a different thread
+        if (m_resetYARPClockAfterPortCreation)
+        {
+            auto resetYARPNetworkClockLambda
+                = []() { yarp::os::NetworkBase::yarpClockInit(yarp::os::YARP_CLOCK_DEFAULT); };
+            std::thread resetYARPNetworkClockThread(resetYARPNetworkClockLambda);
+            resetYARPNetworkClockThread.detach();
+            m_resetYARPClockAfterPortCreation = false;
         }
 
         auto currentTime = _info.simTime;
@@ -91,7 +121,10 @@ public:
 
 private:
     bool m_initialized;
-    yarp::os::Network m_network;
+    // True if the YARP network needs to be reset to
+    // YARP_CLOCK_DEFAULT after the port has been created
+    bool m_resetYARPClockAfterPortCreation;
+    std::unique_ptr<yarp::os::Network> m_network = nullptr;
     std::string m_portName;
     yarp::os::BufferedPort<yarp::os::Bottle> m_clockPort;
 };
