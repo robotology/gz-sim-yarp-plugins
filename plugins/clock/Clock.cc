@@ -62,11 +62,11 @@ public:
 
             if (networkIsNotInitialized)
             {
-                m_network = yarp::os::Network(yarp::os::YARP_CLOCK_SYSTEM);
+                m_network = std::make_unique<yarp::os::Network>(yarp::os::YARP_CLOCK_SYSTEM);
                 m_resetYARPClockAfterPortCreation = true;
             } else
             {
-                m_network = yarp::os::Network();
+                m_network = std::make_unique<yarp::os::Network>();
                 m_resetYARPClockAfterPortCreation = false;
             }
 
@@ -95,7 +95,6 @@ public:
         // receives data, so we need to launch it in a different thread
         if (m_resetYARPClockAfterPortCreation)
         {
-            yError() << "Resetting YARP clock to default";
             auto resetYARPNetworkClockLambda
                 = []() { yarp::os::NetworkBase::yarpClockInit(yarp::os::YARP_CLOCK_DEFAULT); };
             std::thread resetYARPNetworkClockThread(resetYARPNetworkClockLambda);
@@ -125,7 +124,7 @@ private:
     // True if the YARP network needs to be reset to
     // YARP_CLOCK_DEFAULT after the port has been created
     bool m_resetYARPClockAfterPortCreation;
-    yarp::os::Network m_network;
+    std::unique_ptr<yarp::os::Network> m_network = nullptr;
     std::string m_portName;
     yarp::os::BufferedPort<yarp::os::Bottle> m_clockPort;
 };
