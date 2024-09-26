@@ -20,7 +20,44 @@ Before building `gz-sim-yarp-plugins`, you need to install its dependencies, the
 
 in addition to the usual dependencies used to configure, compile and test C++ packages.
 
-## Compile from source using conda-forge dependencies on Linux, macOS or Windows
+To compile gz-sim-yarp-plugins from source, follow just one out of the following sections.
+
+## Compile from source with pixi using conda-forge dependencies on Linux, macOS or Windows
+
+If you want to use [pixi](https://pixi.sh) to compile the project, just clone the repo and in the `gz-sim-yarp-plugins` folder run:
+
+~~~
+pixi run build
+~~~
+
+This will automatically download all dependencies, and build the project.
+
+To run the test suite, run:
+
+~~~
+pixi run test
+~~~
+
+To install the project in the environment created by pixi, run:
+~~~
+pixi run install
+~~~
+
+Then you can launch programs in this environment with `pixi run`, for example:
+
+~~~
+pixi run gz sim
+~~~
+
+If you prefer to launch programs with prepending them with `pixi run`, you can activate the pixi environment with:
+
+~~~
+pixi shell
+~~~
+
+and then run your commands as in a normal shell.
+
+## Compile from source with conda using conda-forge dependencies on Linux, macOS or Windows
 
 If you are using conda (or mamba), the dependencies of `gz-sim-yarp-plugins` can be installed with:
 
@@ -54,7 +91,7 @@ ninja
 ninja install
 ```
 
-## Compile from source using apt dependencies on Linux, macOS or Windows
+## Compile from source using apt dependencies on Ubuntu Linux
 
 If you are using an apt-based distribution such as Ubuntu and you want to use apt, the dependencies can be installed via:
 
