@@ -3,8 +3,9 @@
 ## Table of Contents
 
 - [Dependencies](#dependencies)
-- [Compile from source using conda-forge dependencies on Linux, macOS or Windows](#compile-from-source-using-conda-forge-dependencies-on-linux-macos-or-windows)
-- [Compile from source using apt dependencies on Linux, macOS or Windows](#compile-from-source-using-apt-dependencies-on-linux-macos-or-windows)
+- [Compile from source with pixi on Linux, macOS or Windows](#compile-from-source-with-pixi-on-linux-macos-or-windows)
+- [Compile from source with conda on Linux, macOS or Windows](#compile-from-source-with-conda-on-linux-macos-or-windows)
+- [Compile from source using apt dependencies on Ubuntu Linux](#compile-from-source-using-apt-dependencies-on-ubuntu-linux)
 - [Usage](#usage)
 
 ## Dependencies
@@ -22,7 +23,7 @@ in addition to the usual dependencies used to configure, compile and test C++ pa
 
 To compile gz-sim-yarp-plugins from source, follow just one out of the following sections.
 
-## Compile from source with pixi using conda-forge dependencies on Linux, macOS or Windows
+## Compile from source with pixi on Linux, macOS or Windows
 
 If you want to use [pixi](https://pixi.sh) to compile the project, just clone the repo and in the `gz-sim-yarp-plugins` folder run:
 
@@ -57,9 +58,9 @@ pixi shell
 
 and then run your commands as in a normal shell.
 
-## Compile from source with conda using conda-forge dependencies on Linux, macOS or Windows
+## Compile from source with conda on Linux, macOS or Windows
 
-If you are using conda (or mamba), the dependencies of `gz-sim-yarp-plugins` can be installed with:
+If you are using conda, the dependencies of `gz-sim-yarp-plugins` can be installed with:
 
 ```bash
 conda install -c conda-forge libgz-sim8 yarp ycm-cmake-modules cmake ninja pkg-config cmake compilers gtest cli11
@@ -145,7 +146,7 @@ ninja install
 
 ## Usage
 
-To notify Gazebo of the new plugins compiled, it is necessary to modify the `GZ_SIM_SYSTEM_PLUGIN_PATH` environment variable, for example on Linux:
+To notify Gazebo of the new plugins compiled, unless you are using pixi it is necessary to modify the `GZ_SIM_SYSTEM_PLUGIN_PATH` environment variable, for example on Linux:
 
 ~~~
 export GZ_SIM_SYSTEM_PLUGIN_PATH=${GZ_SIM_SYSTEM_PLUGIN_PATH}:<install_location>/lib
