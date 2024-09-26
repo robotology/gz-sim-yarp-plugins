@@ -4,15 +4,37 @@ project(gz-sim-yarp-plugins
         LANGUAGES CXX C
         VERSION 0.3.0)
 
-find_package(gz-cmake3 REQUIRED)
 find_package(YARP REQUIRED COMPONENTS robotinterface os)
 find_package(YCM REQUIRED)
 
-gz_find_package(gz-plugin2 REQUIRED COMPONENTS register)
-set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
+# Initial value of GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION is empty, and then is set to 8 or 9 depending if gz-sim8 or gz-sim9 are available
+set(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION_DOCS "Version of gz-sim used to compile gz-sim-yarp-plugins (either 8 or 9)")
+set(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION "" CACHE STRING ${GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION_DOCS})
 
-gz_find_package(gz-sim8 REQUIRED)
-set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
+# If GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION is not set, try to guess a suitable value
+# based on the gz-sim version that can be found in the system
+if(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION STREQUAL "")
+    find_package(gz-sim8 QUIET)
+    if(gz-sim8_FOUND)
+        set(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION "8" CACHE STRING ${GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION_DOCS} FORCE)
+    else()
+        find_package(gz-sim9 REQUIRED)
+        set(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION "9" CACHE STRING ${GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION_DOCS} FORCE)
+    endif()
+endif()
+
+if(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION STREQUAL "8")
+    set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
+    find_package(gz-plugin2 REQUIRED COMPONENTS register)
+    set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
+elseif(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION STREQUAL "9")
+    find_package(gz-sim9 REQUIRED)
+    set(GZ_SIM_VER ${gz-sim9_VERSION_MAJOR})
+    find_package(gz-plugin3 REQUIRED COMPONENTS register)
+    set(GZ_PLUGIN_VER ${gz-plugin3_VERSION_MAJOR})
+else()
+    message(FATAL_ERROR "Unsupported GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION value ${GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION}, only 8 or 9 are supported.")
+endif()
 
 option(GZ_SIM_YARP_PLUGINS_BUILD_TOOLS "If enabled, build command line helper tools" ON)
 
