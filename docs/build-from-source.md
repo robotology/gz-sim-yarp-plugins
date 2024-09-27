@@ -3,8 +3,9 @@
 ## Table of Contents
 
 - [Dependencies](#dependencies)
-- [Compile from source using conda-forge dependencies on Linux, macOS or Windows](#compile-from-source-using-conda-forge-dependencies-on-linux-macos-or-windows)
-- [Compile from source using apt dependencies on Linux, macOS or Windows](#compile-from-source-using-apt-dependencies-on-linux-macos-or-windows)
+- [Compile from source with pixi on Linux, macOS or Windows](#compile-from-source-with-pixi-on-linux-macos-or-windows)
+- [Compile from source with conda on Linux, macOS or Windows](#compile-from-source-with-conda-on-linux-macos-or-windows)
+- [Compile from source using apt dependencies on Ubuntu Linux](#compile-from-source-using-apt-dependencies-on-ubuntu-linux)
 - [Usage](#usage)
 
 ## Dependencies
@@ -20,9 +21,46 @@ Before building `gz-sim-yarp-plugins`, you need to install its dependencies, the
 
 in addition to the usual dependencies used to configure, compile and test C++ packages.
 
-## Compile from source using conda-forge dependencies on Linux, macOS or Windows
+To compile gz-sim-yarp-plugins from source, follow just one out of the following sections.
 
-If you are using conda (or mamba), the dependencies of `gz-sim-yarp-plugins` can be installed with:
+## Compile from source with pixi on Linux, macOS or Windows
+
+If you want to use [pixi](https://pixi.sh) to compile the project, just clone the repo and in the `gz-sim-yarp-plugins` folder run:
+
+~~~
+pixi run build
+~~~
+
+This will automatically download all dependencies, and build the project.
+
+To run the test suite, run:
+
+~~~
+pixi run test
+~~~
+
+To install the project in the environment created by pixi, run:
+~~~
+pixi run install
+~~~
+
+Then you can launch programs in this environment with `pixi run`, for example:
+
+~~~
+pixi run gz sim
+~~~
+
+If you prefer to launch programs with prepending them with `pixi run`, you can activate the pixi environment with:
+
+~~~
+pixi shell
+~~~
+
+and then run your commands as in a normal shell.
+
+## Compile from source with conda on Linux, macOS or Windows
+
+If you are using conda, the dependencies of `gz-sim-yarp-plugins` can be installed with:
 
 ```bash
 conda install -c conda-forge libgz-sim8 yarp ycm-cmake-modules cmake ninja pkg-config cmake compilers gtest cli11
@@ -54,7 +92,7 @@ ninja
 ninja install
 ```
 
-## Compile from source using apt dependencies on Linux, macOS or Windows
+## Compile from source using apt dependencies on Ubuntu Linux
 
 If you are using an apt-based distribution such as Ubuntu and you want to use apt, the dependencies can be installed via:
 
@@ -108,7 +146,7 @@ ninja install
 
 ## Usage
 
-To notify Gazebo of the new plugins compiled, it is necessary to modify the `GZ_SIM_SYSTEM_PLUGIN_PATH` environment variable, for example on Linux:
+To notify Gazebo of the new plugins compiled, unless you are using pixi it is necessary to modify the `GZ_SIM_SYSTEM_PLUGIN_PATH` environment variable, for example on Linux:
 
 ~~~
 export GZ_SIM_SYSTEM_PLUGIN_PATH=${GZ_SIM_SYSTEM_PLUGIN_PATH}:<install_location>/lib
