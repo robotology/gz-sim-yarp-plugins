@@ -142,6 +142,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libdrm-2.4.123-hb9d3cd8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libedit-3.1.20191231-he28a2e2_2.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libegl-1.7.0-ha4b6fd6_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libegl-devel-1.7.0-ha4b6fd6_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libev-4.33-hd590300_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libevent-2.1.12-hf998b51_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libexpat-2.6.3-h5888daf_0.conda
@@ -171,10 +172,12 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libgfortran-ng-14.1.0-h69a702a_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libgfortran5-14.1.0-hc5f4f2c_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libgl-1.7.0-ha4b6fd6_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libgl-devel-1.7.0-ha4b6fd6_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libglib-2.82.1-h2ff4ddf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libglu-9.0.0-ha6d2627_1004.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libglvnd-1.7.0-ha4b6fd6_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libglx-1.7.0-ha4b6fd6_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libglx-devel-1.7.0-ha4b6fd6_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libgomp-14.1.0-h77fa898_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libgoogle-cloud-2.29.0-h435de7b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libgoogle-cloud-storage-2.29.0-h0121fbd_0.conda
@@ -212,6 +215,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libode-0.16.2-h30efb56_14.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libogg-1.3.5-h4ab18f5_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libopencv-4.10.0-qt6_py312h01efb12_606.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libopengl-1.7.0-ha4b6fd6_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libopengl-devel-1.7.0-ha4b6fd6_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libopenvino-2024.4.0-hac27bb2_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libopenvino-auto-batch-plugin-2024.4.0-h4d9b6c2_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libopenvino-auto-plugin-2024.4.0-h4d9b6c2_0.conda
@@ -345,6 +350,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/xcb-util-wm-0.4.2-hb711507_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/xerces-c-3.2.5-h988505b_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/xkeyboard-config-2.42-h4ab18f5_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/xorg-glproto-1.4.17-hb9d3cd8_1003.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/xorg-libice-1.1.1-hb9d3cd8_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/xorg-libsm-1.2.4-he73a12e_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/xorg-libx11-1.8.10-h4f16b4b_0.conda
@@ -508,6 +514,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libdrm-2.4.123-h86ecc28_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libedit-3.1.20191231-he28a2e2_2.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libegl-1.7.0-hd24410f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libegl-devel-1.7.0-hd24410f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libev-4.33-h31becfc_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libevent-2.1.12-h4ba1bb4_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libexpat-2.6.3-h5ad3122_0.conda
@@ -537,10 +544,12 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libgfortran-ng-14.1.0-he9431aa_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libgfortran5-14.1.0-h9420597_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libgl-1.7.0-hd24410f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libgl-devel-1.7.0-hd24410f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libglib-2.82.1-hc486b8e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libglu-9.0.0-h5eeb66e_1004.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libglvnd-1.7.0-hd24410f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libglx-1.7.0-hd24410f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libglx-devel-1.7.0-hd24410f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libgomp-14.1.0-he277a41_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libgoogle-cloud-2.29.0-hbb89541_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libgoogle-cloud-storage-2.29.0-hb9b2b65_0.conda
@@ -578,6 +587,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libode-0.16.2-py312h2aa54b4_14.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libogg-1.3.5-h0b9eccb_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libopencv-4.10.0-headless_py312hc19e177_6.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libopengl-1.7.0-hd24410f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libopengl-devel-1.7.0-hd24410f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libopenvino-2024.4.0-hd7d4d4f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libopenvino-arm-cpu-plugin-2024.4.0-hd7d4d4f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/libopenvino-auto-batch-plugin-2024.4.0-hf15766e_0.conda
@@ -703,6 +714,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/xcb-util-wm-0.4.2-h5c728e9_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/xerces-c-3.2.5-h595f43b_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/xkeyboard-config-2.42-h68df207_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/xorg-glproto-1.4.17-h86ecc28_1003.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/xorg-libice-1.1.1-h57736b2_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/xorg-libsm-1.2.4-hbac51e1_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/xorg-libx11-1.8.9-he755bbd_2.conda
@@ -9859,6 +9871,37 @@ packages:
   size: 53467
   timestamp: 1723474989555
 - kind: conda
+  name: libegl-devel
+  version: 1.7.0
+  build: ha4b6fd6_0
+  subdir: linux-64
+  url: https://conda.anaconda.org/conda-forge/linux-64/libegl-devel-1.7.0-ha4b6fd6_0.conda
+  sha256: 444692f38f052ca8567054677dac246206e50857673dab12caf9bf70ff35e421
+  md5: b331f7eaeedf8a0dc752b9211f4df60c
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libegl 1.7.0 ha4b6fd6_0
+  - libgl-devel 1.7.0 ha4b6fd6_0
+  - xorg-libx11
+  license: LicenseRef-libglvnd
+  size: 30549
+  timestamp: 1723473233921
+- kind: conda
+  name: libegl-devel
+  version: 1.7.0
+  build: hd24410f_0
+  subdir: linux-aarch64
+  url: https://conda.anaconda.org/conda-forge/linux-aarch64/libegl-devel-1.7.0-hd24410f_0.conda
+  sha256: 49d434657046b10d107716841297ab39894673dcdf233dfa66725eb879018fa6
+  md5: b4e87bcf648b2caa56fc5efc29178b91
+  depends:
+  - libegl 1.7.0 hd24410f_0
+  - libgl-devel 1.7.0 hd24410f_0
+  - xorg-libx11
+  license: LicenseRef-libglvnd
+  size: 30527
+  timestamp: 1723475040101
+- kind: conda
   name: libev
   version: '4.33'
   build: h31becfc_2
@@ -11796,6 +11839,35 @@ packages:
   size: 145952
   timestamp: 1723475015909
 - kind: conda
+  name: libgl-devel
+  version: 1.7.0
+  build: ha4b6fd6_0
+  subdir: linux-64
+  url: https://conda.anaconda.org/conda-forge/linux-64/libgl-devel-1.7.0-ha4b6fd6_0.conda
+  sha256: ab97033b3f6ecd983b1a6682e830023113fdcfd25ff139ca98ea9295d9f59aeb
+  md5: 7a74c89b5435866bded8074bf6fa3674
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libgl 1.7.0 ha4b6fd6_0
+  - libglx-devel 1.7.0 ha4b6fd6_0
+  license: LicenseRef-libglvnd
+  size: 114733
+  timestamp: 1723473229262
+- kind: conda
+  name: libgl-devel
+  version: 1.7.0
+  build: hd24410f_0
+  subdir: linux-aarch64
+  url: https://conda.anaconda.org/conda-forge/linux-aarch64/libgl-devel-1.7.0-hd24410f_0.conda
+  sha256: d08ba8c2e630d63319dcd43bc94711834639d293f00384100ce8a4e995acab49
+  md5: 20fdf2e0fc507372d53b6229b627e8d0
+  depends:
+  - libgl 1.7.0 hd24410f_0
+  - libglx-devel 1.7.0 hd24410f_0
+  license: LicenseRef-libglvnd
+  size: 114179
+  timestamp: 1723475032114
+- kind: conda
   name: libglib
   version: 2.82.1
   build: h2ff4ddf_0
@@ -11968,6 +12040,39 @@ packages:
   license: LicenseRef-libglvnd
   size: 78114
   timestamp: 1723475005041
+- kind: conda
+  name: libglx-devel
+  version: 1.7.0
+  build: ha4b6fd6_0
+  subdir: linux-64
+  url: https://conda.anaconda.org/conda-forge/linux-64/libglx-devel-1.7.0-ha4b6fd6_0.conda
+  sha256: 0ef1dafc7b8897b2c02bb97dd8797c4aede7ed892c78fc58087c219f9b377e8e
+  md5: 7cf710253c3a0ee41425eef303f37e20
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libglx 1.7.0 ha4b6fd6_0
+  - xorg-glproto
+  - xorg-libx11 >=1.8.9,<2.0a0
+  - xorg-xextproto >=7.3.0,<8.0a0
+  license: LicenseRef-libglvnd
+  size: 26401
+  timestamp: 1723473221051
+- kind: conda
+  name: libglx-devel
+  version: 1.7.0
+  build: hd24410f_0
+  subdir: linux-aarch64
+  url: https://conda.anaconda.org/conda-forge/linux-aarch64/libglx-devel-1.7.0-hd24410f_0.conda
+  sha256: a0a4e59f31e20e13126598c69dd330e0ac4a1aad77216fc5f02b31e8f7c63c98
+  md5: 018e35e10c1171313b3cfb5f13e3b9e3
+  depends:
+  - libglx 1.7.0 hd24410f_0
+  - xorg-glproto
+  - xorg-libx11 >=1.8.9,<2.0a0
+  - xorg-xextproto >=7.3.0,<8.0a0
+  license: LicenseRef-libglvnd
+  size: 26418
+  timestamp: 1723475022144
 - kind: conda
   name: libgomp
   version: 14.1.0
@@ -14992,6 +15097,60 @@ packages:
   license_family: Apache
   size: 30774201
   timestamp: 1727652433771
+- kind: conda
+  name: libopengl
+  version: 1.7.0
+  build: ha4b6fd6_0
+  subdir: linux-64
+  url: https://conda.anaconda.org/conda-forge/linux-64/libopengl-1.7.0-ha4b6fd6_0.conda
+  sha256: 6807eff238bbd19680184aad70c90c9c14824fca8b52b791b6669e37e0e963a7
+  md5: 8e5037cbb79e56e4eba250cba7fcc784
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libglvnd 1.7.0 ha4b6fd6_0
+  license: LicenseRef-libglvnd
+  size: 50785
+  timestamp: 1723473212137
+- kind: conda
+  name: libopengl
+  version: 1.7.0
+  build: hd24410f_0
+  subdir: linux-aarch64
+  url: https://conda.anaconda.org/conda-forge/linux-aarch64/libopengl-1.7.0-hd24410f_0.conda
+  sha256: b6d2b761e06d89299e746ea7ab273a1290f4ae0757a6c2aa391acc55a5323812
+  md5: 37845cb5373e437b219842d72745640b
+  depends:
+  - libglvnd 1.7.0 hd24410f_0
+  license: LicenseRef-libglvnd
+  size: 58680
+  timestamp: 1723475010385
+- kind: conda
+  name: libopengl-devel
+  version: 1.7.0
+  build: ha4b6fd6_0
+  subdir: linux-64
+  url: https://conda.anaconda.org/conda-forge/linux-64/libopengl-devel-1.7.0-ha4b6fd6_0.conda
+  sha256: 1212d65718e1438838e214197afe3735ca7a1e5a8e4e8b5d48819b20eb0f314d
+  md5: 827cff134185a72d7fd2f869f9649078
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libopengl 1.7.0 ha4b6fd6_0
+  license: LicenseRef-libglvnd
+  size: 15437
+  timestamp: 1723473225061
+- kind: conda
+  name: libopengl-devel
+  version: 1.7.0
+  build: hd24410f_0
+  subdir: linux-aarch64
+  url: https://conda.anaconda.org/conda-forge/linux-aarch64/libopengl-devel-1.7.0-hd24410f_0.conda
+  sha256: 89952d2859a46f01c4b838e4bb30df3fb4989099190d16eaa27a3ceccafc0772
+  md5: 1eb6def3002c39a988d9927431305a1c
+  depends:
+  - libopengl 1.7.0 hd24410f_0
+  license: LicenseRef-libglvnd
+  size: 15505
+  timestamp: 1723475027148
 - kind: conda
   name: libopenvino
   version: 2024.4.0
@@ -23072,6 +23231,37 @@ packages:
   license_family: MIT
   size: 388960
   timestamp: 1717817664159
+- kind: conda
+  name: xorg-glproto
+  version: 1.4.17
+  build: h86ecc28_1003
+  build_number: 1003
+  subdir: linux-aarch64
+  url: https://conda.anaconda.org/conda-forge/linux-aarch64/xorg-glproto-1.4.17-h86ecc28_1003.conda
+  sha256: c29e447b21707c899c4a72f5458ac6fb5f34b27cc06988ac07b777e92d33b08b
+  md5: 800884b597a01d08973487028cb35544
+  depends:
+  - libgcc >=13
+  license: MIT
+  license_family: MIT
+  size: 23725
+  timestamp: 1726801858874
+- kind: conda
+  name: xorg-glproto
+  version: 1.4.17
+  build: hb9d3cd8_1003
+  build_number: 1003
+  subdir: linux-64
+  url: https://conda.anaconda.org/conda-forge/linux-64/xorg-glproto-1.4.17-hb9d3cd8_1003.conda
+  sha256: cd29d1023230078cf83a06d01f4f013d9bbfbc7f8082ba59b40090c4f2f4eec3
+  md5: 8361b4e3d72dc700eb46422470b34901
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=13
+  license: MIT
+  license_family: MIT
+  size: 23473
+  timestamp: 1726801830878
 - kind: conda
   name: xorg-libice
   version: 1.1.1

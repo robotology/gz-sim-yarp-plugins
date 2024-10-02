@@ -52,3 +52,13 @@ compilers = "*"
 gtest = "*"
 fd-find = "*"
 clang-format = "18.*"
+
+[target.linux-64.dependencies]
+libgl-devel = "*"
+libopengl-devel = "*"
+libegl-devel = "*"
+
+[target.linux-aarch64.dependencies]
+libgl-devel = "*"
+libopengl-devel = "*"
+libegl-devel = "*"
