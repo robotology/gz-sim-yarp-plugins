@@ -17,6 +17,12 @@ GZ_SIM_SYSTEM_PLUGIN_PATH = "$CONDA_PREFIX/lib"
 CMAKE_INSTALL_PREFIX = "%CONDA_PREFIX%\\Library"
 GZ_SIM_SYSTEM_PLUGIN_PATH = "%CONDA_PREFIX%\\Library\\bin"
 
+[feature.harmonic.activation.env]
+GSYP_BUILD_DIRECTORY_NAME = ".build_harmonic"
+
+[feature.ionic.activation.env]
+GSYP_BUILD_DIRECTORY_NAME = ".build_ionic"
+
 [tasks]
 
 configure = { cmd = [
@@ -30,19 +36,18 @@ configure = { cmd = [
     # The source is in the root directory
     "-S",
     ".",
-    # We wanna build in the .build directory
+    # We wanna build in the $GSYP_BUILD_DIRECTORY_NAME directory
     "-B",
-    ".build",
+    "$GSYP_BUILD_DIRECTORY_NAME"
 ]}
 
-build = { cmd = "cmake --build .build --config Release", depends_on = ["configure"] }
-test = { cmd = "ctest --test-dir .build --build-config Release --output-on-failure", depends_on = ["build"] }
-install = { cmd = ["cmake", "--install", ".build", "--config", "Release"], depends_on = ["build"] }
-uninstall = { cmd = ["cmake", "--build", ".build", "--target", "uninstall"]}
+build = { cmd = "cmake --build $GSYP_BUILD_DIRECTORY_NAME --config Release", depends_on = ["configure"] }
+test = { cmd = "ctest --test-dir $GSYP_BUILD_DIRECTORY_NAME --build-config Release --output-on-failure", depends_on = ["build"] }
+install = { cmd = ["cmake", "--install", "$GSYP_BUILD_DIRECTORY_NAME", "--config", "Release"], depends_on = ["build"] }
+uninstall = { cmd = ["cmake", "--build", "$GSYP_BUILD_DIRECTORY_NAME", "--target", "uninstall"]}
 cpp-fmt = "fd --extension h --extension hh --extension hpp --extension c --extension cc --extension cpp --exec clang-format -i --verbose"
 
 [dependencies]
-libgz-sim8 = "*"
 yarp = "*"
 ycm-cmake-modules = "*"
 cmake = "*"
@@ -62,3 +67,13 @@ libegl-devel = "*"
 libgl-devel = "*"
 libopengl-devel = "*"
 libegl-devel = "*"
+
+[feature.harmonic.dependencies]
+libgz-sim8 = "*"
+
+[feature.ionic.dependencies]
+libgz-sim9 = "*"
+
+[environments]
+default = ["harmonic"]
+ionic = ["ionic"]

@@ -58,6 +58,12 @@ pixi shell
 
 and then run your commands as in a normal shell.
 
+The `default` environment of pixi uses Gazebo Harmonic (`gz-sim8`), if you want to use Gazebo Ionic (`gz-sim9`) just add `-e ionic` after `pixi run`, for example to run the tests under Ionic:
+
+~~~
+pixi run -e ionic test
+~~~
+
 ## Compile from source with conda on Linux, macOS or Windows
 
 If you are using conda, the dependencies of `gz-sim-yarp-plugins` can be installed with:
@@ -66,7 +72,7 @@ If you are using conda, the dependencies of `gz-sim-yarp-plugins` can be install
 conda install -c conda-forge libgz-sim8 yarp ycm-cmake-modules cmake ninja pkg-config cmake compilers gtest cli11
 ```
 
-This command should be executed in a terminal with the environment activated.
+This command should be executed in a terminal with the environment activated. If you want to use Gazebo Ionic (`gz-sim9`) in place of Gazebo Harmonic (`gz-sim8`), just change `libgz-sim8` to `libgz-sim9`.
 
 ### Build
 
@@ -101,7 +107,7 @@ sudo apt-get update
 sudo apt-get install lsb-release wget gnupg cmake pkg-config ninja-build build-essential libcli11-dev libgtest-dev
 ```
 
-and then install Gazebo Harmonic:
+and then install Gazebo:
 
 ```bash
 sudo wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
@@ -109,6 +115,8 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-
 sudo apt-get update
 sudo apt-get install gz-harmonic
 ```
+
+If you want to use Gazebo Ionic (`gz-sim9`) in place of Gazebo Harmonic (`gz-sim8`), just change `gz-harmonic` to `gz-ionic`.
 
 Then, you need to install [`ycm-cmake-modules`](https://github.com/robotology/ycm) and [`yarp`](https://github.com/robotology/yarp), for which no apt binaries are available. You can install them easily via the `robotology-superbuild`, or otherwise with the following commands:
 

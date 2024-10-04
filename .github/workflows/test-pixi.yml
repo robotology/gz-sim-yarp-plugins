@@ -6,7 +6,7 @@ on:
 
 jobs:
   pixi-test:
-    name: '[pixi:${{ matrix.os }}]'
+    name: '[pixi:${{ matrix.os }}:env:${{ matrix.pixi_env }}]'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -14,8 +14,11 @@ jobs:
         os: [
           ubuntu-22.04,
           macos-latest,
-          # Disabled until https://github.com/robotology/gz-sim-yarp-plugins/issues/205 is fixed
-          # windows-2019
+          windows-2019
+        ]
+        pixi_env: [
+          default,
+          ionic
         ]
 
     steps:
@@ -38,5 +41,11 @@ jobs:
     - name: Print pixi info
       run: pixi info
 
+    - name: Build the project
+      run: pixi run -e ${{ matrix.pixi_env }} build
+
+    # Windows disabled due to https://github.com/robotology/gz-sim-yarp-plugins/issues/205
+    # macOS on Ionic disabled due to https://github.com/robotology/gz-sim-yarp-plugins/issues/215
     - name: Run tests
-      run: pixi run test
+      if: "!contains(matrix.os, 'windows') && !(contains(matrix.os, 'macos') && matrix.pixi_env == 'ionic')"
+      run: pixi run -e ${{ matrix.pixi_env }} test
