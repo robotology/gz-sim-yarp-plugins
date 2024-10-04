@@ -47,5 +47,5 @@ jobs:
     # Windows disabled due to https://github.com/robotology/gz-sim-yarp-plugins/issues/205
     # macOS on Ionic disabled due to https://github.com/robotology/gz-sim-yarp-plugins/issues/215
     - name: Run tests
-      if: !contains(matrix.os, 'windows') && !(contains(matrix.os, 'macos') && matrix.pixi_env == 'ionic')
+      if: "!contains(matrix.os, 'windows') && !(contains(matrix.os, 'macos') && matrix.pixi_env == 'ionic')"
       run: pixi run -e ${{ matrix.pixi_env }} test
