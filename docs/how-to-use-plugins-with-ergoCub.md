@@ -15,42 +15,37 @@ Note that some features of the ergocub model (mainly the depth sensors and the h
 
 ## Installation
 
-The easiest ways to setup an environment with everything we need are:
+The easiest ways to setup an environment with everything we need is to follow only one of the following two options:
 
-- Using the robotology-superbuild
-- Creating a conda environment
+- [Creating a conda environment](#conda-environment)
+- [Using the robotology-superbuild](#installation-via-robotology-superbuild)
+
 
 ### Conda environment
 
 #### Install a conda distribution
 
-If you do not have one, please install a conda distribution. We suggest to use the minimal [mambaforge](https://github.com/conda-forge/miniforge#mambaforge) distribution, which uses conda-forge packages by default and installs the [mamba](https://github.com/mamba-org/mamba) command by default.
+If you do not have one, please install a conda distribution. We suggest to use the minimal [miniforge](https://github.com/conda-forge/miniforge) distribution, which uses conda-forge packages by default.
 
-To install mambaforge, please follow the instructions in [install-mambaforge](https://github.com/robotology/robotology-superbuild/blob/master/doc/install-mambaforge.md) documentation.
+To install miniforge, please follow the instructions in [install-miniforge](https://github.com/robotology/robotology-superbuild/blob/master/doc/install-miniforge.md) documentation.
 
 #### Create an environment
 
 Then create the following environment with all the packages needed:
 
-```bash
-mamba create -c conda-forge -c robotology -n ergocub-gz
-```
+~~~bash
+conda create -n ergocub-gz libgz-sim-yarp-plugins ergocub-software
+~~~
 
-Then, activate the environment we created with:
+Once you did this, you can activate it with:
 
-```bash
-mamba activate ergocub-gz
-```
-
-and finally, install in it the packages we need:
-
-```bash
-mamba install libgz-sim-yarp-plugins ergocub-software
-```
+~~~bash
+conda activate ergocub-gz
+~~~
 
 ### Installation via robotology-superbuild
 
-[robotology-superbuild](https://github.com/robotology/robotology-superbuild/tree/master) is a meta repository that is able to download and compile a plethora of software from the [robotology](https://github.com/robotology) organization.
+[robotology-superbuild](https://github.com/robotology/robotology-superbuild) is a meta repository that is able to download and compile a plethora of software from the [robotology](https://github.com/robotology) organization.
 
 First of all, we have to configure the superbuild such that it will download and install the software we need. It is possible to do this by enabling the appropriate options: in particular, we need to enable the `ROBOTOLOGY_ENABLE_CORE` profile with `ROBOTOLOGY_USES_GZ` option and disable the `ROBOTOLOGY_USES_GAZEBO` one.
 
