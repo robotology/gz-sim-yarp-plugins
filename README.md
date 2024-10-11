@@ -1,6 +1,6 @@
 # gz-sim-yarp-plugins
 
-> [!WARNING]  
+> [!WARNING]
 > This repository contains a preliminary work in progress of integration of Modern Gazebo (gz) and YARP devices, a port of some functionalities of <https://github.com/robotology/gazebo-yarp-plugins> to Modern Gazebo. \
 > The repo is working in progress, and public interfaces can change without warning.
 
@@ -50,7 +50,7 @@ There are two ways to specify the Yarp configuration of a plugin:
 Concerning `yarpConfigurationFile`, the preferred way to specify the path to the configuration file is by using [Gazebo URIs](https://gazebosim.org/api/common/6/classgz_1_1common_1_1URI.html). A URI has the following general scheme:
 
 ```
-scheme:[//authority]path[?query][#fragment] 
+scheme:[//authority]path[?query][#fragment]
 ```
 
 For example, the configuration file for an IMU plugin can be specified as:
@@ -75,6 +75,10 @@ models
 
 > [!WARNING]
 > It is possible, but strongly discouraged, to specify the location of a `yarpConfigurationFile` using absolute paths or paths relative to the current working directory: the former approach is not portable, while the latter only works if the library is loaded from the directory it was intended to be loaded from.
+
+### Applications
+
+One project that is already using these plugins is [ergocub-software](https://github.com/icub-tech-iit/ergocub-software). Check out our [guide](docs/how-to-use-plugins-with-ergoCub.md) to learn how to perform simulations with it.
 
 ## Tools
 
