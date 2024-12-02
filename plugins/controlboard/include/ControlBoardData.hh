@@ -15,6 +15,7 @@
 #include <yarp/conf/numeric.h>
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IInteractionMode.h>
+#include <yarp/dev/IJointCoupling.h>
 #include <yarp/dev/PidEnums.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/os/Vocab.h>
@@ -66,9 +67,10 @@ class ControlBoardData
 {
 public:
     std::mutex mutex;
-    std::vector<JointProperties> joints;
+    std::vector<JointProperties> physicalJoints;
+    std::vector<JointProperties> actuatedAxes;
     yarp::os::Stamp simTime;
-
+    yarp::dev::IJointCoupling* ijointcoupling{nullptr};
     // TODO (xela95): read this value from configuration file
     std::chrono::milliseconds controlUpdatePeriod = std::chrono::milliseconds(1);
 };
