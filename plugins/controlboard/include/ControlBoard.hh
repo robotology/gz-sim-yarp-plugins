@@ -60,6 +60,7 @@ private:
     std::string m_deviceId;
     gz::sim::Entity m_modelEntity;
     yarp::dev::PolyDriver m_controlBoardDriver;
+    yarp::dev::PolyDriver m_coupling_driver;
     ControlBoardData m_controlBoardData;
     yarp::os::Network m_yarpNetwork;
     yarp::os::Property m_pluginParameters;
@@ -90,7 +91,7 @@ private:
     bool setYarpPIDsParam(const std::vector<double>& pidParams,
                           const std::string& paramName,
                           std::vector<yarp::dev::Pid>& yarpPIDs,
-                          size_t numberOfJoints);
+                          size_t numberOfPhysicalJoints);
     void setJointPositionPIDs(AngleUnitEnum cUnits, const std::vector<yarp::dev::Pid>& yarpPIDs);
     double convertUserGainToGazeboGain(JointProperties& joint, double value);
     double convertGazeboGainToUserGain(JointProperties& joint, double value);
