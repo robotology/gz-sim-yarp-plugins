@@ -934,7 +934,7 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
     {
         yWarning() << "No initial configuration found, initializing trajectory generator with "
                       "current values";
-
+        yarp::sig::Vector initialPositionAct, initialPositionPhys, limitsMin, limitsMax;
         for (size_t i = 0; i < m_controlBoardData.physicalJoints.size(); i++)
         {
             auto& joint = m_controlBoardData.physicalJoints.at(i);
@@ -947,16 +947,43 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
                 joint.trajectoryGenerationRefPosition = userPos;
                 joint.refPosition = userPos;
                 joint.position = userPos;
+                initialPositionPhys.push_back(userPos);
             }
-            auto limitMin = joint.positionLimitMin;
-            auto limitMax = joint.positionLimitMax;
+        }
+
+        if (m_controlBoardData.ijointcoupling) {
+            initialPositionAct.resize(m_controlBoardData.actuatedAxes.size());
+            auto ok = m_controlBoardData.ijointcoupling->convertFromPhysicalJointsToActuatedAxesPos(initialPositionPhys, initialPositionAct);
+            if(!ok)
+            {
+                yError() << "Failed to convert from physical joints to actuated axes";
+                return;
+            }
+            for(size_t i=0; i<m_controlBoardData.actuatedAxes.size(); i++)
+            {
+                auto& actAxis = m_controlBoardData.actuatedAxes[i];
+                actAxis.trajectoryGenerationRefPosition = initialPositionAct[i];
+                actAxis.refPosition = initialPositionAct[i];
+                actAxis.position = initialPositionAct[i];
+            }
+
+        }
+        else { // With no coupling, actuated axes are the same as physical joints
+            initialPositionAct = initialPositionPhys;
+        }
+
+        for (size_t i=0; i<initialPositionAct.size(); i++) {
+            auto& joint = m_controlBoardData.physicalJoints.at(i);
+            auto limitMin = m_controlBoardData.ijointcoupling ? m_controlBoardData.actuatedAxes[i].positionLimitMin : m_controlBoardData.physicalJoints[i].positionLimitMin;
+            auto limitMax = m_controlBoardData.ijointcoupling ? m_controlBoardData.actuatedAxes[i].positionLimitMax : m_controlBoardData.physicalJoints[i].positionLimitMax;
             joint.trajectoryGenerator->setLimits(limitMin, limitMax);
-            joint.trajectoryGenerator->initTrajectory(joint.position,
-                                                      joint.position,
+            joint.trajectoryGenerator->initTrajectory(initialPositionAct[i],
+                                                      initialPositionAct[i],
                                                       joint.trajectoryGenerationRefSpeed,
                                                       joint.trajectoryGenerationRefAcceleration,
                                                       m_controlBoardData.controlUpdatePeriod);
         }
+
     }
 
     // Reset control mode
