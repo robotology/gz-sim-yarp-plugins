@@ -384,7 +384,7 @@ bool ControlBoard::updateTrajectories(const UpdateInfo& _info, EntityComponentMa
 
     // TODO: execute the following at control update time
     
-    for (auto& joint : m_controlBoardData.physicalJoints)
+    for (auto& joint : *m_controlBoardData.actuated_joints_handle)
     {
         
         switch (joint.controlMode)
@@ -414,6 +414,22 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
 
     double forceReference{};
     Joint gzJoint;
+
+
+    if(m_controlBoardData.ijointcoupling){
+        yarp::sig::Vector actuatedAxesRefPositions, physicalJointsRefPositions;
+        for (auto& joint: m_controlBoardData.actuatedAxes)
+        {
+            actuatedAxesRefPositions.push_back(joint.refPosition);
+        }
+        physicalJointsRefPositions.resize(m_controlBoardData.physicalJoints.size());
+
+        m_controlBoardData.ijointcoupling->convertFromActuatedAxesToPhysicalJointsPos(actuatedAxesRefPositions, physicalJointsRefPositions);
+        for(auto i = 0; i < m_controlBoardData.physicalJoints.size(); i++)
+        {
+            m_controlBoardData.physicalJoints[i].refPosition = physicalJointsRefPositions[i];
+        }
+    }
 
     for (auto& joint : m_controlBoardData.physicalJoints)
     {
@@ -741,6 +757,8 @@ bool ControlBoard::initializeTrajectoryGenerators()
     // Read from configuration
     auto trajectoryGeneratorsGroup = m_pluginParameters.findGroup("TRAJECTORY_GENERATION");
     bool missingConfiguration = false;
+    // In case of coupled systems, the trajectory generators has to be initialized only for the actuated axes
+    m_controlBoardData.actuated_joints_handle = m_controlBoardData.ijointcoupling ? &(m_controlBoardData.actuatedAxes) : &(m_controlBoardData.physicalJoints); 
     if (trajectoryGeneratorsGroup.isNull())
     {
         yWarning() << "Group TRAJECTORY_GENERATION not found in plugin configuration. Defaults to "
@@ -782,7 +800,7 @@ bool ControlBoard::initializeTrajectoryGenerators()
         }
     }
 
-    for (auto& joint : m_controlBoardData.physicalJoints)
+    for (auto& joint : *m_controlBoardData.actuated_joints_handle)
     {
         joint.trajectoryGenerator
             = yarp::dev::gzyarp::TrajectoryGeneratorFactory::create(trajectoryType);
@@ -836,10 +854,10 @@ bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGen
     }
 
     // Set trajectory generation reference speed and acceleration
-    // TODO: manage different joint types
-    for (size_t i = 0; i < m_controlBoardData.physicalJoints.size(); ++i)
+    // TODO: manage different joint types HERE
+    for (size_t i = 0; i < m_controlBoardData.actuated_joints_handle->size(); ++i)
     {
-        auto& joint = m_controlBoardData.physicalJoints[i];
+        auto& joint = m_controlBoardData.actuated_joints_handle->at(i);
         if (useDefaultSpeedRef)
         {
             joint.trajectoryGenerationRefSpeed = 10.0; // [deg/s]
@@ -973,12 +991,11 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
         else { // With no coupling, actuated axes are the same as physical joints
             initialPositionAct = initialPositionPhys;
         }
-
-        for (size_t i=0; i<initialPositionAct.size(); i++) {
-            auto& joint = m_controlBoardData.physicalJoints.at(i);
+        for (size_t i=0; i<m_controlBoardData.actuated_joints_handle->size(); i++) {
+            auto& joint = m_controlBoardData.actuated_joints_handle->at(i);
             auto limitMin = m_controlBoardData.ijointcoupling ? m_controlBoardData.actuatedAxes[i].positionLimitMin : m_controlBoardData.physicalJoints[i].positionLimitMin;
             auto limitMax = m_controlBoardData.ijointcoupling ? m_controlBoardData.actuatedAxes[i].positionLimitMax : m_controlBoardData.physicalJoints[i].positionLimitMax;
-            joint.trajectoryGenerator->setLimits(limitMin, limitMax);
+            joint.trajectoryGenerator->setLimits(joint.positionLimitMin, joint.positionLimitMax);
             joint.trajectoryGenerator->initTrajectory(initialPositionAct[i],
                                                       initialPositionAct[i],
                                                       joint.trajectoryGenerationRefSpeed,

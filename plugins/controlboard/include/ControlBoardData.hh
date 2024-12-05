@@ -71,6 +71,7 @@ public:
     std::vector<JointProperties> actuatedAxes;
     yarp::os::Stamp simTime;
     yarp::dev::IJointCoupling* ijointcoupling{nullptr};
+    std::vector<JointProperties>* actuated_joints_handle;
     // TODO (xela95): read this value from configuration file
     std::chrono::milliseconds controlUpdatePeriod = std::chrono::milliseconds(1);
 };
