@@ -383,11 +383,13 @@ bool ControlBoard::updateTrajectories(const UpdateInfo& _info, EntityComponentMa
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
 
     // TODO: execute the following at control update time
-
+    
     for (auto& joint : m_controlBoardData.physicalJoints)
     {
+        
         switch (joint.controlMode)
         {
+        // PUT THE COUPLING HERE!!
         case VOCAB_CM_POSITION:
             joint.refPosition = joint.trajectoryGenerator->computeTrajectory();
             joint.isMotionDone = joint.trajectoryGenerator->isMotionDone();
