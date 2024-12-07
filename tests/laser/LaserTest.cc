@@ -30,7 +30,7 @@ TEST(LaserTest, PluginTest)
     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
 
     yarp::os::Property option;
-    option.put("device", "Rangefinder2DClient");
+    option.put("device", "rangefinder2D_nwc_yarp");
     option.put("remote", "/laser");
     option.put("local", "/LaserTest");
     yarp::dev::PolyDriver driver;
