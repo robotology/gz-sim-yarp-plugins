@@ -110,7 +110,7 @@ public:
     }
     virtual bool getSixAxisForceTorqueSensorMeasure(size_t sens_index,
                                                     yarp::sig::Vector& out,
-                                                    double& timestamp) const
+                                                    double& timestamp) const override
     {
         if (sens_index >= 1)
         {
