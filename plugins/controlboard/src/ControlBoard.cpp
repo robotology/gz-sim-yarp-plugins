@@ -366,8 +366,7 @@ ControlBoard::getJointTorqueFromTransmittedWrench(const Joint& gzJoint,
 void ControlBoard::checkForJointsHwFault()
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
-
-    for (auto& joint : m_controlBoardData.physicalJoints)
+    for (auto& joint : *m_controlBoardData.actuated_joints_handle)
     {
         if (joint.controlMode != VOCAB_CM_HW_FAULT && std::abs(joint.torque) > joint.maxTorqueAbs)
         {
@@ -1007,6 +1006,11 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
 
     // Reset control mode
     for (auto& joint : m_controlBoardData.physicalJoints)
+    {
+        joint.controlMode = VOCAB_CM_POSITION;
+    }
+
+    for (auto& joint : m_controlBoardData.actuatedAxes)
     {
         joint.controlMode = VOCAB_CM_POSITION;
     }

@@ -50,7 +50,7 @@ bool ControlBoardDriver::getInteractionMode(int axis, yarp::dev::InteractionMode
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
-    *mode = m_controlBoardData->physicalJoints.at(axis).interactionMode;
+    *mode = m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.interactionMode;
 
     return true;
 }
@@ -89,7 +89,7 @@ bool ControlBoardDriver::getInteractionModes(yarp::dev::InteractionModeEnum* mod
         return false;
     }
 
-    for (int i = 0; i < m_controlBoardData->physicalJoints.size(); i++)
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
         if (!ControlBoardDriver::getInteractionMode(i, &modes[i]))
         {
@@ -103,10 +103,36 @@ bool ControlBoardDriver::getInteractionModes(yarp::dev::InteractionModeEnum* mod
 bool ControlBoardDriver::setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
-
+    yarp::sig::VectorOf<size_t> coupledActuatedAxes, coupledPhysicalJoints;
     try
     {
-        m_controlBoardData->physicalJoints.at(axis).interactionMode = mode;
+        // If there is coupling let's check if we have to change the interaction mode for all the coupled joints
+        if (m_controlBoardData->ijointcoupling)
+        {
+            m_controlBoardData->ijointcoupling->getCoupledActuatedAxes(coupledActuatedAxes);
+            m_controlBoardData->ijointcoupling->getCoupledPhysicalJoints(coupledPhysicalJoints);
+            // If the joint is coupled, we have to change the interaction mode for all the coupled joints
+            if(std::find(coupledActuatedAxes.begin(), coupledActuatedAxes.end(), axis) != coupledActuatedAxes.end())
+            {
+                for (auto& actuatedAxis : coupledActuatedAxes)
+                {
+                    m_controlBoardData->actuatedAxes.at(actuatedAxis).commonJointProperties.interactionMode = mode;
+                }
+                for (auto& physicalJoint : coupledPhysicalJoints)
+                {
+                    m_controlBoardData->physicalJoints.at(physicalJoint).commonJointProperties.interactionMode = mode;
+                }
+            } // if the joint is not coupled, we change the interaction mode only for the selected joint
+            else
+            {
+                m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.interactionMode = mode;
+                m_controlBoardData->physicalJoints.at(axis).commonJointProperties.interactionMode = mode;
+            }
+        } // No coupling, we change the interaction mode only for the selected joint
+        else {
+            m_controlBoardData->physicalJoints.at(axis).commonJointProperties.interactionMode = mode;
+            m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.interactionMode = mode;
+        }
     } catch (const std::exception& e)
     {
         yError() << "Error while setting interaction mode for axis " + std::to_string(axis) + ": \n"
@@ -151,7 +177,7 @@ bool ControlBoardDriver::setInteractionModes(yarp::dev::InteractionModeEnum* mod
         return false;
     }
 
-    for (int i = 0; i < m_controlBoardData->physicalJoints.size(); i++)
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
         if (!ControlBoardDriver::setInteractionMode(i, modes[i]))
         {
@@ -174,14 +200,14 @@ bool ControlBoardDriver::getControlMode(int j, int* mode)
         return false;
     }
 
-    if (j < 0 || j >= m_controlBoardData->physicalJoints.size())
+    if (j < 0 || j >= m_controlBoardData->actuatedAxes.size())
     {
         yError() << "Error while getting control mode: joint index " + std::to_string(j)
                         + " out of range";
         return false;
     }
 
-    *mode = m_controlBoardData->physicalJoints.at(j).controlMode;
+    *mode = m_controlBoardData->actuatedAxes.at(j).commonJointProperties.controlMode;
 
     return true;
 }
@@ -194,7 +220,7 @@ bool ControlBoardDriver::getControlModes(int* modes)
         return false;
     }
 
-    for (int i = 0; i < m_controlBoardData->physicalJoints.size(); i++)
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
         if (!ControlBoardDriver::getControlMode(i, &modes[i]))
         {
@@ -235,7 +261,7 @@ bool ControlBoardDriver::setControlMode(const int j, const int mode)
 
     int desired_mode = mode;
 
-    if (j < 0 || j >= m_controlBoardData->physicalJoints.size())
+    if (j < 0 || j >= m_controlBoardData->actuatedAxes.size())
     {
         yError() << "Error while setting control mode: joint index out of range";
         return false;
@@ -255,7 +281,7 @@ bool ControlBoardDriver::setControlMode(const int j, const int mode)
     }
 
     // If joint is in hw fault, only a force idle command can recover it
-    if (m_controlBoardData->physicalJoints.at(j).controlMode == VOCAB_CM_HW_FAULT
+    if (m_controlBoardData->actuatedAxes.at(j).controlMode == VOCAB_CM_HW_FAULT
         && mode != VOCAB_CM_FORCE_IDLE)
     {
         return true;
@@ -267,7 +293,35 @@ bool ControlBoardDriver::setControlMode(const int j, const int mode)
         desired_mode = VOCAB_CM_IDLE;
     }
 
-    m_controlBoardData->physicalJoints.at(j).controlMode = desired_mode;
+    yarp::sig::VectorOf<size_t> coupledActuatedAxes, coupledPhysicalJoints;
+    // If there is coupling let's check if we have to change the interaction mode for all the coupled joints
+    if (m_controlBoardData->ijointcoupling)
+    {
+        m_controlBoardData->ijointcoupling->getCoupledActuatedAxes(coupledActuatedAxes);
+        m_controlBoardData->ijointcoupling->getCoupledPhysicalJoints(coupledPhysicalJoints);
+        // If the joint is coupled, we have to change the interaction mode for all the coupled joints
+        if(std::find(coupledActuatedAxes.begin(), coupledActuatedAxes.end(), axis) != coupledActuatedAxes.end())
+        {
+            for (auto& actuatedAxis : coupledActuatedAxes)
+            {
+                m_controlBoardData->actuatedAxes.at(actuatedAxis).commonJointProperties.controlMode = desired_mode;
+            }
+            for (auto& physicalJoint : coupledPhysicalJoints)
+            {
+                m_controlBoardData->physicalJoints.at(physicalJoint).commonJointProperties.controlMode = desired_mode;
+            }
+        } // if the joint is not coupled, we change the interaction mode only for the selected joint
+        else
+        {
+            m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.controlMode = desired_mode;
+            m_controlBoardData->physicalJoints.at(axis).commonJointProperties.controlMode = desired_mode;
+        }
+    } // No coupling, we change the interaction mode only for the selected joint
+    else {
+        m_controlBoardData->physicalJoints.at(axis).commonJointProperties.controlMode = desired_mode;
+        m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.controlMode = desired_mode;
+    }
+
 
     return true;
 }
@@ -304,7 +358,7 @@ bool ControlBoardDriver::setControlModes(int* modes)
         return false;
     }
 
-    for (int i = 0; i < m_controlBoardData->physicalJoints.size(); i++)
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
         if (!ControlBoardDriver::setControlMode(i, modes[i]))
         {
@@ -321,7 +375,7 @@ bool ControlBoardDriver::getAxisName(int axis, std::string& name)
 {
     // TODO integrate with IJointCoupled interface
 
-    name = m_controlBoardData->physicalJoints.at(axis).name;
+    name = m_controlBoardData->actuatedAxes.at(axis).name;
 
     return true;
 }
@@ -341,14 +395,14 @@ bool ControlBoardDriver::setLimits(int axis, double min, double max)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
-    if (axis < 0 || axis >= m_controlBoardData->physicalJoints.size())
+    if (axis < 0 || axis >= m_controlBoardData->actuatedAxes.size())
     {
         yError() << "Error while setting limits: axis index out of range";
         return false;
     }
 
-    m_controlBoardData->physicalJoints.at(axis).positionLimitMin = min;
-    m_controlBoardData->physicalJoints.at(axis).positionLimitMax = max;
+    m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.positionLimitMin = min;
+    m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.positionLimitMax = max;
 
     return true;
 }
@@ -367,14 +421,14 @@ bool ControlBoardDriver::getLimits(int axis, double* min, double* max)
         yError() << "Error while getting limits: max is null";
         return false;
     }
-    if (axis < 0 || axis >= m_controlBoardData->physicalJoints.size())
+    if (axis < 0 || axis >= m_controlBoardData->actuatedAxes.size())
     {
         yError() << "Error while getting limits: axis index out of range";
         return false;
     }
 
-    *min = m_controlBoardData->physicalJoints.at(axis).positionLimitMin;
-    *max = m_controlBoardData->physicalJoints.at(axis).positionLimitMax;
+    *min = m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.positionLimitMin;
+    *max = m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.positionLimitMax;
 
     return true;
 }
@@ -383,14 +437,14 @@ bool ControlBoardDriver::setVelLimits(int axis, double min, double max)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
-    if (axis < 0 || axis >= m_controlBoardData->physicalJoints.size())
+    if (axis < 0 || axis >= m_controlBoardData->actuatedAxes.size())
     {
         yError() << "Error while setting velocity limits: axis index out of range";
         return false;
     }
 
-    m_controlBoardData->physicalJoints.at(axis).velocityLimitMin = min;
-    m_controlBoardData->physicalJoints.at(axis).velocityLimitMax = max;
+    m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.velocityLimitMin = min;
+    m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.velocityLimitMax = max;
 
     return true;
 }
@@ -409,14 +463,14 @@ bool ControlBoardDriver::getVelLimits(int axis, double* min, double* max)
         yError() << "Error while getting velocity limits: max is null";
         return false;
     }
-    if (axis < 0 || axis >= m_controlBoardData->physicalJoints.size())
+    if (axis < 0 || axis >= m_controlBoardData->actuatedAxes.size())
     {
         yError() << "Error while getting velocity limits: axis index out of range";
         return false;
     }
 
-    *min = m_controlBoardData->physicalJoints.at(axis).velocityLimitMin;
-    *max = m_controlBoardData->physicalJoints.at(axis).velocityLimitMax;
+    *min = m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.velocityLimitMin;
+    *max = m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.velocityLimitMax;
 
     return true;
 }
@@ -446,7 +500,7 @@ bool ControlBoardDriver::getAxes(int* ax)
     // TODO integrate with IJointCoupled interface
 
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
-    *ax = m_controlBoardData->physicalJoints.size();
+    *ax = m_controlBoardData->actuatedAxes.size();
 
     return true;
 }
@@ -460,13 +514,13 @@ bool ControlBoardDriver::getRefTorque(int j, double* t)
         yError() << "Error while getting reference torque: t is null";
         return false;
     }
-    if (j < 0 || j >= m_controlBoardData->physicalJoints.size())
+    if (j < 0 || j >= m_controlBoardData->actuatedAxes.size())
     {
         yError() << "Error while getting reference torque: joint index out of range";
         return false;
     }
 
-    *t = m_controlBoardData->physicalJoints.at(j).refTorque;
+    *t = m_controlBoardData->actuatedAxes.at(j).commonJointProperties.refTorque;
 
     return true;
 }
@@ -479,7 +533,7 @@ bool ControlBoardDriver::getRefTorques(double* t)
         return false;
     }
 
-    for (int i = 0; i < m_controlBoardData->physicalJoints.size(); i++)
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
         if (!ControlBoardDriver::getRefTorque(i, &t[i]))
         {
@@ -494,7 +548,7 @@ bool ControlBoardDriver::setRefTorque(int j, double t)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
-    if (j < 0 || j >= m_controlBoardData->physicalJoints.size())
+    if (j < 0 || j >= m_controlBoardData->actuatedAxes.size())
     {
         yError() << "Error while setting reference torque: joint index " + std::to_string(j)
                         + " out of range";
@@ -505,7 +559,7 @@ bool ControlBoardDriver::setRefTorque(int j, double t)
         return false;
     }
 
-    m_controlBoardData->physicalJoints.at(j).refTorque = t;
+    m_controlBoardData->actuatedAxes.at(j).commonJointProperties.refTorque = t;
 
     return true;
 }
@@ -518,7 +572,7 @@ bool ControlBoardDriver::setRefTorques(const double* t)
         return false;
     }
 
-    for (int i = 0; i < m_controlBoardData->physicalJoints.size(); i++)
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
         if (!ControlBoardDriver::setRefTorque(i, t[i]))
         {
@@ -587,14 +641,14 @@ bool ControlBoardDriver::getTorque(int j, double* t)
         yError() << "Error while getting torque: t is null";
         return false;
     }
-    if (j < 0 || j >= m_controlBoardData->physicalJoints.size())
+    if (j < 0 || j >= m_controlBoardData->actuatedAxes.size())
     {
         yError() << "Error while getting torque: joint index " + std::to_string(j)
                         + " out of range";
         return false;
     }
 
-    *t = m_controlBoardData->physicalJoints.at(j).torque;
+    *t = m_controlBoardData->actuatedAxes.at(j).commonJointProperties.torque;
 
     return true;
 }
@@ -607,7 +661,7 @@ bool ControlBoardDriver::getTorques(double* t)
         return false;
     }
 
-    for (int i = 0; i < m_controlBoardData->physicalJoints.size(); i++)
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
         if (!ControlBoardDriver::getTorque(i, &t[i]))
         {
@@ -632,15 +686,15 @@ bool ControlBoardDriver::getTorqueRange(int j, double* min, double* max)
         yError() << "Error while getting torque range: max is null";
         return false;
     }
-    if (j < 0 || j >= m_controlBoardData->physicalJoints.size())
+    if (j < 0 || j >= m_controlBoardData->actuatedAxes.size())
     {
         yError() << "Error while getting torque range: joint index " + std::to_string(j)
                         + " out of range";
         return false;
     }
 
-    *min = -m_controlBoardData->physicalJoints.at(j).maxTorqueAbs;
-    *max = m_controlBoardData->physicalJoints.at(j).maxTorqueAbs;
+    *min = -m_controlBoardData->actuatedAxes.at(j).commonJointProperties.maxTorqueAbs;
+    *max = m_controlBoardData->actuatedAxes.at(j).commonJointProperties.maxTorqueAbs;
 
     return true;
 }
@@ -658,7 +712,7 @@ bool ControlBoardDriver::getTorqueRanges(double* min, double* max)
         return false;
     }
 
-    for (int i = 0; i < m_controlBoardData->physicalJoints.size(); i++)
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
         if (!ControlBoardDriver::getTorqueRange(i, &min[i], &max[i]))
         {
@@ -675,21 +729,21 @@ bool ControlBoardDriver::setPosition(int j, double ref)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
-    if (j < 0 || j >= m_controlBoardData->physicalJoints.size())
+    if (j < 0 || j >= m_controlBoardData->actuatedAxes.size())
     {
         yError() << "Error while setting position: joint index " + std::to_string(j)
                         + " out of range";
         return false;
     }
 
-    if (m_controlBoardData->physicalJoints.at(j).controlMode != VOCAB_CM_POSITION_DIRECT)
+    if (m_controlBoardData->actuatedAxes.at(j).controlMode != VOCAB_CM_POSITION_DIRECT)
     {
         yError() << "Error while setting position: joint " + std::to_string(j)
                         + " is not in position direct mode";
         return false;
     }
 
-    m_controlBoardData->physicalJoints.at(j).refPosition = ref;
+    m_controlBoardData->actuatedAxes.at(j).commonJointProperties.refPosition = ref;
 
     return true;
 }
@@ -726,7 +780,7 @@ bool ControlBoardDriver::setPositions(const double* refs)
         return false;
     }
 
-    for (int i = 0; i < m_controlBoardData->physicalJoints.size(); i++)
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
         if (!ControlBoardDriver::setPosition(i, refs[i]))
         {
@@ -739,14 +793,14 @@ bool ControlBoardDriver::setPositions(const double* refs)
 
 bool ControlBoardDriver::getRefPosition(const int joint, double* ref)
 {
-    if (joint < 0 || joint >= m_controlBoardData->physicalJoints.size())
+    if (joint < 0 || joint >= m_controlBoardData->actuatedAxes.size())
     {
         yError() << "Error while getting reference position: joint index " + std::to_string(joint)
                         + " out of range";
         return false;
     }
 
-    *ref = m_controlBoardData->physicalJoints.at(joint).refPosition;
+    *ref = m_controlBoardData->actuatedAxes.at(joint).commonJointProperties.refPosition;
 
     return true;
 }
@@ -759,7 +813,7 @@ bool ControlBoardDriver::getRefPositions(double* refs)
         return false;
     }
 
-    for (int i = 0; i < m_controlBoardData->physicalJoints.size(); i++)
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
         if (!ControlBoardDriver::getRefPosition(i, &refs[i]))
         {
@@ -800,24 +854,24 @@ bool ControlBoardDriver::positionMove(int j, double ref)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
-    if (j < 0 || j >= m_controlBoardData->physicalJoints.size())
+    if (j < 0 || j >= m_controlBoardData->actuatedAxes.size())
     {
         yError() << "Error while setting reference position for trajectory generation: joint index "
                         + std::to_string(j) + " out of range";
         return false;
     }
 
-    auto& joint = m_controlBoardData->physicalJoints.at(j);
+    auto& joint = m_controlBoardData->actuatedAxes.at(j);
 
     joint.trajectoryGenerationRefPosition = ref;
 
     // TODO: use getLimits when recursive mutexes are implemented
 
-    auto limitMin = m_controlBoardData->physicalJoints.at(j).positionLimitMin;
-    auto limitMax = m_controlBoardData->physicalJoints.at(j).positionLimitMax;
+    auto limitMin = joint.commonJointProperties.positionLimitMin;
+    auto limitMax = joint.commonJointProperties.positionLimitMax;
 
     joint.trajectoryGenerator->setLimits(limitMin, limitMax);
-    joint.trajectoryGenerator->initTrajectory(joint.position,
+    joint.trajectoryGenerator->initTrajectory(joint.commonJointProperties.position,
                                               joint.trajectoryGenerationRefPosition,
                                               joint.trajectoryGenerationRefSpeed,
                                               joint.trajectoryGenerationRefAcceleration,
@@ -835,7 +889,7 @@ bool ControlBoardDriver::positionMove(const double* refs)
         return false;
     }
 
-    for (size_t i = 0; i < m_controlBoardData->physicalJoints.size(); i++)
+    for (size_t i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
         if (!ControlBoardDriver::positionMove(i, refs[i]))
         {
@@ -849,7 +903,7 @@ bool ControlBoardDriver::positionMove(const double* refs)
 bool ControlBoardDriver::relativeMove(int j, double delta)
 {
     // Check on valid joint number done in setPosition
-    return setPosition(j, m_controlBoardData->physicalJoints.at(j).position + delta);
+    return setPosition(j, m_controlBoardData->actuatedAxes.at(j).commonJointProperties.position + delta);
 }
 
 bool ControlBoardDriver::relativeMove(const double* deltas)
@@ -860,7 +914,7 @@ bool ControlBoardDriver::relativeMove(const double* deltas)
         return false;
     }
 
-    for (size_t i = 0; i < m_controlBoardData->physicalJoints.size(); i++)
+    for (size_t i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
         if (!ControlBoardDriver::relativeMove(i, deltas[i]))
         {
@@ -875,13 +929,13 @@ bool ControlBoardDriver::checkMotionDone(int j, bool* flag)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
-    if (j < 0 || j >= m_controlBoardData->physicalJoints.size())
+    if (j < 0 || j >= m_controlBoardData->actuatedAxes.size())
     {
         yError() << "Error while checking motion done: joint index out of range";
         return false;
     }
 
-    *flag = m_controlBoardData->physicalJoints.at(j).isMotionDone;
+    *flag = m_controlBoardData->actuatedAxes.at(j).isMotionDone;
 
     return true;
 }
@@ -894,7 +948,7 @@ bool ControlBoardDriver::checkMotionDone(bool* flag)
         return false;
     }
 
-    for (size_t i = 0; i < m_controlBoardData->physicalJoints.size(); i++)
+    for (size_t i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
         if (!ControlBoardDriver::checkMotionDone(i, &flag[i]))
         {
@@ -904,6 +958,8 @@ bool ControlBoardDriver::checkMotionDone(bool* flag)
 
     return true;
 }
+
+// TODO CONTINUE HERE!
 
 bool ControlBoardDriver::setRefSpeed(int j, double sp)
 {

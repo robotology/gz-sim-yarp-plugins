@@ -34,8 +34,7 @@ struct PidControlTypeEnumHashFunction
     }
 };
 
-struct JointProperties
-{
+struct CommonJointProperties {
     std::string name;
     yarp::dev::InteractionModeEnum interactionMode{yarp::dev::InteractionModeEnum::VOCAB_IM_STIFF};
     yarp::conf::vocab32_t controlMode{VOCAB_CM_IDLE};
@@ -53,9 +52,19 @@ struct JointProperties
     double velocity{0.0}; // Joint velocity [deg/s]
     double velocityLimitMin{std::numeric_limits<double>::min()};
     double velocityLimitMax{std::numeric_limits<double>::max()};
+}
+
+struct PhysicalJointProperties
+{
+    CommonJointProperties commonJointProperties;
     std::unordered_map<yarp::dev::PidControlTypeEnum, gz::math::PID, PidControlTypeEnumHashFunction>
         pidControllers;
     std::string positionControlLaw; // TODO: verify usefulness of this field
+};
+
+struct ActuatedAxesProperties
+{
+    CommonJointProperties commonJointProperties;
     std::unique_ptr<yarp::dev::gzyarp::TrajectoryGenerator> trajectoryGenerator;
     double trajectoryGenerationRefPosition{0.0};
     double trajectoryGenerationRefSpeed{0.0};
@@ -67,11 +76,10 @@ class ControlBoardData
 {
 public:
     std::mutex mutex;
-    std::vector<JointProperties> physicalJoints;
-    std::vector<JointProperties> actuatedAxes;
+    std::vector<PhysicalJointProperties> physicalJoints;
+    std::vector<ActuatedAxesProperties>  actuatedAxes;
     yarp::os::Stamp simTime;
     yarp::dev::IJointCoupling* ijointcoupling{nullptr};
-    std::vector<JointProperties>* actuated_joints_handle;
     // TODO (xela95): read this value from configuration file
     std::chrono::milliseconds controlUpdatePeriod = std::chrono::milliseconds(1);
 };
