@@ -103,44 +103,7 @@ bool ControlBoardDriver::getInteractionModes(yarp::dev::InteractionModeEnum* mod
 bool ControlBoardDriver::setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
-    yarp::sig::VectorOf<size_t> coupledActuatedAxes, coupledPhysicalJoints;
-    try
-    {
-        // If there is coupling let's check if we have to change the interaction mode for all the coupled joints
-        if (m_controlBoardData->ijointcoupling)
-        {
-            m_controlBoardData->ijointcoupling->getCoupledActuatedAxes(coupledActuatedAxes);
-            m_controlBoardData->ijointcoupling->getCoupledPhysicalJoints(coupledPhysicalJoints);
-            // If the joint is coupled, we have to change the interaction mode for all the coupled joints
-            if(std::find(coupledActuatedAxes.begin(), coupledActuatedAxes.end(), axis) != coupledActuatedAxes.end())
-            {
-                for (auto& actuatedAxis : coupledActuatedAxes)
-                {
-                    m_controlBoardData->actuatedAxes.at(actuatedAxis).commonJointProperties.interactionMode = mode;
-                }
-                for (auto& physicalJoint : coupledPhysicalJoints)
-                {
-                    m_controlBoardData->physicalJoints.at(physicalJoint).commonJointProperties.interactionMode = mode;
-                }
-            } // if the joint is not coupled, we change the interaction mode only for the selected joint
-            else
-            {
-                m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.interactionMode = mode;
-                m_controlBoardData->physicalJoints.at(axis).commonJointProperties.interactionMode = mode;
-            }
-        } // No coupling, we change the interaction mode only for the selected joint
-        else {
-            m_controlBoardData->physicalJoints.at(axis).commonJointProperties.interactionMode = mode;
-            m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.interactionMode = mode;
-        }
-    } catch (const std::exception& e)
-    {
-        yError() << "Error while setting interaction mode for axis " + std::to_string(axis) + ": \n"
-                        + e.what();
-        return false;
-    }
-
-    return true;
+    return m_controlBoardData->setInteractionMode(axis, mode);
 }
 
 bool ControlBoardDriver::setInteractionModes(int n_joints,
@@ -258,72 +221,7 @@ bool ControlBoardDriver::getControlModes(const int n_joint, const int* joints, i
 bool ControlBoardDriver::setControlMode(const int j, const int mode)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
-
-    int desired_mode = mode;
-
-    if (j < 0 || j >= m_controlBoardData->actuatedAxes.size())
-    {
-        yError() << "Error while setting control mode: joint index out of range";
-        return false;
-    }
-
-    // Only accept supported control modes
-    // The only not supported control mode is
-    // (for now) VOCAB_CM_MIXED
-    if (!(mode == VOCAB_CM_POSITION || mode == VOCAB_CM_POSITION_DIRECT || mode == VOCAB_CM_VELOCITY
-          || mode == VOCAB_CM_TORQUE || mode == VOCAB_CM_MIXED || mode == VOCAB_CM_PWM
-          || mode == VOCAB_CM_CURRENT || mode == VOCAB_CM_IDLE || mode == VOCAB_CM_FORCE_IDLE))
-    {
-        yWarning() << "request control mode " << yarp::os::Vocab32::decode(mode)
-                   << " that is not supported by "
-                   << " gz-sim-yarp-controlboard-system plugin.";
-        return false;
-    }
-
-    // If joint is in hw fault, only a force idle command can recover it
-    if (m_controlBoardData->actuatedAxes.at(j).controlMode == VOCAB_CM_HW_FAULT
-        && mode != VOCAB_CM_FORCE_IDLE)
-    {
-        return true;
-    }
-
-    if (mode == VOCAB_CM_FORCE_IDLE)
-    {
-        // Clean the fault status and set control mode to idle
-        desired_mode = VOCAB_CM_IDLE;
-    }
-
-    yarp::sig::VectorOf<size_t> coupledActuatedAxes, coupledPhysicalJoints;
-    // If there is coupling let's check if we have to change the interaction mode for all the coupled joints
-    if (m_controlBoardData->ijointcoupling)
-    {
-        m_controlBoardData->ijointcoupling->getCoupledActuatedAxes(coupledActuatedAxes);
-        m_controlBoardData->ijointcoupling->getCoupledPhysicalJoints(coupledPhysicalJoints);
-        // If the joint is coupled, we have to change the interaction mode for all the coupled joints
-        if(std::find(coupledActuatedAxes.begin(), coupledActuatedAxes.end(), axis) != coupledActuatedAxes.end())
-        {
-            for (auto& actuatedAxis : coupledActuatedAxes)
-            {
-                m_controlBoardData->actuatedAxes.at(actuatedAxis).commonJointProperties.controlMode = desired_mode;
-            }
-            for (auto& physicalJoint : coupledPhysicalJoints)
-            {
-                m_controlBoardData->physicalJoints.at(physicalJoint).commonJointProperties.controlMode = desired_mode;
-            }
-        } // if the joint is not coupled, we change the interaction mode only for the selected joint
-        else
-        {
-            m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.controlMode = desired_mode;
-            m_controlBoardData->physicalJoints.at(axis).commonJointProperties.controlMode = desired_mode;
-        }
-    } // No coupling, we change the interaction mode only for the selected joint
-    else {
-        m_controlBoardData->physicalJoints.at(axis).commonJointProperties.controlMode = desired_mode;
-        m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.controlMode = desired_mode;
-    }
-
-
-    return true;
+    return m_controlBoardData->setControlMode(j, mode);
 }
 
 bool ControlBoardDriver::setControlModes(const int n_joint, const int* joints, int* modes)

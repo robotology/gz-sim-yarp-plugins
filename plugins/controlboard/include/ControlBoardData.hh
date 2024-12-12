@@ -82,6 +82,9 @@ public:
     yarp::dev::IJointCoupling* ijointcoupling{nullptr};
     // TODO (xela95): read this value from configuration file
     std::chrono::milliseconds controlUpdatePeriod = std::chrono::milliseconds(1);
+
+    bool setInteractionMode((int axis, yarp::dev::InteractionModeEnum mode);
+    bool setControlMode(int j, int mode);
 };
 
 class IControlBoardData

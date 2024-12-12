@@ -7,6 +7,7 @@ set(HEADER_FILES
 
 set(SRC_FILES
     src/ControlBoard.cpp
+    src/ControlBoardData.cpp
     src/ControlBoardDriver.cpp
     src/ControlBoardTrajectory.cpp
 )
