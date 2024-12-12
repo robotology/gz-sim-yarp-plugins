@@ -175,7 +175,7 @@ void ControlBoard::Configure(const Entity& _entity,
         yError() << "gz-sim-yarp-controlboard-system: failed setting joint properties";
         return;
     }
-    configureBuffers();
+
     resetPositionsAndTrajectoryGenerators(_ecm);
 
     configureHelper.setConfigureIsSuccessful(true);
@@ -264,6 +264,8 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
 
             yInfo() << "Joint " << jointFromConfigName << " added to the control board data.";
         }
+        // Let's initialize all the buffers/vectors
+        configureBuffers();
 
         if (!initializeJointPositionLimits(_ecm))
         {
@@ -938,7 +940,6 @@ bool ControlBoard::parseInitialConfiguration(std::vector<double>& initialConfigu
 void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponentManager& ecm)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
-
     std::vector<double> initialConfigurations(m_controlBoardData.physicalJoints.size());
     if (parseInitialConfiguration(initialConfigurations))
     {
@@ -958,9 +959,8 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
             Joint(Model(m_modelEntity).JointByName(ecm, joint.commonJointProperties.name))
                 .ResetPosition(ecm, std::vector<double>{gzPos});
         }
-
-    } else
-    {
+    }
+    else {
         yWarning() << "No initial configuration found, initializing trajectory generator with "
                       "current values";
         for (size_t i = 0; i < m_controlBoardData.physicalJoints.size(); i++)
@@ -1026,31 +1026,37 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
 }
 
 void ControlBoard::configureBuffers() {
+    size_t nrOfActuatedAxes{0};
+    size_t nrOfPhysicalJoints{0};
     if(m_controlBoardData.ijointcoupling)
     {
-        size_t nrOfActuatedAxes{0};
         bool ok = m_controlBoardData.ijointcoupling->getNrOfActuatedAxes(nrOfActuatedAxes);
         if(!ok)
         {
             yError() << "Failed to get number of actuated axes";
             return;
         }
-        m_controlBoardData.actuatedAxes.resize(nrOfActuatedAxes);
-        m_actuatedAxesPositionBuffer.resize(nrOfActuatedAxes);
-        m_actuatedAxesVelocityBuffer.resize(nrOfActuatedAxes);
-        m_actuatedAxesTorqueBuffer.resize(nrOfActuatedAxes);
-        size_t nrOfPhysicalJoints{0};
         ok = m_controlBoardData.ijointcoupling->getNrOfPhysicalJoints(nrOfPhysicalJoints);
         if(!ok)
         {
             yError() << "Failed to get number of physical joints";
             return;
         }
-        m_controlBoardData.physicalJoints.resize(nrOfPhysicalJoints);
-        m_physicalJointsPositionBuffer.resize(nrOfPhysicalJoints);
-        m_physicalJointsVelocityBuffer.resize(nrOfPhysicalJoints);
-        m_physicalJointsTorqueBuffer.resize(nrOfPhysicalJoints);
+
     }
+    else {
+        nrOfPhysicalJoints = m_controlBoardData.physicalJoints.size();
+        nrOfActuatedAxes = nrOfPhysicalJoints;
+    }
+    m_controlBoardData.actuatedAxes.resize(nrOfActuatedAxes);
+    m_actuatedAxesPositionBuffer.resize(nrOfActuatedAxes);
+    m_actuatedAxesVelocityBuffer.resize(nrOfActuatedAxes);
+    m_actuatedAxesTorqueBuffer.resize(nrOfActuatedAxes);
+    m_controlBoardData.physicalJoints.resize(nrOfPhysicalJoints);
+    m_physicalJointsPositionBuffer.resize(nrOfPhysicalJoints);
+    m_physicalJointsVelocityBuffer.resize(nrOfPhysicalJoints);
+    m_physicalJointsTorqueBuffer.resize(nrOfPhysicalJoints);
+    return;
 
 }
 
