@@ -52,7 +52,7 @@ struct CommonJointProperties {
     double velocity{0.0}; // Joint velocity [deg/s]
     double velocityLimitMin{std::numeric_limits<double>::min()};
     double velocityLimitMax{std::numeric_limits<double>::max()};
-}
+};
 
 struct PhysicalJointProperties
 {
@@ -83,7 +83,7 @@ public:
     // TODO (xela95): read this value from configuration file
     std::chrono::milliseconds controlUpdatePeriod = std::chrono::milliseconds(1);
 
-    bool setInteractionMode((int axis, yarp::dev::InteractionModeEnum mode);
+    bool setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode);
     bool setControlMode(int j, int mode);
 };
 

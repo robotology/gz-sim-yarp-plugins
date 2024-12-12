@@ -1,9 +1,9 @@
 
-#include "ControlBoardData.h"
+#include "ControlBoardData.hh"
 
-namespace yarp::dev::gzyarp
+namespace gzyarp
 {
-bool ControlBoardData::setInteractionMode(int axis, InteractionModeEnum mode)
+bool ControlBoardData::setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode)
 {
     yarp::sig::VectorOf<size_t> coupledActuatedAxes, coupledPhysicalJoints;
     try
@@ -41,6 +41,7 @@ bool ControlBoardData::setInteractionMode(int axis, InteractionModeEnum mode)
                         + e.what();
         return false;
     }
+    return true;
 }
 
 bool ControlBoardData::setControlMode(int j, int mode) {
@@ -66,7 +67,7 @@ bool ControlBoardData::setControlMode(int j, int mode) {
     }
 
     // If joint is in hw fault, only a force idle command can recover it
-    if (this->actuatedAxes.at(j).controlMode == VOCAB_CM_HW_FAULT
+    if (this->actuatedAxes.at(j).commonJointProperties.controlMode == VOCAB_CM_HW_FAULT
         && mode != VOCAB_CM_FORCE_IDLE)
     {
         return true;
@@ -85,7 +86,7 @@ bool ControlBoardData::setControlMode(int j, int mode) {
         this->ijointcoupling->getCoupledActuatedAxes(coupledActuatedAxes);
         this->ijointcoupling->getCoupledPhysicalJoints(coupledPhysicalJoints);
         // If the joint is coupled, we have to change the interaction mode for all the coupled joints
-        if(std::find(coupledActuatedAxes.begin(), coupledActuatedAxes.end(), axis) != coupledActuatedAxes.end())
+        if(std::find(coupledActuatedAxes.begin(), coupledActuatedAxes.end(), j) != coupledActuatedAxes.end())
         {
             for (auto& actuatedAxis : coupledActuatedAxes)
             {
@@ -98,16 +99,16 @@ bool ControlBoardData::setControlMode(int j, int mode) {
         } // if the joint is not coupled, we change the interaction mode only for the selected joint
         else
         {
-            this->actuatedAxes.at(axis).commonJointProperties.controlMode = desired_mode;
-            this->physicalJoints.at(axis).commonJointProperties.controlMode = desired_mode;
+            this->actuatedAxes.at(j).commonJointProperties.controlMode = desired_mode;
+            this->physicalJoints.at(j).commonJointProperties.controlMode = desired_mode;
         }
     } // No coupling, we change the interaction mode only for the selected joint
     else {
-        this->physicalJoints.at(axis).commonJointProperties.controlMode = desired_mode;
-        this->actuatedAxes.at(axis).commonJointProperties.controlMode = desired_mode;
+        this->physicalJoints.at(j).commonJointProperties.controlMode = desired_mode;
+        this->actuatedAxes.at(j).commonJointProperties.controlMode = desired_mode;
     }
-
+        return true;
 }
 
 
-} // namespace yarp::dev::gzyarp
+} // namespace gzyarp

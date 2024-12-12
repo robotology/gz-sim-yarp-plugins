@@ -65,6 +65,10 @@ private:
     yarp::os::Network m_yarpNetwork;
     yarp::os::Property m_pluginParameters;
     gz::sim::EntityComponentManager* m_ecm;
+    yarp::sig::Vector m_physicalJointsPositionBuffer, m_physicalJointsVelocityBuffer,
+        m_physicalJointsTorqueBuffer;
+    yarp::sig::Vector m_actuatedAxesPositionBuffer, m_actuatedAxesVelocityBuffer,
+        m_actuatedAxesTorqueBuffer;
 
     enum class AngleUnitEnum
     {
@@ -92,15 +96,16 @@ private:
                           std::vector<yarp::dev::Pid>& yarpPIDs,
                           size_t numberOfPhysicalJoints);
     void setJointPositionPIDs(AngleUnitEnum cUnits, const std::vector<yarp::dev::Pid>& yarpPIDs);
-    double convertUserGainToGazeboGain(JointProperties& joint, double value);
-    double convertGazeboGainToUserGain(JointProperties& joint, double value);
-    double convertGazeboToUser(JointProperties& joint, double value);
-    double convertUserToGazebo(JointProperties& joint, double value);
+    double convertUserGainToGazeboGain(PhysicalJointProperties& joint, double value);
+    double convertGazeboGainToUserGain(PhysicalJointProperties& joint, double value);
+    double convertGazeboToUser(PhysicalJointProperties& joint, double value);
+    double convertUserToGazebo(PhysicalJointProperties& joint, double value);
     bool initializeJointPositionLimits(const gz::sim::EntityComponentManager& ecm);
     bool initializeTrajectoryGenerators();
     bool initializeTrajectoryGeneratorReferences(yarp::os::Bottle& trajectoryGeneratorsGroup);
     bool parseInitialConfiguration(std::vector<double>& initialConfigurations);
     void resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponentManager& ecm);
+    void configureBuffers();
 };
 
 } // namespace gzyarp

@@ -175,7 +175,7 @@ void ControlBoard::Configure(const Entity& _entity,
         yError() << "gz-sim-yarp-controlboard-system: failed setting joint properties";
         return;
     }
-
+    configureBuffers();
     resetPositionsAndTrajectoryGenerators(_ecm);
 
     configureHelper.setConfigureIsSuccessful(true);
@@ -260,7 +260,7 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
             gzJoint.EnableTransmittedWrenchCheck(_ecm, true);
 
             // Initialize JointProperties object
-            m_controlBoardData.physicalJoints[i].name = jointFromConfigName;
+            m_controlBoardData.physicalJoints[i].commonJointProperties.name = jointFromConfigName;
 
             yInfo() << "Joint " << jointFromConfigName << " added to the control board data.";
         }
@@ -301,46 +301,69 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
 
     auto model = Model(m_modelEntity);
     Joint gzJoint;
-    for (auto& joint : m_controlBoardData.physicalJoints)
+    for (int i =0; i<m_controlBoardData.physicalJoints.size(); i++)
     {
+        auto& joint = m_controlBoardData.physicalJoints[i];      
         try
         {
-            gzJoint = Joint(model.JointByName(_ecm, joint.name));
+            gzJoint = Joint(model.JointByName(_ecm, joint.commonJointProperties.name));
         } catch (const std::exception& e)
         {
-            yError() << "Error while trying to access joint " << joint.name;
+            yError() << "Error while trying to access joint " << joint.commonJointProperties.name;
             return false;
         }
 
         if (gzJoint.Position(_ecm).has_value())
         {
-            joint.position = convertGazeboToUser(joint, gzJoint.Position(_ecm).value().at(0));
+            joint.commonJointProperties.position = convertGazeboToUser(joint, gzJoint.Position(_ecm).value().at(0));
+            m_physicalJointsPositionBuffer[i] = joint.commonJointProperties.position;
         } else
         {
-            yError() << "Error while reading position for joint " << joint.name;
+            yError() << "Error while reading position for joint " << joint.commonJointProperties.name;
             return false;
         }
 
         if (gzJoint.Velocity(_ecm).has_value())
         {
-            joint.velocity = convertGazeboToUser(joint, gzJoint.Velocity(_ecm).value().at(0));
+            joint.commonJointProperties.velocity = convertGazeboToUser(joint, gzJoint.Velocity(_ecm).value().at(0));
+            m_physicalJointsVelocityBuffer[i] = joint.commonJointProperties.velocity;
         } else
         {
-            yError() << "Error while reading velocity for joint " << joint.name;
+            yError() << "Error while reading velocity for joint " << joint.commonJointProperties.name;
             return false;
         }
 
         if (gzJoint.TransmittedWrench(_ecm).has_value())
         {
-            // joint.torque = gzJoint.TransmittedWrench(_ecm).value().at(0).torque().x();
-            joint.torque
+            // joint.commonJointProperties.torque = gzJoint.TransmittedWrench(_ecm).value().at(0).torque().x();
+            joint.commonJointProperties.torque
                 = getJointTorqueFromTransmittedWrench(gzJoint,
                                                       gzJoint.TransmittedWrench(_ecm).value().at(0),
                                                       _ecm);
+            m_physicalJointsTorqueBuffer[i] = joint.commonJointProperties.torque;
         } else
         {
-            yError() << "Error while reading torque for joint " << joint.name;
+            yError() << "Error while reading torque for joint " << joint.commonJointProperties.name;
             return false;
+        }
+    }
+
+    if (m_controlBoardData.ijointcoupling){
+        m_controlBoardData.ijointcoupling->convertFromPhysicalJointsToActuatedAxesPos(m_physicalJointsPositionBuffer, m_actuatedAxesPositionBuffer);
+        m_controlBoardData.ijointcoupling->convertFromPhysicalJointsToActuatedAxesVel(m_physicalJointsPositionBuffer, m_physicalJointsVelocityBuffer, m_actuatedAxesVelocityBuffer);
+        for (int i = 0; i < m_controlBoardData.actuatedAxes.size(); i++)
+        {
+            m_controlBoardData.actuatedAxes[i].commonJointProperties.position = m_actuatedAxesPositionBuffer[i];
+            m_controlBoardData.actuatedAxes[i].commonJointProperties.velocity = m_actuatedAxesVelocityBuffer[i];
+        }
+    }
+    else {
+        // If no coupling is present, the actuated axes are the same as the physical joints
+        for (int i = 0; i < m_controlBoardData.actuatedAxes.size(); i++)
+        {
+            m_controlBoardData.actuatedAxes[i].commonJointProperties.position = m_controlBoardData.physicalJoints[i].commonJointProperties.position;
+            m_controlBoardData.actuatedAxes[i].commonJointProperties.velocity = m_controlBoardData.physicalJoints[i].commonJointProperties.velocity;
+            m_controlBoardData.actuatedAxes[i].commonJointProperties.torque = m_controlBoardData.physicalJoints[i].commonJointProperties.torque;
         }
     }
     return true;
@@ -366,13 +389,13 @@ ControlBoard::getJointTorqueFromTransmittedWrench(const Joint& gzJoint,
 void ControlBoard::checkForJointsHwFault()
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
-    for (auto& joint : *m_controlBoardData.actuated_joints_handle)
+    for (auto& joint : m_controlBoardData.actuatedAxes)
     {
-        if (joint.controlMode != VOCAB_CM_HW_FAULT && std::abs(joint.torque) > joint.maxTorqueAbs)
+        if (joint.commonJointProperties.controlMode != VOCAB_CM_HW_FAULT && std::abs(joint.commonJointProperties.torque) > joint.commonJointProperties.maxTorqueAbs)
         {
-            joint.controlMode = VOCAB_CM_HW_FAULT;
-            yError() << "An hardware fault occurred on joint " << joint.name
-                     << " torque too big! ( " << joint.torque << " )";
+            joint.commonJointProperties.controlMode = VOCAB_CM_HW_FAULT;
+            yError() << "An hardware fault occurred on joint " << joint.commonJointProperties.name
+                     << " torque too big! ( " << joint.commonJointProperties.torque << " )";
         }
     }
 }
@@ -383,14 +406,14 @@ bool ControlBoard::updateTrajectories(const UpdateInfo& _info, EntityComponentMa
 
     // TODO: execute the following at control update time
     
-    for (auto& joint : *m_controlBoardData.actuated_joints_handle)
+    for (auto& joint : m_controlBoardData.actuatedAxes)
     {
         
-        switch (joint.controlMode)
+        switch (joint.commonJointProperties.controlMode)
         {
         // PUT THE COUPLING HERE!!
         case VOCAB_CM_POSITION:
-            joint.refPosition = joint.trajectoryGenerator->computeTrajectory();
+            joint.commonJointProperties.refPosition = joint.trajectoryGenerator->computeTrajectory();
             joint.isMotionDone = joint.trajectoryGenerator->isMotionDone();
             break;
         case VOCAB_CM_MIXED:
@@ -416,33 +439,38 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
 
 
     if(m_controlBoardData.ijointcoupling){
-        yarp::sig::Vector actuatedAxesRefPositions, physicalJointsRefPositions;
-        for (auto& joint: m_controlBoardData.actuatedAxes)
+        for (int i = 0; i < m_controlBoardData.actuatedAxes.size(); i++)
         {
-            actuatedAxesRefPositions.push_back(joint.refPosition);
+            m_actuatedAxesPositionBuffer[i] = m_controlBoardData.actuatedAxes[i].commonJointProperties.refPosition;
         }
-        physicalJointsRefPositions.resize(m_controlBoardData.physicalJoints.size());
-
-        m_controlBoardData.ijointcoupling->convertFromActuatedAxesToPhysicalJointsPos(actuatedAxesRefPositions, physicalJointsRefPositions);
+        m_controlBoardData.ijointcoupling->convertFromActuatedAxesToPhysicalJointsPos(m_actuatedAxesPositionBuffer, m_physicalJointsPositionBuffer);
+        
         for(auto i = 0; i < m_controlBoardData.physicalJoints.size(); i++)
         {
-            m_controlBoardData.physicalJoints[i].refPosition = physicalJointsRefPositions[i];
+            m_controlBoardData.physicalJoints[i].commonJointProperties.refPosition = m_physicalJointsPositionBuffer[i];
+        }
+    }
+    else {
+        // If no coupling is present, the actuated axes are the same as the physical joints
+        for (int i = 0; i < m_controlBoardData.actuatedAxes.size(); i++)
+        {
+            m_controlBoardData.physicalJoints[i].commonJointProperties.refPosition = m_controlBoardData.actuatedAxes[i].commonJointProperties.refPosition;
         }
     }
 
     for (auto& joint : m_controlBoardData.physicalJoints)
     {
-        switch (joint.controlMode)
+        switch (joint.commonJointProperties.controlMode)
         {
         case VOCAB_CM_TORQUE:
-            forceReference = joint.refTorque;
+            forceReference = joint.commonJointProperties.refTorque;
             break;
         case VOCAB_CM_POSITION:
         case VOCAB_CM_POSITION_DIRECT: {
             // TODO manage motor positions instead of joint positions when implemented
             auto& pid = joint.pidControllers[yarp::dev::VOCAB_PIDTYPE_POSITION];
-            forceReference = pid.Update(convertUserToGazebo(joint, joint.position)
-                                            - convertUserToGazebo(joint, joint.refPosition),
+            forceReference = pid.Update(convertUserToGazebo(joint, joint.commonJointProperties.position)
+                                            - convertUserToGazebo(joint, joint.commonJointProperties.refPosition),
                                         _info.dt);
             break;
         }
@@ -451,7 +479,7 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
             forceReference = 0.0;
             break;
         default:
-            yWarning() << "Joint " << joint.name << " control mode " << joint.controlMode
+            yWarning() << "Joint " << joint.commonJointProperties.name << " control mode " << joint.commonJointProperties.controlMode
                        << " is currently not implemented";
             return false;
         };
@@ -460,10 +488,10 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
 
         try
         {
-            gzJoint = Joint(Model(m_modelEntity).JointByName(_ecm, joint.name));
+            gzJoint = Joint(Model(m_modelEntity).JointByName(_ecm, joint.commonJointProperties.name));
         } catch (const std::exception& e)
         {
-            yError() << "Error while trying to access joint " << joint.name;
+            yError() << "Error while trying to access joint " << joint.commonJointProperties.name;
             return false;
         }
 
@@ -664,25 +692,25 @@ void ControlBoard::setJointPositionPIDs(AngleUnitEnum cUnits,
     }
 }
 
-double ControlBoard::convertUserGainToGazeboGain(JointProperties& joint, double value)
+double ControlBoard::convertUserGainToGazeboGain(PhysicalJointProperties& joint, double value)
 {
     // TODO discriminate between joint types
     return gzyarp::convertDegreeGainToRadianGains(value);
 }
 
-double ControlBoard::convertGazeboGainToUserGain(JointProperties& joint, double value)
+double ControlBoard::convertGazeboGainToUserGain(PhysicalJointProperties& joint, double value)
 {
     // TODO discriminate between joint types
     return gzyarp::convertRadianGainToDegreeGains(value);
 }
 
-double ControlBoard::convertGazeboToUser(JointProperties& joint, double value)
+double ControlBoard::convertGazeboToUser(PhysicalJointProperties& joint, double value)
 {
     // TODO discriminate between joint types
     return convertRadiansToDegrees(value);
 }
 
-double ControlBoard::convertUserToGazebo(JointProperties& joint, double value)
+double ControlBoard::convertUserToGazebo(PhysicalJointProperties& joint, double value)
 {
     // TODO discriminate between joint types
     return convertDegreesToRadians(value);
@@ -712,8 +740,8 @@ bool ControlBoard::initializeJointPositionLimits(const gz::sim::EntityComponentM
         // TODO: access gazebo joint position limits and use them to check if software limits
         // ([LIMITS] group) are consistent. In case they are not defined set them as sw limits.
         auto& joint = m_controlBoardData.physicalJoints[i];
-        joint.positionLimitMin = limitMinGroup.at(i);
-        joint.positionLimitMax = limitMaxGroup.at(i);
+        joint.commonJointProperties.positionLimitMin = limitMinGroup.at(i);
+        joint.commonJointProperties.positionLimitMax = limitMaxGroup.at(i);
     }
     // We have also to set the actuated axes limits
     if (m_controlBoardData.ijointcoupling)
@@ -724,17 +752,9 @@ bool ControlBoard::initializeJointPositionLimits(const gz::sim::EntityComponentM
             yError() << "Failed to get coupling group";
             return false;
         }
-        size_t nrOfActuatedAxes{0};
-        bool ok = m_controlBoardData.ijointcoupling->getNrOfActuatedAxes(nrOfActuatedAxes);
-        if(!ok)
-        {
-            yError() << "Failed to get number of actuated axes";
-            return false;
-        }
-        m_controlBoardData.actuatedAxes.resize(nrOfActuatedAxes);
         std::vector<double> actuatedAxisPosLimitsMin, actuatedAxisPosLimitsMax;
-        if (!(tryGetGroup(couplingGroup, actuatedAxisPosLimitsMin, "actuatedAxesPosMin", "", numberOfPhysicalJoints)
-            && tryGetGroup(couplingGroup, actuatedAxisPosLimitsMax, "actuatedAxesPosMax", "", numberOfPhysicalJoints)))
+        if (!(tryGetGroup(couplingGroup, actuatedAxisPosLimitsMin, "actuatedAxesPosMin", "", m_controlBoardData.actuatedAxes.size())
+            && tryGetGroup(couplingGroup, actuatedAxisPosLimitsMax, "actuatedAxesPosMax", "", m_controlBoardData.actuatedAxes.size())))
         {
             yError() << "Error while reading joint position limits from plugin configuration";
             return false;
@@ -742,8 +762,8 @@ bool ControlBoard::initializeJointPositionLimits(const gz::sim::EntityComponentM
         for (size_t i = 0; i< m_controlBoardData.actuatedAxes.size(); ++i)
         {
             auto& actuatedAxis = m_controlBoardData.actuatedAxes[i];
-            actuatedAxis.positionLimitMin = actuatedAxisPosLimitsMin.at(i);
-            actuatedAxis.positionLimitMax = actuatedAxisPosLimitsMax.at(i);
+            actuatedAxis.commonJointProperties.positionLimitMin = actuatedAxisPosLimitsMin.at(i);
+            actuatedAxis.commonJointProperties.positionLimitMax = actuatedAxisPosLimitsMax.at(i);
         }
        
     }
@@ -756,8 +776,6 @@ bool ControlBoard::initializeTrajectoryGenerators()
     // Read from configuration
     auto trajectoryGeneratorsGroup = m_pluginParameters.findGroup("TRAJECTORY_GENERATION");
     bool missingConfiguration = false;
-    // In case of coupled systems, the trajectory generators has to be initialized only for the actuated axes
-    m_controlBoardData.actuated_joints_handle = m_controlBoardData.ijointcoupling ? &(m_controlBoardData.actuatedAxes) : &(m_controlBoardData.physicalJoints); 
     if (trajectoryGeneratorsGroup.isNull())
     {
         yWarning() << "Group TRAJECTORY_GENERATION not found in plugin configuration. Defaults to "
@@ -799,7 +817,7 @@ bool ControlBoard::initializeTrajectoryGenerators()
         }
     }
 
-    for (auto& joint : *m_controlBoardData.actuated_joints_handle)
+    for (auto& joint : m_controlBoardData.actuatedAxes)
     {
         joint.trajectoryGenerator
             = yarp::dev::gzyarp::TrajectoryGeneratorFactory::create(trajectoryType);
@@ -854,9 +872,9 @@ bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGen
 
     // Set trajectory generation reference speed and acceleration
     // TODO: manage different joint types HERE
-    for (size_t i = 0; i < m_controlBoardData.actuated_joints_handle->size(); ++i)
+    for (size_t i = 0; i < m_controlBoardData.actuatedAxes.size(); ++i)
     {
-        auto& joint = m_controlBoardData.actuated_joints_handle->at(i);
+        auto& joint = m_controlBoardData.actuatedAxes.at(i);
         if (useDefaultSpeedRef)
         {
             joint.trajectoryGenerationRefSpeed = 10.0; // [deg/s]
@@ -874,15 +892,15 @@ bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGen
         }
 
         // Clip trajectory generation reference velocities according to max joint limit
-        if (joint.trajectoryGenerationRefSpeed > joint.velocityLimitMax)
+        if (joint.trajectoryGenerationRefSpeed > joint.commonJointProperties.velocityLimitMax)
         {
-            joint.trajectoryGenerationRefSpeed = joint.velocityLimitMax;
+            joint.trajectoryGenerationRefSpeed = joint.commonJointProperties.velocityLimitMax;
         }
 
-        yDebug() << "Joint " << joint.name
+        yDebug() << "Joint " << joint.commonJointProperties.name
                  << " trajectory generation reference speed: " << joint.trajectoryGenerationRefSpeed
                  << " [deg/s]";
-        yDebug() << "Joint " << joint.name << " trajectory generation reference acceleration: "
+        yDebug() << "Joint " << joint.commonJointProperties.name << " trajectory generation reference acceleration: "
                  << joint.trajectoryGenerationRefAcceleration << " [deg/s^2]";
     }
 
@@ -932,88 +950,108 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
             auto gzPos = initialConfigurations[i];
             auto userPos = convertGazeboToUser(joint, gzPos);
             // Reset joint properties
-            joint.trajectoryGenerationRefPosition = userPos;
-            joint.refPosition = userPos;
-            joint.position = userPos;
+            joint.commonJointProperties.refPosition = userPos;
+            joint.commonJointProperties.position = userPos;
+            m_physicalJointsPositionBuffer[i] = userPos;
             // Reset position of gazebo joint
             // TODO(xela-95): store joint entity in JointProperties
-            Joint(Model(m_modelEntity).JointByName(ecm, joint.name))
+            Joint(Model(m_modelEntity).JointByName(ecm, joint.commonJointProperties.name))
                 .ResetPosition(ecm, std::vector<double>{gzPos});
-            auto limitMin = joint.positionLimitMin;
-            auto limitMax = joint.positionLimitMax;
-            joint.trajectoryGenerator->setLimits(limitMin, limitMax);
-            joint.trajectoryGenerator->initTrajectory(joint.position,
-                                                      joint.position,
-                                                      joint.trajectoryGenerationRefSpeed,
-                                                      joint.trajectoryGenerationRefAcceleration,
-                                                      m_controlBoardData.controlUpdatePeriod);
         }
 
     } else
     {
         yWarning() << "No initial configuration found, initializing trajectory generator with "
                       "current values";
-        yarp::sig::Vector initialPositionAct, initialPositionPhys, limitsMin, limitsMax;
         for (size_t i = 0; i < m_controlBoardData.physicalJoints.size(); i++)
         {
             auto& joint = m_controlBoardData.physicalJoints.at(i);
-            auto gzJoint = Joint(Model(m_modelEntity).JointByName(ecm, joint.name));
+            auto gzJoint = Joint(Model(m_modelEntity).JointByName(ecm, joint.commonJointProperties.name));
             if (gzJoint.Position(ecm).has_value() && gzJoint.Position(ecm).value().size() > 0)
             {
                 auto gzPos = gzJoint.Position(ecm).value().at(0);
                 auto userPos = convertGazeboToUser(joint, gzPos);
                 // Reset joint properties
-                joint.trajectoryGenerationRefPosition = userPos;
-                joint.refPosition = userPos;
-                joint.position = userPos;
-                initialPositionPhys.push_back(userPos);
+                joint.commonJointProperties.refPosition = userPos;
+                joint.commonJointProperties.position = userPos;
+                m_physicalJointsPositionBuffer[i] = userPos;
             }
         }
+    }
 
-        if (m_controlBoardData.ijointcoupling) {
-            initialPositionAct.resize(m_controlBoardData.actuatedAxes.size());
-            auto ok = m_controlBoardData.ijointcoupling->convertFromPhysicalJointsToActuatedAxesPos(initialPositionPhys, initialPositionAct);
-            if(!ok)
-            {
-                yError() << "Failed to convert from physical joints to actuated axes";
-                return;
-            }
-            for(size_t i=0; i<m_controlBoardData.actuatedAxes.size(); i++)
-            {
-                auto& actAxis = m_controlBoardData.actuatedAxes[i];
-                actAxis.trajectoryGenerationRefPosition = initialPositionAct[i];
-                actAxis.refPosition = initialPositionAct[i];
-                actAxis.position = initialPositionAct[i];
-            }
-
+    if (m_controlBoardData.ijointcoupling) {
+        auto ok = m_controlBoardData.ijointcoupling->convertFromPhysicalJointsToActuatedAxesPos(m_physicalJointsPositionBuffer, m_actuatedAxesPositionBuffer);
+        if(!ok)
+        {
+            yError() << "Failed to convert from physical joints to actuated axes";
+            return;
         }
-        else { // With no coupling, actuated axes are the same as physical joints
-            initialPositionAct = initialPositionPhys;
-        }
-        for (size_t i=0; i<m_controlBoardData.actuated_joints_handle->size(); i++) {
-            auto& joint = m_controlBoardData.actuated_joints_handle->at(i);
-            auto limitMin = m_controlBoardData.ijointcoupling ? m_controlBoardData.actuatedAxes[i].positionLimitMin : m_controlBoardData.physicalJoints[i].positionLimitMin;
-            auto limitMax = m_controlBoardData.ijointcoupling ? m_controlBoardData.actuatedAxes[i].positionLimitMax : m_controlBoardData.physicalJoints[i].positionLimitMax;
-            joint.trajectoryGenerator->setLimits(joint.positionLimitMin, joint.positionLimitMax);
-            joint.trajectoryGenerator->initTrajectory(initialPositionAct[i],
-                                                      initialPositionAct[i],
-                                                      joint.trajectoryGenerationRefSpeed,
-                                                      joint.trajectoryGenerationRefAcceleration,
-                                                      m_controlBoardData.controlUpdatePeriod);
+        for(size_t i=0; i<m_controlBoardData.actuatedAxes.size(); i++)
+        {
+            auto& actAxis = m_controlBoardData.actuatedAxes[i];
+            actAxis.trajectoryGenerationRefPosition = m_actuatedAxesPositionBuffer[i];
+            actAxis.commonJointProperties.refPosition = m_actuatedAxesPositionBuffer[i];
+            actAxis.commonJointProperties.position = m_actuatedAxesPositionBuffer[i];
         }
 
+    }
+    else { // With no coupling, actuated axes are the same as physical joints
+        m_actuatedAxesPositionBuffer = m_physicalJointsPositionBuffer;
+        for(size_t i=0; i<m_controlBoardData.actuatedAxes.size(); i++)
+        {
+            auto& actAxis = m_controlBoardData.actuatedAxes[i];
+            auto& physJoint = m_controlBoardData.physicalJoints[i];
+            actAxis.trajectoryGenerationRefPosition = physJoint.commonJointProperties.refPosition;
+            actAxis.commonJointProperties.refPosition = physJoint.commonJointProperties.refPosition;
+            actAxis.commonJointProperties.position = physJoint.commonJointProperties.position;
+        }
+    }
+    for (size_t i=0; i<m_controlBoardData.actuatedAxes.size(); i++) {
+        auto& joint = m_controlBoardData.actuatedAxes.at(i);
+        auto limitMin = joint.commonJointProperties.positionLimitMin;
+        auto limitMax = joint.commonJointProperties.positionLimitMax;
+        joint.trajectoryGenerator->setLimits(limitMin, limitMax);
+        joint.trajectoryGenerator->initTrajectory(m_actuatedAxesPositionBuffer[i],
+                                                    m_actuatedAxesPositionBuffer[i],
+                                                    joint.trajectoryGenerationRefSpeed,
+                                                    joint.trajectoryGenerationRefAcceleration,
+                                                    m_controlBoardData.controlUpdatePeriod);
     }
 
     // Reset control mode
-    for (auto& joint : m_controlBoardData.physicalJoints)
+    for (int i=0; i<m_controlBoardData.actuatedAxes.size(); i++)
     {
-        joint.controlMode = VOCAB_CM_POSITION;
+        m_controlBoardData.setControlMode(i, VOCAB_CM_POSITION);
+    }
+}
+
+void ControlBoard::configureBuffers() {
+    if(m_controlBoardData.ijointcoupling)
+    {
+        size_t nrOfActuatedAxes{0};
+        bool ok = m_controlBoardData.ijointcoupling->getNrOfActuatedAxes(nrOfActuatedAxes);
+        if(!ok)
+        {
+            yError() << "Failed to get number of actuated axes";
+            return;
+        }
+        m_controlBoardData.actuatedAxes.resize(nrOfActuatedAxes);
+        m_actuatedAxesPositionBuffer.resize(nrOfActuatedAxes);
+        m_actuatedAxesVelocityBuffer.resize(nrOfActuatedAxes);
+        m_actuatedAxesTorqueBuffer.resize(nrOfActuatedAxes);
+        size_t nrOfPhysicalJoints{0};
+        ok = m_controlBoardData.ijointcoupling->getNrOfPhysicalJoints(nrOfPhysicalJoints);
+        if(!ok)
+        {
+            yError() << "Failed to get number of physical joints";
+            return;
+        }
+        m_controlBoardData.physicalJoints.resize(nrOfPhysicalJoints);
+        m_physicalJointsPositionBuffer.resize(nrOfPhysicalJoints);
+        m_physicalJointsVelocityBuffer.resize(nrOfPhysicalJoints);
+        m_physicalJointsTorqueBuffer.resize(nrOfPhysicalJoints);
     }
 
-    for (auto& joint : m_controlBoardData.actuatedAxes)
-    {
-        joint.controlMode = VOCAB_CM_POSITION;
-    }
 }
 
 } // namespace gzyarp

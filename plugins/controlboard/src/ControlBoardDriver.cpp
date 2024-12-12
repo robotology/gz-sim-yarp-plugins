@@ -273,7 +273,7 @@ bool ControlBoardDriver::getAxisName(int axis, std::string& name)
 {
     // TODO integrate with IJointCoupled interface
 
-    name = m_controlBoardData->actuatedAxes.at(axis).name;
+    name = m_controlBoardData->actuatedAxes.at(axis).commonJointProperties.name;
 
     return true;
 }
@@ -634,7 +634,7 @@ bool ControlBoardDriver::setPosition(int j, double ref)
         return false;
     }
 
-    if (m_controlBoardData->actuatedAxes.at(j).controlMode != VOCAB_CM_POSITION_DIRECT)
+    if (m_controlBoardData->actuatedAxes.at(j).commonJointProperties.controlMode != VOCAB_CM_POSITION_DIRECT)
     {
         yError() << "Error while setting position: joint " + std::to_string(j)
                         + " is not in position direct mode";
