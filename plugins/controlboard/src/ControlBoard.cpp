@@ -267,6 +267,21 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
         // Let's initialize all the buffers/vectors
         configureBuffers();
 
+
+        for (size_t i=0; i<m_controlBoardData.actuatedAxes.size(); i++)
+        {
+            if (m_controlBoardData.ijointcoupling) {
+                bool ok = m_controlBoardData.ijointcoupling->getActuatedAxisName(i, m_controlBoardData.actuatedAxes[i].commonJointProperties.name);
+                if (!ok) {
+                    yError() << "Error while getting actuated axis name";
+                    return false;
+                }
+            }
+            else {
+                m_controlBoardData.actuatedAxes[i].commonJointProperties.name = m_controlBoardData.physicalJoints[i].commonJointProperties.name;
+            }
+        }
+
         if (!initializeJointPositionLimits(_ecm))
         {
             yError() << "Error while setting joint position limits";
@@ -768,6 +783,15 @@ bool ControlBoard::initializeJointPositionLimits(const gz::sim::EntityComponentM
             actuatedAxis.commonJointProperties.positionLimitMax = actuatedAxisPosLimitsMax.at(i);
         }
        
+    }
+    else {
+        // If no coupling is present, the actuated axes are the same as the physical joints
+        for (size_t i = 0; i < m_controlBoardData.actuatedAxes.size(); ++i)
+        {
+            auto& actuatedAxis = m_controlBoardData.actuatedAxes[i];
+            actuatedAxis.commonJointProperties.positionLimitMin = m_controlBoardData.physicalJoints[i].commonJointProperties.positionLimitMin;
+            actuatedAxis.commonJointProperties.positionLimitMax = m_controlBoardData.physicalJoints[i].commonJointProperties.positionLimitMax;
+        }
     }
 
     return true;
