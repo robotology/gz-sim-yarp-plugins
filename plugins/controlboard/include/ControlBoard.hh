@@ -105,7 +105,7 @@ private:
     bool initializeTrajectoryGeneratorReferences(yarp::os::Bottle& trajectoryGeneratorsGroup);
     bool parseInitialConfiguration(std::vector<double>& initialConfigurations);
     void resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponentManager& ecm);
-    void configureBuffers();
+    bool configureBuffers();
 };
 
 } // namespace gzyarp

@@ -1,18 +1,25 @@
 
-#include "ControlBoardData.hh"
+#include <ControlBoardData.hh>
 
 namespace gzyarp
 {
+
+
+bool ControlBoardData::initCoupledJoints() {
+    if (this->ijointcoupling) {
+        bool ok = this->ijointcoupling->getCoupledActuatedAxes(coupledActuatedAxes);
+        ok = ok & this->ijointcoupling->getCoupledPhysicalJoints(coupledPhysicalJoints);
+        return ok;
+    }
+    return true;
+}
 bool ControlBoardData::setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode)
 {
-    yarp::sig::VectorOf<size_t> coupledActuatedAxes, coupledPhysicalJoints;
     try
     {
         // If there is coupling let's check if we have to change the interaction mode for all the coupled joints
         if (this->ijointcoupling)
         {
-            this->ijointcoupling->getCoupledActuatedAxes(coupledActuatedAxes);
-            this->ijointcoupling->getCoupledPhysicalJoints(coupledPhysicalJoints);
             // If the joint is coupled, we have to change the interaction mode for all the coupled joints
             if(std::find(coupledActuatedAxes.begin(), coupledActuatedAxes.end(), axis) != coupledActuatedAxes.end())
             {
@@ -79,12 +86,9 @@ bool ControlBoardData::setControlMode(int j, int mode) {
         desired_mode = VOCAB_CM_IDLE;
     }
 
-    yarp::sig::VectorOf<size_t> coupledActuatedAxes, coupledPhysicalJoints;
     // If there is coupling let's check if we have to change the interaction mode for all the coupled joints
     if (this->ijointcoupling)
     {
-        this->ijointcoupling->getCoupledActuatedAxes(coupledActuatedAxes);
-        this->ijointcoupling->getCoupledPhysicalJoints(coupledPhysicalJoints);
         // If the joint is coupled, we have to change the interaction mode for all the coupled joints
         if(std::find(coupledActuatedAxes.begin(), coupledActuatedAxes.end(), j) != coupledActuatedAxes.end())
         {

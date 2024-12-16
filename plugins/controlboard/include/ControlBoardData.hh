@@ -62,7 +62,7 @@ struct PhysicalJointProperties
     std::string positionControlLaw; // TODO: verify usefulness of this field
 };
 
-struct ActuatedAxesProperties
+struct ActuatedAxisProperties
 {
     CommonJointProperties commonJointProperties;
     std::unique_ptr<yarp::dev::gzyarp::TrajectoryGenerator> trajectoryGenerator;
@@ -77,14 +77,17 @@ class ControlBoardData
 public:
     std::mutex mutex;
     std::vector<PhysicalJointProperties> physicalJoints;
-    std::vector<ActuatedAxesProperties>  actuatedAxes;
+    std::vector<ActuatedAxisProperties>  actuatedAxes;
     yarp::os::Stamp simTime;
     yarp::dev::IJointCoupling* ijointcoupling{nullptr};
     // TODO (xela95): read this value from configuration file
     std::chrono::milliseconds controlUpdatePeriod = std::chrono::milliseconds(1);
-
+    
+    bool initCoupledJoints();
     bool setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode);
     bool setControlMode(int j, int mode);
+private:
+    yarp::sig::VectorOf<size_t> coupledActuatedAxes, coupledPhysicalJoints;
 };
 
 class IControlBoardData

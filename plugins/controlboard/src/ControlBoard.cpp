@@ -134,18 +134,22 @@ void ControlBoard::Configure(const Entity& _entity,
 
     auto& coupling_group_bottle = m_pluginParameters.findGroup("COUPLING");
     if (!coupling_group_bottle.isNull()) {
-        m_pluginParameters.unput("device");
+        yarp::os::Property couplingParameters;
+        couplingParameters.fromString(m_pluginParameters.toString());
+        couplingParameters.unput("device");
+        // We need to remove the device name from the coupling parameters and set the one for the coupling driver
+        // The coupling driver needs some parameters stored in the controlboard configuration, then we copy it
         auto coupling_device_str = coupling_group_bottle.find("device").asString();
-        m_pluginParameters.put("device", coupling_device_str);
-        if(!m_coupling_driver.open(m_pluginParameters))
+        couplingParameters.put("device", coupling_device_str);
+        if(!m_coupling_driver.open(couplingParameters))
         {
             yError() << "gz-sim-yarp-controlboard-system Plugin failed: error in opening yarp "
-                        "coupling driver";
+                        "coupling driver with device name " << coupling_device_str;
             return;
         }
         if(!m_coupling_driver.view(m_controlBoardData.ijointcoupling)) {
             yError() << "gz-sim-yarp-controlboard-system Plugin failed: error in getting "
-                        "IJointCoupling interface";
+                        "IJointCoupling interface from device with name " << coupling_device_str;
             return;
         }
 
@@ -264,8 +268,17 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
 
             yInfo() << "Joint " << jointFromConfigName << " added to the control board data.";
         }
+        if (!m_controlBoardData.initCoupledJoints())
+        {
+            yError() << "Error while initializing coupled joints";
+            return false;
+        }
+        
         // Let's initialize all the buffers/vectors
-        configureBuffers();
+        if (!configureBuffers()) {
+            yError() << "Error while configuring buffers";
+            return false;
+        }
 
 
         for (size_t i=0; i<m_controlBoardData.actuatedAxes.size(); i++)
@@ -428,7 +441,6 @@ bool ControlBoard::updateTrajectories(const UpdateInfo& _info, EntityComponentMa
         
         switch (joint.commonJointProperties.controlMode)
         {
-        // PUT THE COUPLING HERE!!
         case VOCAB_CM_POSITION:
             joint.commonJointProperties.refPosition = joint.trajectoryGenerator->computeTrajectory();
             joint.isMotionDone = joint.trajectoryGenerator->isMotionDone();
@@ -1049,7 +1061,7 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
     }
 }
 
-void ControlBoard::configureBuffers() {
+bool ControlBoard::configureBuffers() {
     size_t nrOfActuatedAxes{0};
     size_t nrOfPhysicalJoints{0};
     if(m_controlBoardData.ijointcoupling)
@@ -1058,13 +1070,13 @@ void ControlBoard::configureBuffers() {
         if(!ok)
         {
             yError() << "Failed to get number of actuated axes";
-            return;
+            return false;
         }
         ok = m_controlBoardData.ijointcoupling->getNrOfPhysicalJoints(nrOfPhysicalJoints);
         if(!ok)
         {
             yError() << "Failed to get number of physical joints";
-            return;
+            return false;
         }
 
     }
@@ -1080,7 +1092,7 @@ void ControlBoard::configureBuffers() {
     m_physicalJointsPositionBuffer.resize(nrOfPhysicalJoints);
     m_physicalJointsVelocityBuffer.resize(nrOfPhysicalJoints);
     m_physicalJointsTorqueBuffer.resize(nrOfPhysicalJoints);
-    return;
+    return true;
 
 }
 
