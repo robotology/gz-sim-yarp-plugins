@@ -15,6 +15,7 @@
 #include <yarp/conf/numeric.h>
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IInteractionMode.h>
+#include <yarp/dev/IJointCoupling.h>
 #include <yarp/dev/PidEnums.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/os/Vocab.h>
@@ -33,8 +34,7 @@ struct PidControlTypeEnumHashFunction
     }
 };
 
-struct JointProperties
-{
+struct CommonJointProperties {
     std::string name;
     yarp::dev::InteractionModeEnum interactionMode{yarp::dev::InteractionModeEnum::VOCAB_IM_STIFF};
     yarp::conf::vocab32_t controlMode{VOCAB_CM_IDLE};
@@ -52,9 +52,19 @@ struct JointProperties
     double velocity{0.0}; // Joint velocity [deg/s]
     double velocityLimitMin{std::numeric_limits<double>::min()};
     double velocityLimitMax{std::numeric_limits<double>::max()};
+};
+
+struct PhysicalJointProperties
+{
+    CommonJointProperties commonJointProperties;
     std::unordered_map<yarp::dev::PidControlTypeEnum, gz::math::PID, PidControlTypeEnumHashFunction>
         pidControllers;
     std::string positionControlLaw; // TODO: verify usefulness of this field
+};
+
+struct ActuatedAxisProperties
+{
+    CommonJointProperties commonJointProperties;
     std::unique_ptr<yarp::dev::gzyarp::TrajectoryGenerator> trajectoryGenerator;
     double trajectoryGenerationRefPosition{0.0};
     double trajectoryGenerationRefSpeed{0.0};
@@ -66,11 +76,18 @@ class ControlBoardData
 {
 public:
     std::mutex mutex;
-    std::vector<JointProperties> joints;
+    std::vector<PhysicalJointProperties> physicalJoints;
+    std::vector<ActuatedAxisProperties>  actuatedAxes;
     yarp::os::Stamp simTime;
-
+    yarp::dev::IJointCoupling* ijointcoupling{nullptr};
     // TODO (xela95): read this value from configuration file
     std::chrono::milliseconds controlUpdatePeriod = std::chrono::milliseconds(1);
+    
+    bool initCoupledJoints();
+    bool setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode);
+    bool setControlMode(int j, int mode);
+private:
+    yarp::sig::VectorOf<size_t> coupledActuatedAxes, coupledPhysicalJoints;
 };
 
 class IControlBoardData
