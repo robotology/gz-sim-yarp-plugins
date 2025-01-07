@@ -1,0 +1,122 @@
+name: apt CI Workflow
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  pull_request:
+  schedule:
+  # * is a special character in YAML so you have to quote this string
+  # Execute a "nightly" build at 2 AM UTC
+  - cron:  '0 2 * * *'
+
+jobs:
+  build:
+    name: '[${{ matrix.os }}@${{ matrix.build_type }}@yarp:${{ matrix.yarp_tag }}@gazebo:${{ matrix.gazebo_distro }}]'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Release, Debug]
+        os: [ubuntu-22.04]
+        ycm_tag: [v0.16.2]
+        yarp_tag: [v3.10.1]
+        gazebo_distro: [harmonic]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # Print environment variables to simplify development and debugging
+    - name: Environment Variables
+      run: env
+
+    # ============
+    # DEPENDENCIES
+    # ============
+    - name: apt Dependencies
+      run: |
+        sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-latest.list'
+        wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+        sudo apt-get update
+        # YARP dependencies
+        sudo apt-get install git build-essential cmake ninja-build libace-dev libeigen3-dev libopencv-dev libtinyxml-dev
+        # gz-sim-yarp-plugins dependencies
+        sudo apt-get install gz-${{ matrix.gazebo_distro }} libcli11-dev
+        # Test dependencies
+        sudo apt-get install libgtest-dev
+
+    - name: Cache Source-based Dependencies
+      id: cache-source-deps
+      uses: actions/cache@v3
+      with:
+        path: ${{ github.workspace }}/install/deps
+        key: source-deps-${{ runner.os }}-os-${{ matrix.os }}-build-type-${{ matrix.build_type }}-ycm-${{ matrix.ycm_tag }}-yarp-${{ matrix.yarp_tag }}
+
+    - name: Source-based Dependencies
+      if: steps.cache-source-deps.outputs.cache-hit != 'true'
+      run: |
+        # YCM
+        git clone https://github.com/robotology/ycm
+        cd ycm
+        git checkout ${{ matrix.ycm_tag }}
+        mkdir -p build
+        cd build
+        cmake -GNinja -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install/deps ..
+        cmake --build . --config ${{ matrix.build_type }} --target install
+        # YARP
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/yarp
+        cd yarp
+        git checkout ${{ matrix.yarp_tag }}
+        mkdir -p build
+        cd build
+        cmake -GNinja -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install/deps -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install/deps ..
+        cmake --build . --config ${{ matrix.build_type }} --target install
+
+    - name: Configure Environment variables for Source-based Dependencies
+      run: |
+        # Configure environment
+        echo "YARP_DATA_DIRS=${GITHUB_WORKSPACE}/install/deps/share/yarp" >> $GITHUB_ENV
+
+    # ===================
+    # CMAKE-BASED PROJECT
+    # ===================
+
+    - name: Configure
+      shell: bash
+      run: |
+        mkdir -p build
+        cd build
+        cmake -GNinja -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install/deps -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DCMAKE_CXX_FLAGS_DEBUG="--coverage -g -O0" -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install -DBUILD_TESTING:BOOL=ON ..
+
+    - name: Build
+      run: |
+        cd build
+        cmake --build . --config ${{ matrix.build_type }}
+
+    - name: Test (Release)
+      if: contains(matrix.build_type, 'Release')
+      run: |
+        cd build
+        # Deterministic tests
+        ctest -E "^CameraTest" --output-on-failure -C ${{ matrix.build_type }} .
+        # Non-deterministic tests
+        ctest -R "^CameraTest" --repeat until-pass:10  --output-on-failure -C ${{ matrix.build_type }} .
+
+    - name: Test (Debug)
+      if: contains(matrix.build_type, 'Debug')
+      run: |
+        cd build
+        # Deterministic tests
+        ctest -E "^CameraTest"  -T Test -T Coverage --output-on-failure -C ${{ matrix.build_type }} .
+        # Non-deterministic tests
+        ctest -R "^CameraTest" -T Test -T Coverage --repeat until-pass:10 --output-on-failure -C ${{ matrix.build_type }} .
+
+
+    - name: Install
+      run: |
+        cd build
+        cmake --build . --config ${{ matrix.build_type }} --target install
+
