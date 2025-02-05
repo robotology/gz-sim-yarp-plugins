@@ -23,6 +23,7 @@ namespace gzyarp
  *
  * The class destructor calls DeviceRegistry::getHandler()->incrementNrOfGzSimYARPPluginsNotSuccessfullyLoaded(ecm),
  * unless the setConfigureIsSuccessful(true) method is called to signal that the configure of the plugin has been successful.
+ * This is used to keep track of the number of gz-sim-yarp-plugins that have not been successfully loaded.
  */
 class PluginConfigureHelper {
 public:
@@ -35,26 +36,46 @@ private:
     const gz::sim::EntityComponentManager* m_pecm;
 };
 
+/**
+ * Class that manages the YARP devices created by the gz-sim-yarp-plugins.
+ *
+ * The class is a singleton and is used to store the devices created by the gz-sim-yarp-plugins.
+ */
 class DeviceRegistry
 {
 public:
+    // Return a pointer to the only global instance of the DeviceRegistry in the process
     static DeviceRegistry* getHandler();
 
+    /**
+     * Extract all the devices from the registry that correspond to a given gz server
+     * and that belong to a model and all its descendants
+     */
     bool getDevicesAsPolyDriverList(const gz::sim::EntityComponentManager& ecm,
                                     const std::string& modelScopedName,
                                     yarp::dev::PolyDriverList& list,
                                     std::vector<std::string>& deviceScopedNames) const;
-
+    /**
+     * Insert a device in the registry.
+     *
+     * This method MUST be called only by the gz plugin that created the YARP device
+     */
     bool setDevice(const gz::sim::Entity& entity,
                    const gz::sim::EntityComponentManager& ecm,
                    const std::string& yarpDeviceName,
                    yarp::dev::PolyDriver* device2add,
                    std::string& generatedDeviceDatabaseKey);
 
+    /**
+     * Get a device whose device ID corresponds exactly to the specified deviceDatabaseKey.
+     */
     bool getDevice(const gz::sim::EntityComponentManager& ecm,
                    const std::string& deviceDatabaseKey,
                    yarp::dev::PolyDriver*& driver) const;
 
+    /**
+     * Remove a device whose device ID corresponds exactly to the specified deviceDatabaseKey.
+     */
     bool
     removeDevice(const gz::sim::EntityComponentManager& ecm, const std::string& deviceDatabaseKey);
 
@@ -67,6 +88,9 @@ public:
         return m_deviceRemovedEvent.Connect(_subscriber);
     }
 
+    /**
+     * Get all the device ids (aka device database keys) of the devices in the registry for a given gz server.
+     */
     std::vector<std::string> getDevicesKeys(const gz::sim::EntityComponentManager& ecm) const;
 
     /**
@@ -86,21 +110,43 @@ public:
     void incrementNrOfGzSimYARPPluginsNotSuccessfullyLoaded(const gz::sim::EntityComponentManager& ecm);
 
 private:
+    /**
+     * Generate a unique device id for a given yarp device name and entity.
+     *
+     * The device id is a process-unique string that identifies a device in a given gz server.
+     * Inside the process, a device is uniquely identified by the pair of the gz instance id and the device id.
+     */
     static std::string generateDeviceId(const gz::sim::Entity& entity,
                                         const gz::sim::EntityComponentManager& ecm,
                                         const std::string& yarpDeviceName);
 
+    /**
+     * Generate a unique instance id for a given gz server.
+     */
     static std::string getGzInstanceId(const gz::sim::EntityComponentManager& ecm);
 
-    static std::string getYarpDeviceName(const std::string& deviceDatabaseKey);
+    /**
+     * Extract the yarpDeviceName from a device id, i.e. the third argument passed to generateDeviceId.
+     */
+    static std::string getYarpDeviceName(const std::string& deviceId);
 
-    static std::string getModelScopedName(const std::string& deviceDatabaseKey);
+    /**
+     * Extract the scoped model name from a device id, i.e. the scoped name of the parent model of the plugin that created the device.
+     */
+    static std::string getModelScopedName(const std::string& deviceId);
 
+    // Private constructor. The constructor is private to ensure that the class is a singleton.
     DeviceRegistry();
+
+    // Static instance of the DeviceRegistry
     static DeviceRegistry* s_handle;
     static std::mutex& mutex();
+
+    // Map that stores all the yarp devices created by the gz-sim-yarp-plugins
+    // The key of the first map is the gz instance id, the key of the second map is the device id
     std::unordered_map<std::string, std::unordered_map<std::string, yarp::dev::PolyDriver*>>
-        m_devicesMap; // map of known yarp devices Updated upstream
+        m_devicesMap;
+
     // Event for when a device is removed
     gz::common::EventT<void (std::string)> m_deviceRemovedEvent;
 
