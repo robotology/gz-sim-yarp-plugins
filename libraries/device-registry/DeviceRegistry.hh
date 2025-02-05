@@ -67,14 +67,14 @@ public:
                    std::string& generatedDeviceDatabaseKey);
 
     /**
-     * Get a device whose device id is correspond exactly to the specified deviceDatabaseKey.
+     * Get a device whose device ID corresponds exactly to the specified deviceDatabaseKey.
      */
     bool getDevice(const gz::sim::EntityComponentManager& ecm,
                    const std::string& deviceDatabaseKey,
                    yarp::dev::PolyDriver*& driver) const;
 
     /**
-     * Remove a device whose device id is correspond exactly to the specified deviceDatabaseKey.
+     * Remove a device whose device ID corresponds exactly to the specified deviceDatabaseKey.
      */
     bool
     removeDevice(const gz::sim::EntityComponentManager& ecm, const std::string& deviceDatabaseKey);
