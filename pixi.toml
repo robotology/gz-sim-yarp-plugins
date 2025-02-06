@@ -58,6 +58,7 @@ compilers = "*"
 gtest = "*"
 fd-find = "*"
 clang-format = "18.*"
+icub-main = "*"
 
 [target.linux-64.dependencies]
 libgl-devel = "*"
