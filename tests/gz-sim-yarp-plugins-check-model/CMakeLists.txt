@@ -17,6 +17,11 @@ gsyp_add_tutorial_model_check(forcetorque-model-one-sensor forcetorque/model_one
 gsyp_add_tutorial_model_check(forcetorque-model-two-sensors forcetorque/model_two_sensors/model2sensors.sdf)
 gsyp_add_tutorial_model_check(single-pendulum single_pendulum/model.sdf)
 
+
+if(GZ_SIM_YARP_PLUGINS_ENABLE_TESTS_WITH_ICUB_MAIN)
+    gsyp_add_tutorial_model_check(coupled-pendulum coupled_pendulum/model.sdf)
+endif()
+
 # Then check that the command correctly exit a failure if we pass it a invalid model
 add_test(NAME gz-sim-yarp-plugins-check-model-fails-as-expected-with-wrong-world-file
          COMMAND gz-sim-yarp-plugins-check-model --world-file  ./world_with_robotinterface_with_non_existing_filename.sdf
