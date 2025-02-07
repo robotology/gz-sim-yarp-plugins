@@ -1,4 +1,13 @@
 find_package(GTest REQUIRED)
+# Only if the GZ_SIM_YARP_PLUGINS_ENABLE_TESTS_WITH_ICUB_MAIN variable is not defined,
+# we look for ICUB, to set its default value
+if(NOT DEFINED GZ_SIM_YARP_PLUGINS_ENABLE_TESTS_WITH_ICUB_MAIN)
+  find_package(ICUB QUIET)
+endif()
+option(GZ_SIM_YARP_PLUGINS_ENABLE_TESTS_WITH_ICUB_MAIN "Enable tests that require the installation of the icub-main package" ICUB_FOUND)
+if (GZ_SIM_YARP_PLUGINS_ENABLE_TESTS_WITH_ICUB_MAIN)
+  find_package(ICUB REQUIRED)
+endif()
 
 add_subdirectory(forcetorque)
 add_subdirectory(imu)

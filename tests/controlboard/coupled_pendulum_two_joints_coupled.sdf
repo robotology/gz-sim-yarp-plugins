@@ -1,0 +1,181 @@
+<?xml version="1.0"?>
+
+<sdf version='1.11'>
+
+  <world name="tutorial_controlboard">
+    <!-- <gravity>0 0 0</gravity> -->
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="coupled_pendulum">
+      <link name='base_link'>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>1000</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <collision name='base_link_fixed_joint_lump__base_collision'>
+          <pose>0 0 1 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.14999999999999999 0.14999999999999999 2.1499999999999999</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name='base_link_fixed_joint_lump__base_visual'>
+          <pose>0 0 1 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.14999999999999999 0.14999999999999999 2.1499999999999999</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <joint name='lower_joint' type='revolute'>
+        <pose relative_to='base_link'>0.14999999999999999 0 1.75 3.1415000000000002 0 0</pose>
+        <parent>base_link</parent>
+        <child>link2</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>-5</lower>
+            <upper>5</upper>
+            <effort>100</effort>
+            <velocity>100</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link2'>
+        <pose relative_to='lower_joint'>0 0 0 0 0 0</pose>
+        <inertial>
+          <pose>0 0 -0.90000000000000002 -0.30000000000000004 0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <visual name='link2_visual'>
+          <pose>0 0 -0.5 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.14999999999999999 0.14999999999999999 1</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <joint name='upper_joint' type='revolute'>
+        <pose relative_to='base_link'>-0.14999999999999999 0 1.75 3.1415000000000002 0 0</pose>
+        <parent>base_link</parent>
+        <child>link1</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>-5</lower>
+            <upper>5</upper>
+            <effort>100</effort>
+            <velocity>100</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link1'>
+        <pose relative_to='upper_joint'>0 0 0 0 0 0</pose>
+        <inertial>
+          <pose>0 0 -0.90000000000000002 0 0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <visual name='link1_visual'>
+          <pose>0 0 -0.5 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.14999999999999999 0.14999999999999999 1</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+
+      <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
+        <yarpConfigurationFile>
+          model://conf/gazebo_controlboard_multiple_joints.ini
+        </yarpConfigurationFile>
+        <initialConfiguration>0.0</initialConfiguration>
+      </plugin>
+      <!-- <plugin name='robotinterface' filename='libgazebo_yarp_robotinterface.so'>
+      <yarpRobotInterfaceConfigurationFile>model://coupled_pendulum/conf/coupled_pendulum_nws.xml</yarpRobotInterfaceConfigurationFile>
+      </plugin> -->
+
+      <frame name='fake_base_fixed_joint' attached_to='base_link'>
+        <pose>0 0 0 0 0 0</pose>
+      </frame>
+      <frame name='base' attached_to='fake_base_fixed_joint'>
+        <pose>0 0 0 0 0 0</pose>
+      </frame>
+    </model>
+
+  </world>
+</sdf>

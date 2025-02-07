@@ -1,4 +1,5 @@
 #include <Common.hh>
+#include <ControlBoardDriver.hh>
 #include <DeviceRegistry.hh>
 
 #include <gtest/gtest.h>
@@ -118,6 +119,92 @@ protected:
     yarp::dev::IEncoders* iEncoders = nullptr;
 };
 
+class ControlBoardPositionCoupledPendulumFixture : public ::testing::Test
+{
+protected:
+    // void SetUp() override
+    ControlBoardPositionCoupledPendulumFixture()
+        : testFixture{(std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR)
+                       / "coupled_pendulum_two_joints_coupled.sdf")
+                          .string()}
+    {
+        gz::common::Console::SetVerbosity(4);
+
+        testFixture.
+            // Use configure callback to get values at startup
+            OnConfigure([&](const gz::sim::Entity& _worldEntity,
+                            const std::shared_ptr<const sdf::Element>& /*_sdf*/,
+                            gz::sim::EntityComponentManager& _ecm,
+                            gz::sim::EventManager& /*_eventMgr*/) {
+                std::cerr << "========== Configuring test" << std::endl;
+
+                gz::sim::World world(_worldEntity);
+
+                // Get model
+                auto modelEntity = world.ModelByName(_ecm, "coupled_pendulum");
+                modelEntity = world.ModelByName(_ecm, "coupled_pendulum");
+                EXPECT_NE(gz::sim::kNullEntity, modelEntity);
+                model = gz::sim::Model(modelEntity);
+
+                auto devicesKeys = DeviceRegistry::getHandler()->getDevicesKeys(_ecm);
+                std::cerr << "Number of Devices: " << devicesKeys.size() << std::endl;
+                auto cbKey = devicesKeys.at(0);
+                EXPECT_TRUE(DeviceRegistry::getHandler()->getDevice(_ecm, devicesKeys[0], driver));
+                std::cerr << "Driver key: " << cbKey << std::endl;
+                ASSERT_TRUE(driver != nullptr);
+                iPositionControl = nullptr;
+                ASSERT_TRUE(driver->view(iPositionControl));
+                iControlMode = nullptr;
+                ASSERT_TRUE(driver->view(iControlMode));
+                iEncoders = nullptr;
+                ASSERT_TRUE(driver->view(iEncoders));
+
+                // Get joint1
+                auto jointEntity0 = model.JointByName(_ecm, "upper_joint");
+                EXPECT_NE(gz::sim::kNullEntity, jointEntity0);
+                joint0 = gz::sim::Joint(jointEntity0);
+
+                // Get joint2
+                auto jointEntity1 = model.JointByName(_ecm, "lower_joint");
+                EXPECT_NE(gz::sim::kNullEntity, jointEntity1);
+                joint1 = gz::sim::Joint(jointEntity1);
+
+                // Set joint in torque control mode
+                ASSERT_TRUE(iControlMode->setControlMode(0, VOCAB_CM_POSITION));
+                ASSERT_TRUE(iControlMode->setControlMode(1, VOCAB_CM_POSITION));
+
+                // Print number of joint configured
+                int nJointsConfigured{};
+                ASSERT_TRUE(iPositionControl->getAxes(&nJointsConfigured));
+                std::cerr << "Number of joints configured: " << nJointsConfigured << std::endl;
+
+                configured = true;
+                std::cerr << "========== Test configured" << std::endl;
+            });
+    }
+
+    // Get SDF model name from test parameter
+    gz::sim::TestFixture testFixture;
+    double linkMass{1};
+    double linkLength{1.0};
+    double linkInertiaAtLinkEnd{0.3352}; // Computed with parallel axis theorem
+    int plannedIterations{5000};
+    int iterations{0};
+    std::vector<std::vector<double>> trackingErrors{2};
+    double acceptedTolerance{5e-2};
+    bool configured{false};
+    gz::math::Vector3d gravity;
+    gz::sim::Entity modelEntity;
+    gz::sim::Model model;
+    gz::sim::Joint joint0;
+    gz::sim::Joint joint1;
+    yarp::dev::PolyDriver* driver;
+    yarp::dev::IPositionControl* iPositionControl = nullptr;
+    yarp::dev::IControlMode* iControlMode = nullptr;
+    yarp::dev::IEncoders* iEncoders = nullptr;
+};
+
+
 TEST_F(ControlBoardPositionFixture, CheckPositionTrackingWithTrajectoryGenerationUsingPendulumModel)
 {
     auto refPosition{90.0};
@@ -165,6 +252,74 @@ TEST_F(ControlBoardPositionFixture, CheckPositionTrackingWithTrajectoryGeneratio
     // Verify that the final error is within the accepted tolerance
     std::cerr << "Final tracking error: " << jointPosError << std::endl;
     ASSERT_LT(jointPosError, acceptedTolerance);
+}
+
+TEST_F(ControlBoardPositionCoupledPendulumFixture, CheckPositionTrackingWithTrajectoryGenerationUsingPendulumModel)
+{
+    auto refPosition{90.0};
+    bool motionDone0{false};
+    bool motionDone1{false};
+    yarp::sig::Vector jointPosition{0.0, 0.0};
+    yarp::sig::Vector jointPosError{0.0, 0.0};
+
+    testFixture
+        .OnPostUpdate(
+            [&](const gz::sim::UpdateInfo& _info, const gz::sim::EntityComponentManager& _ecm) {
+                // std::cerr << "========== Iteration: " << iterations << std::endl;
+
+                iEncoders->getEncoders(jointPosition.data());
+                iPositionControl->checkMotionDone(0, &motionDone0);
+                iPositionControl->checkMotionDone(1, &motionDone1);
+
+                // std::cerr << "ref position: " << refTrajectory[iterations] << std::endl;
+                // std::cerr << "joint position: " << jointPosition << std::endl;
+
+                iterations++;
+            })
+        .
+        // The moment we finalize, the configure callback is called
+        Finalize();
+
+    int modeSet0{};
+    int modeSet1{};
+    iControlMode->getControlMode(0, &modeSet0);
+    iControlMode->getControlMode(1, &modeSet1);
+    ASSERT_TRUE(modeSet0 == VOCAB_CM_POSITION);
+    ASSERT_TRUE(modeSet1 == VOCAB_CM_POSITION);
+
+    // Set reference position
+    iPositionControl->positionMove(0, refPosition);
+
+    // Setup simulation server, this will call the post-update callbacks.
+    // It also calls pre-update and update callbacks if those are being used.
+    while (!motionDone0)
+    {
+        std::cerr << "Running server" << std::endl;
+        testFixture.Server()->Run(true, plannedIterations, false);
+        jointPosError[0] = abs(refPosition - jointPosition[0]);
+        std::cerr << "Joint 0 position error: " << jointPosError[0] << std::endl;
+    }
+
+    std::cerr << "Final tracking error for joint 0: " << jointPosError[0] << std::endl;
+    ASSERT_LT(jointPosError[0], acceptedTolerance);
+
+    iPositionControl->positionMove(1, refPosition);
+    while (!motionDone1)
+    {
+        std::cerr << "Running server" << std::endl;
+        testFixture.Server()->Run(true, plannedIterations, false);
+        jointPosError[1] = abs(refPosition - jointPosition[1]);
+        std::cerr << "Joint 1 position error: " << jointPosError[1] << std::endl;
+    }
+
+    // Final assertions
+    ASSERT_TRUE(configured);
+    ASSERT_TRUE(motionDone0);
+    ASSERT_TRUE(motionDone1);
+
+    // Verify that the final error is within the accepted tolerance
+    std::cerr << "Final tracking error for joint 1: " << jointPosError[1] << std::endl;
+    ASSERT_LT(jointPosError[1], acceptedTolerance);
 }
 
 } // namespace test

@@ -30,6 +30,7 @@ configure = { cmd = [
     "-DCMAKE_BUILD_TYPE=Release",
     "-DCMAKE_INSTALL_PREFIX=$CMAKE_INSTALL_PREFIX",
     "-DBUILD_TESTING:BOOL=ON",
+    "-DGZ_SIM_YARP_PLUGINS_ENABLE_TESTS_WITH_ICUB_MAIN:BOOL=OFF",
     # Use the cross-platform Ninja generator
     "-G",
     "Ninja",
@@ -57,6 +58,7 @@ compilers = "*"
 gtest = "*"
 fd-find = "*"
 clang-format = "18.*"
+icub-main = "*"
 
 [target.linux-64.dependencies]
 libgl-devel = "*"
