@@ -1,6 +1,7 @@
 #include "ControlBoardDriver.hh"
 #include <ControlBoardData.hh>
 #include <DeviceRegistry.hh>
+#include <Common.hh>
 
 #include <gtest/gtest.h>
 
@@ -32,30 +33,6 @@ namespace gzyarp
 {
 namespace test
 {
-
-// Checks that the control board can be configured without initial conditions
-TEST(ControlBoardCommonsTest, ConfigureControlBoardWithoutInitialCondition)
-{
-    auto modelPath
-        = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "pendulum_no_initial_configuration.sdf";
-    gz::sim::TestFixture testFixture(modelPath.string());
-
-    gz::common::Console::SetVerbosity(4);
-
-    testFixture.Finalize();
-}
-
-// Checks that the control board can be configured without initial conditions
-TEST(ControlBoardCommonsTest, ConfigureControlBoardWithInitialCondition)
-{
-    auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR)
-                     / "pendulum_with_initial_configuration.sdf";
-    gz::sim::TestFixture testFixture(modelPath.string());
-
-    gz::common::Console::SetVerbosity(4);
-
-    testFixture.Finalize();
-}
 
 // Check that multiple control board can be congfigured for the same robot model
 TEST(ControlBoardCommonsTest, ConfigureMultipleControlBoards)

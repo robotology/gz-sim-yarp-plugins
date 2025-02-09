@@ -35,12 +35,20 @@ namespace gzyarp
 class ConfigurationOverride : public System, public ISystemConfigure, public ISystemPostUpdate, public ISystemReset
 {
 public:
-    ConfigurationOverride(): m_initialized(false)
+    ConfigurationOverride(): m_overrideInserted(false)
     {
     }
 
     ~ConfigurationOverride()
     {
+        // When the plugin is destroyed, we need to remove the override specified in the singleton,
+        // otherwise it may happen that a new ECM (with exactly the same pointer of the old one) is created
+        // and will find the overrides specified by the destroyed gzyarp::ConfigurationOverride plugin
+        if (m_overrideInserted)
+        {
+            DeviceRegistry::getHandler()->removeConfigurationOverrideForYARPDevice(m_configurationOverrideInstanceId);
+            m_overrideInserted = false;
+        }
     }
 
     virtual void Configure(const Entity& _entity,
@@ -48,7 +56,7 @@ public:
                            EntityComponentManager& _ecm,
                            EventManager& /*_eventMgr*/) override
     {
-        if (!m_initialized)
+        if (!m_overrideInserted)
         {
             // We need to clone the sdf element to call non-const methods
             auto sdfClone = _sdf->Clone();
@@ -79,10 +87,16 @@ public:
                 overridenParameters["gzyarp-xml-element-initialConfiguration"] = sdfClone->Get<std::string>("initialConfiguration");
             }
 
+            // Define unique key to identify the configuration override and then remove it
+            std::stringstream ss;
+            ss << this;
+            m_configurationOverrideInstanceId = DeviceRegistry::getGzInstanceId(_ecm) + "_" + ss.str();
+
             if (!DeviceRegistry::getHandler()->addConfigurationOverrideForYARPDevice(
                     _ecm,
                     scopedName(_entity, _ecm, "/"),
                     yarpDeviceName,
+                    m_configurationOverrideInstanceId,
                     overridenParameters))
             {
                 yError() << "Error in gzyarp::ConfigurationOverride::Configure: "
@@ -90,7 +104,7 @@ public:
                 return;
             }
 
-            m_initialized = true;
+            m_overrideInserted = true;
             configureHelper.setConfigureIsSuccessful(true);
         }
     }
@@ -104,7 +118,8 @@ public:
     }
 
 private:
-    bool m_initialized;
+    bool m_overrideInserted;
+    std::string m_configurationOverrideInstanceId;
 };
 
 } // namespace gzyarp
