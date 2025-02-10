@@ -109,16 +109,44 @@ public:
      */
     void incrementNrOfGzSimYARPPluginsNotSuccessfullyLoaded(const gz::sim::EntityComponentManager& ecm);
 
-private:
+    /**
+     * Add a configuration override for a given yarp device.
+     *
+     * This function is meant to be called only by the gzyarp::ConfigurationOverride plugin.
+     *
+     */
+    bool addConfigurationOverrideForYARPDevice(const gz::sim::EntityComponentManager& ecm,
+                                               const std::string& parentEntityScopedNameWhereConfigurationOverrideWasInserted,
+                                               const std::string& yarpDeviceName,
+                                               const std::string& configurationOverrideInstanceId,
+                                               std::unordered_map<std::string, std::string> overridenParameters);
+
+    /**
+     * Remove a configuration override for a given yarp device.
+     *
+     */
+    bool removeConfigurationOverrideForYARPDevice(const std::string& configurationOverrideInstanceId);
+
+    /**
+     * Get the configuration override for a given yarp device.
+     *
+     * This function is meant to be called by each plugin to override its configuration.
+     *
+     */
+    bool getConfigurationOverrideForYARPDevice(const gz::sim::EntityComponentManager& ecm,
+                                               const std::string& parentEntityScopedNameWhereYARPDeviceWasInserted,
+                                               const std::string& yarpDeviceName,
+                                               std::unordered_map<std::string, std::string>& overridenParameters) const;
+
     /**
      * Generate a unique device id for a given yarp device name and entity.
      *
      * The device id is a process-unique string that identifies a device in a given gz server.
      * Inside the process, a device is uniquely identified by the pair of the gz instance id and the device id.
      */
-    static std::string generateDeviceId(const gz::sim::Entity& entity,
-                                        const gz::sim::EntityComponentManager& ecm,
-                                        const std::string& yarpDeviceName);
+     static std::string generateDeviceId(const gz::sim::Entity& parentEntity,
+        const gz::sim::EntityComponentManager& ecm,
+        const std::string& yarpDeviceName);
 
     /**
      * Generate a unique instance id for a given gz server.
@@ -126,15 +154,16 @@ private:
     static std::string getGzInstanceId(const gz::sim::EntityComponentManager& ecm);
 
     /**
-     * Extract the yarpDeviceName from a device id, i.e. the third argument passed to generateDeviceId.
-     */
+    * Extract the yarpDeviceName from a device id, i.e. the third argument passed to generateDeviceId.
+    */
     static std::string getYarpDeviceName(const std::string& deviceId);
 
     /**
-     * Extract the scoped model name from a device id, i.e. the scoped name of the parent model of the plugin that created the device.
-     */
-    static std::string getModelScopedName(const std::string& deviceId);
+    * Extract the scoped name of the parent entity from a device id, i.e. the scoped name of the parent entity of the plugin that created the device.
+    */
+    static std::string getParentEntityScopedName(const std::string& deviceId);
 
+private:
     // Private constructor. The constructor is private to ensure that the class is a singleton.
     DeviceRegistry();
 
@@ -152,6 +181,33 @@ private:
 
     // Number of gz-sim-yarp-plugins YARP devices not loaded correctly for a given ecm
     std::unordered_map<std::string, std::size_t> m_nrOfGzSimYARPPluginsNotSuccessfullyLoaded;
+
+
+    // Element that stores the parameters that will be overriden for a given yarp device
+    // A device will be affected by the override if:
+    // - gzInstanceId match
+    // - yarpDeviceName match
+    // - the parentEntityScopedNameWhereConfigurationOverrideWasInserted is a prefix of the parent entity scoped name of the device`
+    struct ConfigurationOverrideParameters {
+        // Id that identifies the gz instance where the configuration override plugin was inserted
+        std::string gzInstanceId;
+        // Scoped name of the parent entity where the condiguration override plugin was inserted,
+        // used to understand if a given yarp device is affected by the override
+        std::string parentEntityScopedNameWhereConfigurationOverrideWasInserted;
+        // yarpDeviceName of the yarp device that will have its parameters overriden
+        std::string yarpDeviceName;
+        // configurationOverrideInstanceId is a unique id for each element in the m_yarpDevicesOverridenParametersList,
+        // it is used to remove a configuration override when the corresponding plugin is destroyed
+        std::string configurationOverrideInstanceId;
+        // Map of the parameters that will be overriden
+        // Some keys have a special meaning:
+        // gzyarp-xml-element-initialConfiguration: override the content of a <initialConfiguration> tag
+        std::unordered_map<std::string, std::string> overridenParameters;
+    };
+
+    // This is a list of parameters specified by the configuration override plugin,
+    // they specify the parameters that will be overriden for a given yarp device
+    std::vector<ConfigurationOverrideParameters> m_yarpDevicesOverridenParametersList;
 };
 
 } // namespace gzyarp

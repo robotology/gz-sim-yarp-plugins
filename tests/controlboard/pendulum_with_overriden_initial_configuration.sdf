@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+
+<sdf version="1.7">
+    <world name="pendulum_with_overriden_initial_configuration">
+        <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin
+      filename="gz-sim-physics-system"
+      name="gz::sim::systems::Physics">
+    </plugin>
+    <plugin
+      filename="gz-sim-user-commands-system"
+      name="gz::sim::systems::UserCommands">
+    </plugin>
+    <plugin
+      filename="gz-sim-sensors-system"
+      name="gz::sim::systems::Sensors">
+    </plugin>
+    <plugin
+      filename="gz-sim-scene-broadcaster-system"
+      name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+        <model name="single_pendulum_with_yarp_plugins_and_overriden_initial_conf">
+            <plugin name='gzyarp::ConfigurationOverride' filename='gz-sim-yarp-configurationoverride-system'>
+                <yarpPluginConfigurationOverride yarpDeviceName='controlboard_plugin_device'/>
+                <initialConfiguration>2.0</initialConfiguration>
+            </plugin>
+            <model name="single_pendulum_with_yarp_plugins">
+                <include>
+                    <uri>model://single_pendulum_with_initial_configuration.sdf</uri>
+                </include>
+            </model>
+        </model>
+    </world>
+</sdf>

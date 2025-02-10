@@ -4,6 +4,7 @@ set(TESTS
   ControlBoardPositionControlTest
   ControlBoardCommonsTest
   ControlBoardOnMultipleGazeboInstancesTest
+  ControlBoardInitialConfigurationTest
 )
 
 foreach(TEST ${TESTS})
@@ -26,7 +27,7 @@ foreach(TEST ${TESTS})
        COMMAND ${TEST})
 
   set_tests_properties(${TEST} PROPERTIES
-    ENVIRONMENT "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-controlboard-system>"
+    ENVIRONMENT "GZ_SIM_SYSTEM_PLUGIN_PATH=path_list_append:$<TARGET_FILE_DIR:gz-sim-yarp-controlboard-system>"
     ENVIRONMENT_MODIFICATION "GZ_SIM_RESOURCE_PATH=path_list_append:${CMAKE_CURRENT_SOURCE_DIR}")
 
   target_compile_definitions(${TEST} PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

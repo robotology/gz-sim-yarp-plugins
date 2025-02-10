@@ -50,7 +50,7 @@ DeviceRegistry* DeviceRegistry::getHandler()
 }
 
 bool DeviceRegistry::getDevicesAsPolyDriverList(const gz::sim::EntityComponentManager& ecm,
-                                                const std::string& modelScopedName,
+                                                const std::string& parentEntityScopedName,
                                                 yarp::dev::PolyDriverList& list,
                                                 std::vector<std::string>& deviceScopedNames) const
 {
@@ -74,10 +74,10 @@ bool DeviceRegistry::getDevicesAsPolyDriverList(const gz::sim::EntityComponentMa
 
         for (auto&& [key, value] : devicesMap)
         {
-            std::string deviceModelScopedName = getModelScopedName(key);
+            std::string deviceParentEntityScopedName = getParentEntityScopedName(key);
             std::string yarpDeviceName = getYarpDeviceName(key);
 
-            if (deviceModelScopedName == modelScopedName)
+            if (deviceParentEntityScopedName == parentEntityScopedName)
             {
                 list.push(value, yarpDeviceName.c_str());
                 deviceScopedNames.push_back(key);
@@ -144,12 +144,12 @@ bool DeviceRegistry::setDevice(const gz::sim::Entity& entity,
                             "with the one already registered!";
                 yError() << " This should not happen, check the names are correct in your "
                             "config file. "
-                            "The device already in the map has model scoped name: "
-                         << getModelScopedName(device_it->first)
+                            "The device already in the map has parent entity scoped name: "
+                         << getParentEntityScopedName(device_it->first)
                          << " and yarp device name: " << getYarpDeviceName(device_it->first)
                          << ". "
-                            "The device you are trying to insert has model scoped name: "
-                         << getModelScopedName(deviceDatabaseKey)
+                            "The device you are trying to insert has parent entity scoped name: "
+                         << getParentEntityScopedName(deviceDatabaseKey)
                          << " and yarp device name: " << getYarpDeviceName(deviceDatabaseKey)
                          << ". "
                             "Fatal error.";
@@ -289,11 +289,11 @@ std::string DeviceRegistry::getYarpDeviceName(const std::string& deviceDatabaseK
     return yarpDeviceName;
 }
 
-std::string DeviceRegistry::getModelScopedName(const std::string& deviceDatabaseKey)
+std::string DeviceRegistry::getParentEntityScopedName(const std::string& deviceDatabaseKey)
 {
-    // Extract modelScopedName from deviceDatabaseKey
-    std::string modelScopedName = deviceDatabaseKey.substr(0, deviceDatabaseKey.find_last_of("/"));
-    return modelScopedName;
+    // Extract parentEntityScopedName from deviceDatabaseKey
+    std::string parentEntityScopedName = deviceDatabaseKey.substr(0, deviceDatabaseKey.find_last_of("/"));
+    return parentEntityScopedName;
 }
 
 DeviceRegistry::DeviceRegistry()
@@ -347,4 +347,55 @@ void DeviceRegistry::incrementNrOfGzSimYARPPluginsNotSuccessfullyLoaded(const gz
     }
 }
 
+bool DeviceRegistry::addConfigurationOverrideForYARPDevice(const gz::sim::EntityComponentManager& ecm,
+                                           const std::string& parentEntityScopedNameWhereConfigurationOverrideWasInserted,
+                                           const std::string& yarpDeviceName,
+                                           const std::string& configurationOverrideInstanceId,
+                                           std::unordered_map<std::string, std::string> overridenParameters)
+{
+    m_yarpDevicesOverridenParametersList.push_back({getGzInstanceId(ecm),
+                                                    parentEntityScopedNameWhereConfigurationOverrideWasInserted,
+                                                    yarpDeviceName,
+                                                    configurationOverrideInstanceId,
+                                                    overridenParameters});
+    return true;
+}
+
+bool DeviceRegistry::removeConfigurationOverrideForYARPDevice(const std::string& configurationOverrideInstanceId)
+{
+    m_yarpDevicesOverridenParametersList.erase(
+        std::remove_if(
+            m_yarpDevicesOverridenParametersList.begin(),
+            m_yarpDevicesOverridenParametersList.end(),
+            [&configurationOverrideInstanceId](const ConfigurationOverrideParameters& params) {
+                return params.configurationOverrideInstanceId == configurationOverrideInstanceId;
+            }),
+        m_yarpDevicesOverridenParametersList.end());
+    return true;
+}
+
+bool DeviceRegistry::getConfigurationOverrideForYARPDevice(const gz::sim::EntityComponentManager& ecm,
+                                           const std::string& parentEntityScopedNameWhereYARPDeviceWasInserted,
+                                           const std::string& yarpDeviceName,
+                                           std::unordered_map<std::string, std::string>& overridenParameters) const
+{
+    overridenParameters.clear();
+    // We go through all the overriden parameters and add to the returned overridenParameters all the matchin
+    // elements of the list. Note that earlier elements in the list have higher priority, to provide the possibility
+    // of overriding a parameter that was already overriden in a nested configuration override.
+    // Note that the condition for the overriden to be consider (beside matching gzInstanceId and yarpDeviceName)
+    // is that the model scoped name of the place where the configuration override was inserted is a prefix of the
+    // model scoped name of the device, to ensure that the override is applied only to the devices that are descendent
+    // of the model where the configuration override was inserted
+    for (auto&& params : m_yarpDevicesOverridenParametersList) {
+        if (params.gzInstanceId == getGzInstanceId(ecm) &&
+            parentEntityScopedNameWhereYARPDeviceWasInserted.rfind(params.parentEntityScopedNameWhereConfigurationOverrideWasInserted) == 0 &&
+            params.yarpDeviceName == yarpDeviceName) {
+            std::unordered_map<std::string, std::string> consideredOverridenParameters = params.overridenParameters;
+            overridenParameters.merge(consideredOverridenParameters);
+        }
+    }
+
+    return true;
+}
 } // namespace gzyarp

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<sdf version="1.7">
+    <world name="pendulum_with_overriden_initial_configuration">
+        <model name="single_pendulum_with_yarp_plugins_and_doubly_overriden_initial_conf">
+            <plugin name='gzyarp::ConfigurationOverride' filename='gz-sim-yarp-configurationoverride-system'>
+                <yarpPluginConfigurationOverride yarpDeviceName='controlboard_plugin_device'/>
+                <initialConfiguration>-1.0</initialConfiguration>
+            </plugin>
+            <model name="single_pendulum_with_yarp_plugins_and_overriden_initial_conf">
+                <plugin name='gzyarp::ConfigurationOverride' filename='gz-sim-yarp-configurationoverride-system'>
+                    <yarpPluginConfigurationOverride yarpDeviceName='controlboard_plugin_device'/>
+                    <initialConfiguration>2.0</initialConfiguration>
+                </plugin>
+                <model name="single_pendulum_with_yarp_plugins">
+                    <include>
+                        <uri>model://single_pendulum_with_initial_configuration.sdf</uri>
+                    </include>
+                </model>
+            </model>
+        </model>
+    </world>
+</sdf>

@@ -2,7 +2,7 @@
 
 <sdf version="1.7">
 
-    <model name="single_pendulum">
+    <model name="single_pendulum_no_initial_configuration">
         <!-- <pose>0 0 0.2 0 0 0</pose> -->
         <joint name="fixed_base" type="fixed">
             <parent>world</parent>
@@ -39,14 +39,15 @@
             </visual>
         </link>
         <joint name='upper_joint' type='revolute'>
-            <pose relative_to='base_link'>0.15 0 2 -1.5708 0 0</pose>
+            <!-- Joint axis pose relative to base link -->
+            <pose relative_to='base_link'>0.15 0 2 -3.14159265359 0 0</pose>
             <parent>base_link</parent>
             <child>upper_link</child>
             <axis>
                 <xyz>1 0 0</xyz>
                 <limit>
-                    <lower>-5</lower>
-                    <upper>5</upper>
+                    <!-- <lower>-5</lower> -->
+                    <!-- <upper>5</upper> -->
                     <effort>100</effort>
                     <velocity>100</velocity>
                 </limit>
@@ -89,22 +90,10 @@
                 </geometry>
             </visual>
         </link>
-
-        <!-- Launch the other YARP devices, in this case a controlBoard_nws_yarp to expose the
-        controlboard functionalities via YARP ports -->
         <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
             <yarpConfigurationFile>
-                model://single_pendulum/conf/gazebo_controlboard.ini
+                model://conf/gazebo_controlboard.ini
             </yarpConfigurationFile>
-            <!-- This initialConfiguration is specified here, but it is overriden in single_pendulum_world
-                 to show how to spawn the model in a different configuration from the default one of the model -->
-            <initialConfiguration>0.0</initialConfiguration>
-        </plugin>
-        <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
-            <yarpRobotInterfaceConfigurationFile>
-                model://single_pendulum/conf/single_pendulum_nws.xml
-            </yarpRobotInterfaceConfigurationFile>
         </plugin>
     </model>
-
 </sdf>
