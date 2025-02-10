@@ -41,4 +41,8 @@ The relevant snippet is:
     </plugin>
 ```
 
-The original `initialConfiguration` of the `controlboard_plugin_device` was `0.0`, while via the `gzyarp::ConfigurationOverride` plugin we override its value to be `0.785398` rad (i.e. 45 degrees).
+The original `initialConfiguration` of the `controlboard_plugin_device` was `0.0`, while via the `gzyarp::ConfigurationOverride` plugin we override its value to be `0.785398` rad (i.e. 45 degrees).]
+
+Note that the `<plugin name='gzyarp::ConfigurationOverride' [...]>` element is child of another parent `<model>`.
+
+This is required as Gazebo Harmonic (`gz-sim8`) there are some inconsistency related to the scoped name of the entity passed to plugin inserted under the `world` element. If you are using Gazebo Ionic (`gz-sim9`) or later, you can also insert directly the  `<plugin name='gzyarp::ConfigurationOverride' [...]>` as a child of the `<world>` element.
