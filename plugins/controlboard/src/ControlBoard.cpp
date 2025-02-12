@@ -221,11 +221,6 @@ void ControlBoard::PostUpdate(const UpdateInfo& _info, const EntityComponentMana
     // checkForJointsHwFault();
 }
 
-void ControlBoard::Reset(const UpdateInfo& _info, EntityComponentManager& _ecm)
-{
-    resetPositionsAndTrajectoryGenerators(_ecm);
-}
-
 // Private methods
 
 bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
@@ -1112,5 +1107,4 @@ GZ_ADD_PLUGIN(gzyarp::ControlBoard,
               gz::sim::System,
               gzyarp::ControlBoard::ISystemConfigure,
               gzyarp::ControlBoard::ISystemPreUpdate,
-              gzyarp::ControlBoard::ISystemPostUpdate,
-              gzyarp::ControlBoard::ISystemReset)
+              gzyarp::ControlBoard::ISystemPostUpdate)

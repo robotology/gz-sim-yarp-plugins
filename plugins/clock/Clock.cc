@@ -32,7 +32,7 @@ using yarp::os::BufferedPort;
 namespace gzyarp
 {
 
-class Clock : public System, public ISystemConfigure, public ISystemPostUpdate, public ISystemReset
+class Clock : public System, public ISystemConfigure, public ISystemPostUpdate
 {
 public:
     Clock()
@@ -114,11 +114,6 @@ public:
         m_clockPort.write();
     }
 
-    void Reset(const UpdateInfo& _info, EntityComponentManager& _ecm) override
-    {
-        yInfo() << "gz-sim-yarp-clock-system plugin Reset invoked.";
-    }
-
 private:
     bool m_initialized;
     // True if the YARP network needs to be reset to
@@ -135,5 +130,4 @@ private:
 GZ_ADD_PLUGIN(gzyarp::Clock,
               gz::sim::System,
               gzyarp::Clock::ISystemConfigure,
-              gzyarp::Clock::ISystemPostUpdate,
-              gzyarp::Clock::ISystemReset)
+              gzyarp::Clock::ISystemPostUpdate)

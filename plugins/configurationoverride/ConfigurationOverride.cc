@@ -32,7 +32,7 @@ using yarp::os::BufferedPort;
 namespace gzyarp
 {
 
-class ConfigurationOverride : public System, public ISystemConfigure, public ISystemPostUpdate, public ISystemReset
+class ConfigurationOverride : public System, public ISystemConfigure, public ISystemPostUpdate
 {
 public:
     ConfigurationOverride(): m_overrideInserted(false)
@@ -113,10 +113,6 @@ public:
     {
     }
 
-    void Reset(const UpdateInfo& _info, EntityComponentManager& _ecm) override
-    {
-    }
-
 private:
     bool m_overrideInserted;
     std::string m_configurationOverrideInstanceId;
@@ -128,5 +124,4 @@ private:
 GZ_ADD_PLUGIN(gzyarp::ConfigurationOverride,
               gz::sim::System,
               gzyarp::ConfigurationOverride::ISystemConfigure,
-              gzyarp::ConfigurationOverride::ISystemPostUpdate,
-              gzyarp::ConfigurationOverride::ISystemReset)
+              gzyarp::ConfigurationOverride::ISystemPostUpdate)

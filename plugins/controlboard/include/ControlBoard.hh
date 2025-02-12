@@ -29,8 +29,7 @@ namespace gzyarp
 class ControlBoard : public gz::sim::System,
                      public gz::sim::ISystemConfigure,
                      public gz::sim::ISystemPreUpdate,
-                     public gz::sim::ISystemPostUpdate,
-                     public gz::sim::ISystemReset
+                     public gz::sim::ISystemPostUpdate
 {
 
 public:
@@ -50,9 +49,6 @@ public:
     // ISystemPostUpdate interface
     void PostUpdate(const gz::sim::UpdateInfo& _info,
                     const gz::sim::EntityComponentManager& _ecm) override;
-
-    // ISystemReset interface
-    void Reset(const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm) override;
 
 private:
     bool m_deviceRegistered;
