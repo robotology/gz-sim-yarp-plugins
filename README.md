@@ -1,15 +1,12 @@
 # gz-sim-yarp-plugins
 
-> [!WARNING]
-> This repository contains a preliminary work in progress of integration of Modern Gazebo (gz) and YARP devices, a port of some functionalities of <https://github.com/robotology/gazebo-yarp-plugins> to Modern Gazebo. \
-> The repo is working in progress, and public interfaces can change without warning.
-
 ## Table of contents
 
 - [Installation](#installation)
 - [Usage](#usage)
 - [Run Tests](#run-tests)
 - [Contributing](#contributing)
+- [Compatibility Policy](#compatibility-policy)
 - [Maintainers](#maintainers)
 
 ## Installation
@@ -114,6 +111,10 @@ For more details, check how the tests are run as part of the Continuous Integrat
 
 Refer to the [Contributing page](CONTRIBUTING.md).
 
+## Compatibility Policy
+
+This project tries to avoid removing functionalities in minor releases, while functionalities are only removed in major version. However, this is only done in a best-effort way, and it may be possible that backward incompatibly changes occur in minor releases (see [EffVer](https://jacobtomlinson.dev/effver/) for more details). Furthermore, the policy is that patch releases does not modify at all the public headers (i.e. the installed `.h` and `.hpp`) files of the project. This is done to ensure that no ABI change will occur in patch releases, without having to manually track ABI changes.
+ 
 ## Maintainers
 
 - Silvio Traversaro ([@traversaro](https://github.com/traversaro))
