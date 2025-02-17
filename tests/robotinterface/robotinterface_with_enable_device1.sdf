@@ -1,0 +1,16 @@
+
+<?xml version="1.0"?>
+
+<sdf version="1.11">
+    <world name="world_with_robotinterface_with_overriden_tags">
+        <model name="robotinterface_with_overriden_tags">
+            <plugin name='gzyarp::ConfigurationOverride' filename='gz-sim-yarp-configurationoverride-system'>
+                <yarpPluginConfigurationOverride yarpRobotInterfaceName='all'/>
+                <yarpRobotInterfaceEnableTags>(enable_device1)</yarpRobotInterfaceEnableTags>
+            </plugin>
+            <include>
+                <uri>model://robotinterface_with_default_tags.sdf</uri>
+            </include>
+        </model>
+    </world>
+</sdf>

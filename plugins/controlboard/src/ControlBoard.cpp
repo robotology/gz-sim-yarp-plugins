@@ -107,9 +107,6 @@ void ControlBoard::Configure(const Entity& _entity,
     std::string yarpDeviceName = m_pluginParameters.find("yarpDeviceName").asString();
 
     m_robotScopedName = gz::sim::scopedName(_entity, _ecm, "/");
-    yDebug() << "gz-sim-yarp-controlboard-system : robot scoped name: " << m_robotScopedName;
-    yDebug() << "gz-sim-yarp-controlboard-system : yarpDeviceName: " << yarpDeviceName;
-
     m_modelEntity = _entity;
 
     m_pluginParameters.put(yarp::dev::gzyarp::YarpControlBoardScopedName.c_str(),

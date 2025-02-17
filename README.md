@@ -44,7 +44,7 @@ The plugins available in the repo are listed in the following.
 | `gzyarp::Imu` | `gz-sim-yarp-imu-system` | [Missing. If you need it please open an issue.](https://github.com/robotology/gz-sim-yarp-plugins/issues/new)  | [`tutorial/forcetorque`](./tutorial/imu) |
 | `gzyarp::Camera` | `gz-sim-yarp-camera-system` | [Missing. If you need it please open an issue.](https://github.com/robotology/gz-sim-yarp-plugins/issues/new)  | [`tutorial/camera`](./tutorial/imu) |
 | `gzyarp::BaseState` | `gz-sim-yarp-basestate-system` | [Missing. If you need it please open an issue.](https://github.com/robotology/gz-sim-yarp-plugins/issues/new)  | [`tutorial/basestate`](./tutorial/basestate) |
-| `gzyarp::RobotInterface` | `gz-sim-yarp-robotinterface-system` | [Missing. If you need it please open an issue.](https://github.com/robotology/gz-sim-yarp-plugins/issues/new)  | All tutorials in [`tutorial`](./tutorial) make use of the `gzyarp::RobotInterface` plugin. |
+| `gzyarp::RobotInterface` | `gz-sim-yarp-robotinterface-system` | [`robotinterface/README.md`](./robotinterface/README.md) | All tutorials in [`tutorial`](./tutorial) make use of the `gzyarp::RobotInterface` plugin. |
 | `gzyarp::Clock` | `gz-sim-yarp-clock-system` | [Missing. If you need it please open an issue.](https://github.com/robotology/gz-sim-yarp-plugins/issues/new)  | [`tutorial/clock`](./tutorial/clock) |
 
 You can see how to use the different plugins by looking in the directories contained in the [tutorial](tutorial/) folder of this repo. Each directory is an example, and contains a README that shows how to run that example.
