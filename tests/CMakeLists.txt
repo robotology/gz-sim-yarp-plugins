@@ -18,7 +18,6 @@ add_subdirectory(commons)
 add_subdirectory(test-helpers)
 add_subdirectory(robotinterface)
 
-
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 include(Fetchtiny-process-library)
 add_subdirectory(clock)

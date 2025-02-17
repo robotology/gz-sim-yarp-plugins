@@ -9,8 +9,7 @@ add_test(NAME RobotInterfaceTest
          COMMAND RobotInterfaceTest)
 
 set_tests_properties(RobotInterfaceTest PROPERTIES
-  ENVIRONMENT_MODIFICATION "GZ_SIM_SYSTEM_PLUGIN_PATH=path_list_append:$<TARGET_FILE_DIR:gz-sim-yarp-robotinterface-system>"
-  ENVIRONMENT_MODIFICATION "GZ_SIM_RESOURCE_PATH=path_list_append:${CMAKE_CURRENT_SOURCE_DIR}")
+  ENVIRONMENT_MODIFICATION "GZ_SIM_SYSTEM_PLUGIN_PATH=path_list_append:$<TARGET_FILE_DIR:gz-sim-yarp-robotinterface-system>;GZ_SIM_RESOURCE_PATH=path_list_append:${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_compile_definitions(RobotInterfaceTest
   PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
