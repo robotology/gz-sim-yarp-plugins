@@ -121,6 +121,7 @@ public:
             }
 
             // This code is used if yarpRobotInterfaceName is specified
+            if (yarpPluginConfigurationOverrideElem->HasAttribute("yarpRobotInterfaceName"))
             {
                 std::string yarpRobotInterfaceName = yarpPluginConfigurationOverrideElem->GetAttribute("yarpRobotInterfaceName")->GetAsString();
 
