@@ -122,10 +122,22 @@ public:
                                                std::unordered_map<std::string, std::string> overridenParameters);
 
     /**
-     * Remove a configuration override for a given yarp device.
+     * Add a configuration override for a given yarp RobotInterface.
+     *
+     * This function is meant to be called only by the gzyarp::ConfigurationOverride plugin.
      *
      */
-    bool removeConfigurationOverrideForYARPDevice(const std::string& configurationOverrideInstanceId);
+     bool addConfigurationOverrideForYARPRobotInterface(const gz::sim::EntityComponentManager& ecm,
+        const std::string& parentEntityScopedNameWhereConfigurationOverrideWasInserted,
+        const std::string& yarpRobotInterfaceName,
+        const std::string& configurationOverrideInstanceId,
+        std::unordered_map<std::string, std::string> overridenParameters);
+
+    /**
+     * Remove a configuration override for a gz-sim-yarp-plugin.
+     *
+     */
+    bool removeConfigurationOverrideForYARPPlugin(const std::string& configurationOverrideInstanceId);
 
     /**
      * Get the configuration override for a given yarp device.
@@ -137,6 +149,19 @@ public:
                                                const std::string& parentEntityScopedNameWhereYARPDeviceWasInserted,
                                                const std::string& yarpDeviceName,
                                                std::unordered_map<std::string, std::string>& overridenParameters) const;
+
+    /**
+     * Get the configuration override for a given yarpRobotInterfaceName.
+     *
+     * This function is meant to be called by the gz-yarp-robotinterface plugin to override its configuration.
+     *
+     * At the moment only the `all` yarpRobotInterfaceName special value (to represent all the robotinterface in the nested models) is supported.
+     */
+     bool getConfigurationOverrideForYARPRobotInterface(const gz::sim::EntityComponentManager& ecm,
+        const std::string& parentEntityScopedNameWhereYARPRobotInterfaceWasInserted,
+        const std::string& yarpRobotInterfaceName,
+        std::unordered_map<std::string, std::string>& overridenParameters) const;
+
 
     /**
      * Generate a unique device id for a given yarp device name and entity.
@@ -182,11 +207,15 @@ private:
     // Number of gz-sim-yarp-plugins YARP devices not loaded correctly for a given ecm
     std::unordered_map<std::string, std::size_t> m_nrOfGzSimYARPPluginsNotSuccessfullyLoaded;
 
+    enum OverrideType {
+        YARP_DEVICE,
+        YARP_ROBOT_INTERFACE
+    };
 
-    // Element that stores the parameters that will be overriden for a given yarp device
-    // A device will be affected by the override if:
+    // Element that stores the parameters that will be overriden for a given yarp device or robotinterface
+    // A plugin will be affected by the override if:
     // - gzInstanceId match
-    // - yarpDeviceName match
+    // - (overrideType,yarpPluginIdentifier) match
     // - the parentEntityScopedNameWhereConfigurationOverrideWasInserted is a prefix of the parent entity scoped name of the device`
     struct ConfigurationOverrideParameters {
         // Id that identifies the gz instance where the configuration override plugin was inserted
@@ -194,9 +223,11 @@ private:
         // Scoped name of the parent entity where the condiguration override plugin was inserted,
         // used to understand if a given yarp device is affected by the override
         std::string parentEntityScopedNameWhereConfigurationOverrideWasInserted;
-        // yarpDeviceName of the yarp device that will have its parameters overriden
-        std::string yarpDeviceName;
-        // configurationOverrideInstanceId is a unique id for each element in the m_yarpDevicesOverridenParametersList,
+        // Specify if this is a override for a device or a robotinterface
+        OverrideType overrideType;
+        // This is yarpDeviceName if overrideType==YARP_DEVICE or yarpRobotInterfaceName if overrideType==YARP_ROBOT_INTERFACE
+        std::string yarpPluginIdentifier;
+        // configurationOverrideInstanceId is a unique id for each element in the m_yarpPluginsOverridenParametersList,
         // it is used to remove a configuration override when the corresponding plugin is destroyed
         std::string configurationOverrideInstanceId;
         // Map of the parameters that will be overriden
@@ -206,8 +237,8 @@ private:
     };
 
     // This is a list of parameters specified by the configuration override plugin,
-    // they specify the parameters that will be overriden for a given yarp device
-    std::vector<ConfigurationOverrideParameters> m_yarpDevicesOverridenParametersList;
+    // they specify the parameters that will be overriden for a given yarp plugin (device or robotinterface)
+    std::vector<ConfigurationOverrideParameters> m_yarpPluginsOverridenParametersList;
 };
 
 } // namespace gzyarp

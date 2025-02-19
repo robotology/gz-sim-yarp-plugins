@@ -92,7 +92,7 @@ public:
 
         gzyarp::PluginConfigureHelper configureHelper(_ecm);
 
-        if (!loadYarpRobotInterfaceConfigurationFile(_sdf, _ecm, model))
+        if (!loadYarpRobotInterfaceConfigurationFile(_sdf, _ecm, model, _entity))
         {
             yError("gz-sim-yarp-robotinterface-system : Error loading robotinterface configuration "
                    "file");
@@ -100,7 +100,6 @@ public:
         }
 
         yarp::dev::PolyDriverList externalDriverList;
-
         DeviceRegistry::getHandler()->getDevicesAsPolyDriverList(_ecm,
                                                                  scopedName(model.Entity(), _ecm),
                                                                  externalDriverList,
@@ -137,10 +136,12 @@ private:
     std::vector<std::string> m_deviceScopedNames;
     gz::common::ConnectionPtr m_connection;
     bool m_robotInterfaceCorrectlyStarted;
+    std::string m_yarpRobotInterfaceName;
+    std::string m_parentEntityScopedName;
 
     bool loadYarpRobotInterfaceConfigurationFile(const std::shared_ptr<const sdf::Element>& _sdf,
                                                  const EntityComponentManager& _ecm,
-                                                 const Model& model)
+                                                 const Model& model, const Entity& _entity)
     {
         if (!_sdf->HasElement("yarpRobotInterfaceConfigurationFile"))
         {
@@ -150,12 +151,77 @@ private:
             return false;
         }
 
-        if (!ConfigurationHelpers::loadRobotInterfaceConfiguration(_sdf, m_xmlRobotInterfaceResult))
+        if (!_sdf->HasElement("yarpRobotInterfaceConfigurationFile"))
         {
-            yError() << "gz-sim-yarp-robotinterface-system :"
-                        "yarpRobotInterfaceConfigurationFile not found";
+            yError() << "yarpRobotInterfaceConfigurationFile element not found";
             return false;
         }
+
+        auto robotinterface_file_name = _sdf->Get<std::string>("yarpRobotInterfaceConfigurationFile");
+        std::string filepath;
+        if (!ConfigurationHelpers::findFile(robotinterface_file_name, filepath))
+        {
+            yError() << "Error while finding yarpRobotInterfaceConfigurationFile: "
+                     << robotinterface_file_name;
+            return false;
+        }
+
+        yarp::robotinterface::XMLReader xmlRobotInterfaceReader;
+
+        // We read the file once just to read the name of the robotinterface, so that we can process the override
+        m_xmlRobotInterfaceResult = xmlRobotInterfaceReader.getRobotFromFile(filepath);
+        m_yarpRobotInterfaceName = m_xmlRobotInterfaceResult.robot.name();
+
+        // Now we read the enable and disable tags specified in the SDF, and if available the overrides
+        std::string enableTags = "";
+        std::string disableTags = "";
+        if (_sdf->HasElement("yarpRobotInterfaceEnableTags"))
+        {
+            enableTags = _sdf->Get<std::string>("yarpRobotInterfaceEnableTags");
+        }
+        if (_sdf->HasElement("yarpRobotInterfaceDisableTags"))
+        {
+            disableTags = _sdf->Get<std::string>("yarpRobotInterfaceDisableTags");
+        }
+
+        // Then check if there is any override for the enable and disable tags elements
+        m_parentEntityScopedName = gz::sim::scopedName(_entity, _ecm, "/");
+        std::unordered_map<std::string, std::string> overridenParameters;
+        DeviceRegistry::getHandler()->getConfigurationOverrideForYARPRobotInterface(
+            _ecm, m_parentEntityScopedName, m_yarpRobotInterfaceName, overridenParameters);
+        if (overridenParameters.find("gzyarp-xml-element-yarpRobotInterfaceEnableTags") != overridenParameters.end())
+        {
+            enableTags = overridenParameters["gzyarp-xml-element-yarpRobotInterfaceEnableTags"];
+        }
+
+        if (overridenParameters.find("gzyarp-xml-element-yarpRobotInterfaceDisableTags") != overridenParameters.end())
+        {
+            disableTags = overridenParameters["gzyarp-xml-element-yarpRobotInterfaceDisableTags"];
+        }
+
+        yarp::os::Property config;
+        if (!enableTags.empty())
+        {
+            yarp::os::Bottle bot;
+            bot.fromString(enableTags);
+            config.put("enable_tags", bot.get(0));
+        }
+        if (!disableTags.empty())
+        {
+            yarp::os::Bottle bot;
+            bot.fromString(disableTags);
+            config.put("disable_tags", bot.get(0));
+        }
+
+        m_xmlRobotInterfaceResult = xmlRobotInterfaceReader.getRobotFromFile(filepath, config);
+
+        if (!m_xmlRobotInterfaceResult.parsingIsSuccessful)
+        {
+            yError() << "Failure in parsing yarpRobotInterfaceConfigurationFile: "
+                     << robotinterface_file_name;
+            return false;
+        }
+
 
         return true;
     }

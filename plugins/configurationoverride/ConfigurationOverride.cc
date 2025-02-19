@@ -46,7 +46,7 @@ public:
         // and will find the overrides specified by the destroyed gzyarp::ConfigurationOverride plugin
         if (m_overrideInserted)
         {
-            DeviceRegistry::getHandler()->removeConfigurationOverrideForYARPDevice(m_configurationOverrideInstanceId);
+            DeviceRegistry::getHandler()->removeConfigurationOverrideForYARPPlugin(m_configurationOverrideInstanceId);
             m_overrideInserted = false;
         }
     }
@@ -73,18 +73,23 @@ public:
             }
 
             sdf::ElementPtr yarpPluginConfigurationOverrideElem = sdfClone->GetElement("yarpPluginConfigurationOverride");
-            if (!yarpPluginConfigurationOverrideElem->HasAttribute("yarpDeviceName"))
+
+            // There are two possible way of specifying an override:
+            // * yarpDeviceName attribute, to specify that the override is related to a gz-sim-yarp-plugin that instantiates a YARP device
+            // * yarpRobotInterfaceName attribute, to specify that the override is related to a gz-sim-robotinterface-plugin (at the moment only the `all` special value is supported)
+            if (!yarpPluginConfigurationOverrideElem->HasAttribute("yarpDeviceName") && !yarpPluginConfigurationOverrideElem->HasAttribute("yarpRobotInterfaceName") )
             {
                 yError() << "Error in gzyarp::ConfigurationOverride::Configure: "
-                            "missing yarpDeviceName attribute of yarpPluginConfigurationOverride element";
+                            "missing yarpDeviceName or yarpRobotInterfaceName attribute of yarpPluginConfigurationOverride element";
                 return;
             }
 
-            std::string yarpDeviceName = yarpPluginConfigurationOverrideElem->GetAttribute("yarpDeviceName")->GetAsString();
-
-            if (sdfClone->HasElement("initialConfiguration"))
+            // Only one of yarpDeviceName or yarpRobotInterfaceName can be specified
+            if (yarpPluginConfigurationOverrideElem->HasAttribute("yarpDeviceName") && yarpPluginConfigurationOverrideElem->HasAttribute("yarpRobotInterfaceName"))
             {
-                overridenParameters["gzyarp-xml-element-initialConfiguration"] = sdfClone->Get<std::string>("initialConfiguration");
+                yError() << "Error in gzyarp::ConfigurationOverride::Configure: "
+                            "both yarpDeviceName and yarpRobotInterfaceName attributes of yarpPluginConfigurationOverride element are specified, while only one of the two is supported";
+                return;
             }
 
             // Define unique key to identify the configuration override and then remove it
@@ -92,17 +97,64 @@ public:
             ss << this;
             m_configurationOverrideInstanceId = DeviceRegistry::getGzInstanceId(_ecm) + "_" + ss.str();
 
-            if (!DeviceRegistry::getHandler()->addConfigurationOverrideForYARPDevice(
-                    _ecm,
-                    scopedName(_entity, _ecm, "/"),
-                    yarpDeviceName,
-                    m_configurationOverrideInstanceId,
-                    overridenParameters))
+            // This code is used if yarpDeviceName is specified
+            if (yarpPluginConfigurationOverrideElem->HasAttribute("yarpDeviceName"))
             {
-                yError() << "Error in gzyarp::ConfigurationOverride::Configure: "
-                            "addConfigurationOverrideForYARPDevice failed";
-                return;
+                std::string yarpDeviceName = yarpPluginConfigurationOverrideElem->GetAttribute("yarpDeviceName")->GetAsString();
+
+                if (sdfClone->HasElement("initialConfiguration"))
+                {
+                    overridenParameters["gzyarp-xml-element-initialConfiguration"] = sdfClone->Get<std::string>("initialConfiguration");
+                }
+
+                if (!DeviceRegistry::getHandler()->addConfigurationOverrideForYARPDevice(
+                        _ecm,
+                        scopedName(_entity, _ecm, "/"),
+                        yarpDeviceName,
+                        m_configurationOverrideInstanceId,
+                        overridenParameters))
+                {
+                    yError() << "Error in gzyarp::ConfigurationOverride::Configure: "
+                                "addConfigurationOverrideForYARPDevice failed";
+                    return;
+                }
             }
+
+            // This code is used if yarpRobotInterfaceName is specified
+            if (yarpPluginConfigurationOverrideElem->HasAttribute("yarpRobotInterfaceName"))
+            {
+                std::string yarpRobotInterfaceName = yarpPluginConfigurationOverrideElem->GetAttribute("yarpRobotInterfaceName")->GetAsString();
+
+                if (yarpRobotInterfaceName != "all")
+                {
+                    yError() << "Error in gzyarp::ConfigurationOverride::Configure: "
+                                "yarpRobotInterfaceName attribute of yarpPluginConfigurationOverride element must be 'all'";
+                    return;
+                }
+
+                if (sdfClone->HasElement("yarpRobotInterfaceEnableTags"))
+                {
+                    overridenParameters["gzyarp-xml-element-yarpRobotInterfaceEnableTags"] = sdfClone->Get<std::string>("yarpRobotInterfaceEnableTags");
+                }
+
+                if (sdfClone->HasElement("yarpRobotInterfaceDisableTags"))
+                {
+                    overridenParameters["gzyarp-xml-element-yarpRobotInterfaceDisableTags"] = sdfClone->Get<std::string>("yarpRobotInterfaceDisableTags");
+                }
+
+                if (!DeviceRegistry::getHandler()->addConfigurationOverrideForYARPRobotInterface(
+                        _ecm,
+                        scopedName(_entity, _ecm, "/"),
+                        yarpRobotInterfaceName,
+                        m_configurationOverrideInstanceId,
+                        overridenParameters))
+                {
+                    yError() << "Error in gzyarp::ConfigurationOverride::Configure: "
+                                "addConfigurationOverrideForYARPRobotInterface failed";
+                    return;
+                }
+            }
+
 
             m_overrideInserted = true;
             configureHelper.setConfigureIsSuccessful(true);
