@@ -110,7 +110,7 @@ public:
     void incrementNrOfGzSimYARPPluginsNotSuccessfullyLoaded(const gz::sim::EntityComponentManager& ecm);
 
     /**
-     * Add a configuration override for a given yarp device .
+     * Add a configuration override for a given yarp device.
      *
      * This function is meant to be called only by the gzyarp::ConfigurationOverride plugin.
      *
@@ -122,7 +122,7 @@ public:
                                                std::unordered_map<std::string, std::string> overridenParameters);
 
     /**
-     * Add a configuration override for a given yarp RobotInterface .
+     * Add a configuration override for a given yarp RobotInterface.
      *
      * This function is meant to be called only by the gzyarp::ConfigurationOverride plugin.
      *

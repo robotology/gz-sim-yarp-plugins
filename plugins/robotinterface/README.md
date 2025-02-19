@@ -7,7 +7,7 @@
 
 The `gzyarp::RobotInterface` plugin is used to instantiate arbitrary YARP devices as part of a `gz-sim` simulation, using the [YARP RobotInterface library](https://www.yarp.it/latest/group__robointerface__all.html).
 
-Particularly, tipically the YARP devices that simulate hardware devices are instantiated via dedicated `gz-sim-yarp-*` `gz-sim` plugins, while to launch any other YARP device, for example [Network Wrapper Servers](https://yarp.it/latest/group__nws__and__nwc__architecture.html) to expose YARP devices functionalities in dedicated middlewares like YARP ports or ROS2 topics.
+Particularly, tipically the YARP devices that simulate hardware devices are instantiated via dedicated `gz-sim-yarp-*` `gz-sim` plugins, while to launch any other YARP device, for example [Network Wrapper Servers](https://yarp.it/latest/group__nws__and__nwc__architecture.html) to expose YARP devices functionalities in dedicated middlewares like YARP ports or ROS2 topics, you need to use the `gzyarp::RobotInterface` plugin.
 
 ### Usage
 

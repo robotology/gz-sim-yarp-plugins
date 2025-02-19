@@ -424,7 +424,7 @@ bool DeviceRegistry::getConfigurationOverrideForYARPRobotInterface(const gz::sim
     std::unordered_map<std::string, std::string>& overridenParameters) const
 {
     overridenParameters.clear();
-    // We go through all the overriden parameters and add to the returned overridenParameters all the matchin
+    // We go through all the overriden parameters and add to the returned overridenParameters all the matching
     // elements of the list. Note that earlier elements in the list have higher priority, to provide the possibility
     // of overriding a parameter that was already overriden in a nested configuration override.
     // Note that the condition for the overriden to be consider (beside matching gzInstanceId and yarpDeviceName)

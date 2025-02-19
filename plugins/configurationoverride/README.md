@@ -48,7 +48,7 @@ Another tipical example of `gzyarp::ConfigurationOverride` plugin is to set the 
 |:------------:|:-----------------------:|
 | `yarpPluginConfigurationOverride` | The attributes of this element specify the plugin of which we will override the parameters. Possible attributes are `yarpDeviceName`, that specifies the `yarpDeviceName='@yarpDeviceName@'` instantiated by the plugin to override, or `yarpRobotInterfaceName='@yarpRobotInterfaceName@'` to override the parameters of  `gzyarp::RobotInterface` plugins named `yarpRobotInterfaceName`. In both cases, you can pass `all` to override the parameters of all YARP devices or YARP RobotInterface plugins in all nested models. |
 
-The parameters and plugins currently supported by the `gzyarp::ConfigurationOverride` plugin, that need to:
+The parameters and plugins currently supported by the `gzyarp::ConfigurationOverride` plugin are the following:
 
 | Parameter SDF Element name       | Overrided Plugin |
 |:--------------------------------:|:---------------------:|
