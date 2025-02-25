@@ -6,6 +6,8 @@
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Value.h>
 
+#include "YarpDevReturnValueCompat.h"
+
 namespace gzyarp
 {
 constexpr double pi = 3.1415926535897932384626433;
@@ -108,3 +110,5 @@ inline bool readVectorFromConfigFile(const yarp::os::Searchable& params,
 }
 
 } // namespace gzyarp
+
+
