@@ -20,7 +20,7 @@
 #include <gz/sim/System.hh>
 #include <gz/sim/Types.hh>
 #include <gz/sim/Util.hh>
-#include <gz/sim/components/DepthCamera.hh>
+#include <gz/sim/components/RgbdCamera.hh>
 #include <gz/sim/components/Name.hh>
 #include <gz/sim/components/ParentEntity.hh>
 #include <gz/sim/components/Sensor.hh>
@@ -120,7 +120,7 @@ public:
         this->sensor = _ecm.EntityByComponents(components::ParentEntity(parentLink),
                                                components::Name(sensorName),
                                                components::Sensor());
-        auto sdfSensor = _ecm.ComponentData<components::DepthCamera>(sensor).value().Element();
+        auto sdfSensor = _ecm.ComponentData<components::RgbdCamera>(sensor).value().Element();
         auto sdfImage = sdfSensor.get()->GetElement("camera").get()->GetElement("image").get();
 
         cameraData.init(sdfImage->Get<int>("width"), sdfImage->Get<int>("height"), sensorScopedName);
