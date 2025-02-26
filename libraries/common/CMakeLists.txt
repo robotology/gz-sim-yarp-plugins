@@ -1,3 +1,5 @@
+# This library is installed as it is a shared library, but no headers are installed,
+# so the headers are effectively private headers, even if the library they belong to is installed
 add_library(gz-sim-yarp-commons SHARED Common.hh ConfigurationHelpers.hh ConfigurationHelpers.cpp)
 
 target_include_directories(gz-sim-yarp-commons PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")

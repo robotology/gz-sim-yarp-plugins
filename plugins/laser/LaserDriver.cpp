@@ -13,6 +13,9 @@
 #include <yarp/os/Searchable.h>
 #include <yarp/sig/Vector.h>
 
+#include <YarpDevReturnValueCompat.h>
+
+
 namespace yarp
 {
 namespace dev
@@ -75,7 +78,7 @@ public:
         return true;
     }
 
-    bool getRawData(yarp::sig::Vector& ranges, double* timestamp) override
+    YARP_DEV_RETURN_VALUE_TYPE_CH312 getRawData(yarp::sig::Vector& ranges, double* timestamp) override
     {
         std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
 
@@ -86,36 +89,36 @@ public:
         }
         *timestamp = m_sensorData->simTime;
 
-        return true;
+        return YARP_DEV_RETURN_VALUE_OK_CH312;
     }
 
     // IRangefinder2D
-    bool setDistanceRange(double min, double max) override
+    YARP_DEV_RETURN_VALUE_TYPE_CH312 setDistanceRange(double min, double max) override
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         yError() << "setDistanceRange() Not yet implemented";
-        return false;
+        return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH312;
     }
 
-    bool setScanLimits(double min, double max) override
+    YARP_DEV_RETURN_VALUE_TYPE_CH312 setScanLimits(double min, double max) override
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         yError() << "setScanLimits() Not yet implemented";
-        return false;
+        return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH312;
     }
 
-    bool setHorizontalResolution(double step) override
+    YARP_DEV_RETURN_VALUE_TYPE_CH312 setHorizontalResolution(double step) override
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         yError() << "setHorizontalResolution() Not yet implemented";
-        return false;
+        return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH312;
     }
 
-    bool setScanRate(double rate) override
+    YARP_DEV_RETURN_VALUE_TYPE_CH312 setScanRate(double rate) override
     {
         std::lock_guard<std::mutex> guard(m_mutex);
         yError() << "setScanRate() Not yet implemented";
-        return false;
+        return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH312;
     }
 
     // ILaserData
