@@ -1,6 +1,6 @@
 # How to use `gz‐sim‐yarp‐plugins` with ergoCub
 
-This document explains how to install and use ergoCub in the Modern Gazebo (gz-sim) simulator through `gz-sim-yarp-plugins`.
+This document explains how to install and use ergoCub (or the old iCub 2.*) in the Modern Gazebo (gz-sim) simulator through `gz-sim-yarp-plugins`.
 
 > [!NOTE]
 > For the time being this guide will provide operative instructions only for **Linux** distributions; instructions will also be provided for Windows and macOS in the future.
@@ -142,6 +142,8 @@ In a directory of your choice, create a file called `ergocub-world.sdf` and fill
 </sdf>
 ```
 
+To use a iCub 2.* model in place of ergoCub, use `<uri>package://iCub/robots/iCubGazeboV2_7/model.urdf</uri>` or `<uri>package://iCub/robots/iCubGazeboV2_5/model.urdf</uri>` (or any model you want as documented in https://github.com/robotology/icub-models?tab=readme-ov-file#model-details) in the world.
+
 ## Run the simulation
 
 To run the simulation, open a terminal, navigate to the folder containing the world file (otherwise prefix the world filename with the path to it) and execute the following command:
@@ -175,7 +177,7 @@ gz sim ergocub-world.sdf
 ```
 
 and start the simulation;
-3. In the third one launch the `yarpmotorgui` by executing:
+3. In the third one launch the `yarpmotorgui` by executing (if you are using iCub 2.*, pass `--robot icubSim`):
 
 ```bash
 yarpmotorgui --robot ergocubSim
