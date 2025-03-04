@@ -200,3 +200,5 @@ In the following are listed the projects that already have support for Modern Ga
 | Project          | Repository                                        | PR introducing Modern Gazebo support                       |
 |------------------|---------------------------------------------------|------------------------------------------------------------|
 | ergocub-software | https://github.com/icub-tech-iit/ergocub-software | https://github.com/icub-tech-iit/ergocub-software/pull/230 |
+| icub-models      | https://github.com/robotology/icub-models         | https://github.com/robotology/icub-models-generator/pull/280, https://github.com/robotology/icub-models/pull/249 |
+
