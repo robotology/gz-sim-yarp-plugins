@@ -366,7 +366,6 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
 
         if (gzJoint.TransmittedWrench(_ecm).has_value())
         {
-            // joint.commonJointProperties.torque = gzJoint.TransmittedWrench(_ecm).value().at(0).torque().x();
             joint.commonJointProperties.torque
                 = getJointTorqueFromTransmittedWrench(gzJoint,
                                                       gzJoint.TransmittedWrench(_ecm).value().at(0),
@@ -382,10 +381,13 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
     if (m_controlBoardData.ijointcoupling){
         m_controlBoardData.ijointcoupling->convertFromPhysicalJointsToActuatedAxesPos(m_physicalJointsPositionBuffer, m_actuatedAxesPositionBuffer);
         m_controlBoardData.ijointcoupling->convertFromPhysicalJointsToActuatedAxesVel(m_physicalJointsPositionBuffer, m_physicalJointsVelocityBuffer, m_actuatedAxesVelocityBuffer);
+        m_controlBoardData.ijointcoupling->convertFromPhysicalJointsToActuatedAxesTrq(m_physicalJointsPositionBuffer, m_physicalJointsTorqueBuffer, m_actuatedAxesTorqueBuffer);
+
         for (int i = 0; i < m_controlBoardData.actuatedAxes.size(); i++)
         {
             m_controlBoardData.actuatedAxes[i].commonJointProperties.position = m_actuatedAxesPositionBuffer[i];
             m_controlBoardData.actuatedAxes[i].commonJointProperties.velocity = m_actuatedAxesVelocityBuffer[i];
+            m_controlBoardData.actuatedAxes[i].commonJointProperties.torque = m_actuatedAxesTorqueBuffer[i];
         }
     }
     else {
@@ -468,16 +470,21 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
     Joint gzJoint;
 
 
-    if(m_controlBoardData.ijointcoupling){
+    if(m_controlBoardData.ijointcoupling) {
+        // If a coupling is present, we need to convert the actuated axes references to physical joints references (both position and torque)
         for (int i = 0; i < m_controlBoardData.actuatedAxes.size(); i++)
         {
             m_actuatedAxesPositionBuffer[i] = m_controlBoardData.actuatedAxes[i].commonJointProperties.refPosition;
+            m_actuatedAxesTorqueBuffer[i] = m_controlBoardData.actuatedAxes[i].commonJointProperties.refTorque;
         }
+
         m_controlBoardData.ijointcoupling->convertFromActuatedAxesToPhysicalJointsPos(m_actuatedAxesPositionBuffer, m_physicalJointsPositionBuffer);
-        
+        m_controlBoardData.ijointcoupling->convertFromActuatedAxesToPhysicalJointsTrq(m_actuatedAxesTorqueBuffer, m_physicalJointsTorqueBuffer);
+
         for(auto i = 0; i < m_controlBoardData.physicalJoints.size(); i++)
         {
             m_controlBoardData.physicalJoints[i].commonJointProperties.refPosition = m_physicalJointsPositionBuffer[i];
+            m_controlBoardData.physicalJoints[i].commonJointProperties.refTorque = m_physicalJointsTorqueBuffer[i];
         }
     }
     else {
@@ -485,6 +492,7 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
         for (int i = 0; i < m_controlBoardData.actuatedAxes.size(); i++)
         {
             m_controlBoardData.physicalJoints[i].commonJointProperties.refPosition = m_controlBoardData.actuatedAxes[i].commonJointProperties.refPosition;
+            m_controlBoardData.physicalJoints[i].commonJointProperties.refTorque = m_controlBoardData.actuatedAxes[i].commonJointProperties.refTorque;
         }
     }
 

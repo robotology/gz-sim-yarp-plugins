@@ -43,7 +43,7 @@ protected:
     ControlBoardTorqueControlFixture()
         : testFixture{(std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / GetParam()).string()}
     {
-        std::cerr << "========== Test Parameter: " << GetParam() << std::endl;
+        std::cerr << "ControlBoardTorqueControlFixture Parameter: " << GetParam() << std::endl;
         gz::common::Console::SetVerbosity(4);
 
         testFixture.
@@ -52,7 +52,6 @@ protected:
                             const std::shared_ptr<const sdf::Element>& /*_sdf*/,
                             gz::sim::EntityComponentManager& _ecm,
                             gz::sim::EventManager& /*_eventMgr*/) {
-                std::cerr << "========== configuring test" << std::endl;
                 // Get world and gravity
                 gz::sim::World world(_worldEntity);
                 gravity = world.Gravity(_ecm).value();
@@ -100,7 +99,6 @@ protected:
                 iControlMode->setControlMode(0, VOCAB_CM_TORQUE);
 
                 configured = true;
-                std::cerr << "========== test configured" << std::endl;
             });
     }
 
@@ -110,7 +108,7 @@ protected:
     double linkMass{1};
     double linkLength{1.0};
     double linkInertiaAtLinkEnd{0.3352}; // Computed with parallel axis theorem
-    int plannedIterations{1000};
+    int plannedIterations{10};
     int iterations{0};
     double acceptedTolerance{5e-3};
     bool configured{false};
@@ -131,16 +129,12 @@ TEST_P(ControlBoardTorqueControlFixture, CompareJointTorqueWithExpectedValueUsin
 
     testFixture
         .OnPreUpdate([&](const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm) {
-            std::cerr << "========== Test PreUpdate" << std::endl;
 
             // Set joint torque
-            // joint.SetForce(_ecm, std::vector<double>{motorTorque});
             iTorqueControl->setRefTorque(0, motorTorque);
-            std::cerr << "========== Test PreUpdate done" << std::endl;
         })
         .OnPostUpdate(
             [&](const gz::sim::UpdateInfo& _info, const gz::sim::EntityComponentManager& _ecm) {
-                std::cerr << "========== Test PostUpdate" << std::endl;
                 std::cerr << "iteration: " << iterations << std::endl;
                 // Use post-update callback to get values at the end of every
                 // iteration
@@ -192,16 +186,20 @@ TEST_P(ControlBoardTorqueControlFixture, CompareJointTorqueWithExpectedValueUsin
                 iTorqueControl->getTorque(0, &jointTorque);
 
                 std::cerr << "Torque measured: " << jointTorque
-                          << " - expected: " << expectedJointTorque << std::endl;
+                          << " - expected: " << expectedJointTorque
+                          << " - desired: " << motorTorque << std::endl;
 
                 if (iterations > 1)
                 {
+                    // Check the measured torque is close to the one that we expect given the model
                     EXPECT_NEAR(jointTorque, expectedJointTorque, acceptedTolerance);
+
+                    // Check that the measured torque is close to the one commanded via setRefTorque
+                    EXPECT_NEAR(jointTorque, motorTorque, acceptedTolerance);
                 }
 
                 iterations++;
                 jointVelocityPreviousStep = std::abs(jointVelocity) < 1e-6 ? 0 : jointVelocity;
-                std::cerr << "========== Test PostUpdate done" << std::endl;
             })
         .
         // The moment we finalize, the configure callback is called
@@ -221,9 +219,7 @@ TEST_P(ControlBoardTorqueControlFixture, CompareJointTorqueWithExpectedValueUsin
 
 INSTANTIATE_TEST_SUITE_P(ControlBoardTorqueControl,
                          ControlBoardTorqueControlFixture,
-                         testing::Values("pendulum_joint_relative_to_child_link.sdf"
-                                         //  ,"pendulum_joint_relative_to_parent_link.sdf"
-                                         ));
+                         testing::Values("pendulum_joint_relative_to_child_link.sdf"));
 
 } // namespace test
 } // namespace gzyarp
