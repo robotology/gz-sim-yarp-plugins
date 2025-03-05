@@ -479,7 +479,7 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
         }
 
         m_controlBoardData.ijointcoupling->convertFromActuatedAxesToPhysicalJointsPos(m_actuatedAxesPositionBuffer, m_physicalJointsPositionBuffer);
-        m_controlBoardData.ijointcoupling->convertFromActuatedAxesToPhysicalJointsTrq(m_actuatedAxesTorqueBuffer, m_physicalJointsTorqueBuffer);
+        m_controlBoardData.ijointcoupling->convertFromActuatedAxesToPhysicalJointsTrq(m_actuatedAxesPositionBuffer, m_actuatedAxesTorqueBuffer, m_physicalJointsTorqueBuffer);
 
         for(auto i = 0; i < m_controlBoardData.physicalJoints.size(); i++)
         {
