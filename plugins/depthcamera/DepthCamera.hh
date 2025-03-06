@@ -30,7 +30,7 @@
 #include <sdf/Element.hh>
 
 #include <yarp/dev/Drivers.h>
-#include <yarp/dev/IFrameGrabberImage.h>
+#include <yarp/dev/IRGBDSensor.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
 #include <yarp/os/Log.h>
@@ -66,6 +66,7 @@ public:
 
     void PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm) override;
 
+    void RgbCameraCb(const gz::msgs::Image& _msg);
     void DepthCameraCb(const gz::msgs::Image& _msg);
 
 private:
@@ -78,9 +79,10 @@ private:
     DepthCameraData cameraData;
     bool cameraInitialized;
     gz::transport::Node node;
-    gz::msgs::Image cameraMsg;
+    gz::msgs::Image rgbCameraMsg;
+    gz::msgs::Image depthCameraMsg;
     std::mutex cameraMsgMutex;
-    yarp::dev::IFrameGrabberImage* iFrameGrabberImage;
+    yarp::dev::IRGBDSensor* iRGBDSensor;
     EntityComponentManager* ecm;
 };
 

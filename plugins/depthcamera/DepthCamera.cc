@@ -36,8 +36,8 @@ void DepthCamera::Configure(const Entity& _entity,
     ecm = &_ecm;
 
     ::yarp::dev::Drivers::factory().add(
-        new ::yarp::dev::DriverCreatorOf<::yarp::dev::gzyarp::DepthCameraDriver>("gazebo_camera",
-                                                                            "grabber",
+        new ::yarp::dev::DriverCreatorOf<::yarp::dev::gzyarp::DepthCameraDriver>("gazebo_depth_camera",
+                                                                            "rgbdSensor_nws_yarp",
                                                                             "DepthCameraDriver"));
     ::yarp::os::Property driver_properties;
 
@@ -81,7 +81,7 @@ void DepthCamera::Configure(const Entity& _entity,
 
     driver_properties.put(YarpDepthCameraScopedName.c_str(), sensorScopedName.c_str());
 
-    driver_properties.put("device", "gazebo_camera");
+    driver_properties.put("device", "gazebo_depth_camera");
     driver_properties.put("sensor_name", sensorName);
 
     // Open the driver
@@ -102,10 +102,10 @@ void DepthCamera::Configure(const Entity& _entity,
     }
     iDepthCameraData->setDepthCameraData(&cameraData);
 
-    m_cameraDriver.view(iFrameGrabberImage);
-    if (iFrameGrabberImage == NULL)
+    m_cameraDriver.view(iRGBDSensor);
+    if (iRGBDSensor == nullptr)
     {
-        yError() << "Unable to get the iFrameGrabberImage interface from the device";
+        yError() << "Unable to get the IRGBDSensor interface from the device";
         return;
     }
 
@@ -131,29 +131,32 @@ void DepthCamera::PreUpdate(const UpdateInfo& _info, EntityComponentManager& _ec
         && _ecm.ComponentData<components::SensorTopic>(sensor).has_value())
     {
         this->cameraInitialized = true;
-        auto DepthCameraTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value();
+        auto RgbCameraTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value() + "/image";
+        auto DepthCameraTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value() + "/depth";
+        this->node.Subscribe(RgbCameraTopicName, &DepthCamera::RgbCameraCb, this);
         this->node.Subscribe(DepthCameraTopicName, &DepthCamera::DepthCameraCb, this);
     }
 }
 
 void DepthCamera::PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm)
 {
-    gz::msgs::Image cameraMsg;
-    {
-        std::lock_guard<std::mutex> lock(this->cameraMsgMutex);
-        cameraMsg = this->cameraMsg;
-    }
-
     if (this->cameraInitialized)
     {
         std::lock_guard<std::mutex> lock(cameraData.m_mutex);
-        //memcpy(cameraData.m_imageBuffer, cameraMsg.data().c_str(), cameraData.m_imageBufferSize);
+        memcpy(cameraData.m_imageBuffer.get(), rgbCameraMsg.data().c_str(), cameraData.m_imageBufferSize);
+        memcpy(cameraData.m_depthFrame_Buffer.get(), depthCameraMsg.data().c_str(), cameraData.m_depthFrameBufferSize);
         cameraData.simTime = _info.simTime.count() / 1e9;
     }
+}
+
+void DepthCamera::RgbCameraCb(const gz::msgs::Image& _msg)
+{
+    std::lock_guard<std::mutex> lock(this->cameraMsgMutex);
+    rgbCameraMsg = _msg;
 }
 
 void DepthCamera::DepthCameraCb(const gz::msgs::Image& _msg)
 {
     std::lock_guard<std::mutex> lock(this->cameraMsgMutex);
-    cameraMsg = _msg;
+    depthCameraMsg = _msg;
 }
