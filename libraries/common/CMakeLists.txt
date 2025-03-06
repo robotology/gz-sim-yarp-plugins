@@ -7,12 +7,13 @@ target_include_directories(gz-sim-yarp-commons PUBLIC "$<BUILD_INTERFACE:${CMAKE
 target_compile_features(gz-sim-yarp-commons PRIVATE cxx_std_17)
 
 target_link_libraries(gz-sim-yarp-commons
+  PUBLIC
+    YARP::YARP_robotinterface
+    YARP::YARP_os
   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
   PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
   PRIVATE
     YARP::YARP_dev
-    YARP::YARP_robotinterface
-    YARP::YARP_os
     YARP::YARP_init)
 
 install(TARGETS gz-sim-yarp-commons)
