@@ -79,50 +79,73 @@ bool DepthCameraDriver::setRgbMirroring(bool mirror)
 
 bool DepthCameraDriver::getRgbIntrinsicParam(yarp::os::Property& intrinsic)
 {
-    return getDepthIntrinsicParam(intrinsic);
+    yarp::os::Value        rectM;
+
+    intrinsic.put("physFocalLength", 0.0);
+
+    intrinsic.put("focalLengthX",    m_sensorData->focalLengthX);
+    intrinsic.put("focalLengthY",    m_sensorData->focalLengthY);
+
+    intrinsic.put("k1",              m_sensorData->m_distModel.k1);
+    intrinsic.put("k2",              m_sensorData->m_distModel.k2);
+    intrinsic.put("k3",              m_sensorData->m_distModel.k3);
+    intrinsic.put("t1",              m_sensorData->m_distModel.p1);
+    intrinsic.put("t2",              m_sensorData->m_distModel.p2);
+    intrinsic.put("principalPointX", m_sensorData->m_distModel.cx);
+    intrinsic.put("principalPointY", m_sensorData->m_distModel.cy);
+    intrinsic.put("rectificationMatrix", rectM.makeList("1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0"));
+    intrinsic.put("distortionModel", "plumb_bob");
+    intrinsic.put("stamp",           m_sensorData->simTime);
+    return true;
 }
 
 bool DepthCameraDriver::getRgbImage(yarp::sig::FlexImage& rgbImage, yarp::os::Stamp* timeStamp)
 {
+    if(!timeStamp)
+    {
+        yCError(GZDEPTH) << "getRgbImage: timestamp pointer invalid!";
+        return false;
+    }
     std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
-    rgbImage.setPixelCode(VOCAB_PIXEL_BGR);
+    rgbImage.setPixelCode(m_sensorData->m_imageFormat);
     rgbImage.resize(m_sensorData->m_width, m_sensorData->m_height);
+    memcpy(rgbImage.getRawImage(), m_sensorData->m_imageBuffer.get(), m_sensorData->m_imageBufferSize);
+    timeStamp->update(m_sensorData->simTime);
+    // TODO vertical and horizontal flip, display timestamp and time box
     return true;
 }
 
 int DepthCameraDriver::getDepthHeight()
 {
-    return m_height;
+    return getRgbHeight();
 }
 
 int DepthCameraDriver::getDepthWidth()
 {
-    return m_width;
+    return getRgbWidth();
 }
 
 bool DepthCameraDriver::setDepthResolution(int width, int height)
 {
-    m_width = width;
-    m_height = height;
-    return true;
+    yCError(GZDEPTH) << "setDepthResolution: impossible to set resolution";
+    return false;
 }
 
 bool DepthCameraDriver::getDepthFOV(double& horizontalFov, double& verticalFov)
 {
-    horizontalFov = 0.0;
-    verticalFov = 0.0;
-    return true;
+    return getRgbFOV(horizontalFov, verticalFov);
 }
 
 bool DepthCameraDriver::setDepthFOV(double horizontalFov, double verticalFov)
 {
-    return true;
+    yCError(GZDEPTH) << "setDepthFOV: impossible to set FOV";
+    return false;
 }
 
 
 bool DepthCameraDriver::getDepthIntrinsicParam(yarp::os::Property& intrinsic)
 {
-    return true;
+    return getRgbIntrinsicParam(intrinsic);
 }
 
 double DepthCameraDriver::getDepthAccuracy()
@@ -132,20 +155,21 @@ double DepthCameraDriver::getDepthAccuracy()
 
 bool DepthCameraDriver::setDepthAccuracy(double accuracy)
 {
-    yCError(GZDEPTH)  << "impossible to set accuracy";
+    yCError(GZDEPTH)  << "setDepthAccuracy: impossible to set accuracy";
     return false;
 }
 
 bool DepthCameraDriver::getDepthClipPlanes(double& nearPlane, double& farPlane)
 {
-    nearPlane = 0.0;
-    farPlane = 0.0;
+    nearPlane = m_sensorData->nearPlane;
+    farPlane  = m_sensorData->farPlane;
     return true;
 }
 
 bool DepthCameraDriver::setDepthClipPlanes(double nearPlane, double farPlane)
 {
-    return true;
+    yCError(GZDEPTH)  << "setDepthClipPlanes: impossible to set clip planes";
+    return false;
 }
 
 bool DepthCameraDriver::getDepthMirroring(bool& mirror)
@@ -156,11 +180,35 @@ bool DepthCameraDriver::getDepthMirroring(bool& mirror)
 
 bool DepthCameraDriver::setDepthMirroring(bool mirror)
 {
-    return true;
+    yCError(GZDEPTH)  << "setDepthMirroring: impossible to set mirroring";
+    return false;
 }
 
 bool DepthCameraDriver::getDepthImage(yarp::sig::ImageOf<yarp::sig::PixelFloat>& depthImage, yarp::os::Stamp* timeStamp)
 {
+    if(!timeStamp)
+    {
+        yCError(GZDEPTH)  << "gazeboDepthCameraDriver: timestamp pointer invalid!";
+        return false;
+    }
+    std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
+    depthImage.resize(m_sensorData->m_width, m_sensorData->m_height);
+    if(!m_depthQuantizationEnabled) {
+        memcpy(depthImage.getRawImage(), m_sensorData->m_depthFrame_Buffer.get(), m_sensorData->m_depthFrameBufferSize);
+    }
+    else {
+        float nearPlane = (float) m_sensorData->nearPlane;
+        float farPlane = (float) m_sensorData->farPlane;
+        int intTemp;
+        float value;
+        for (int i = 0; i < m_sensorData->m_depthFrameBufferSize; i++) {
+            value = m_sensorData->m_depthFrame_Buffer[i];
+            intTemp = (int) ((value - nearPlane) / (farPlane - nearPlane) * 255);
+            depthImage.getRawImage()[i] = intTemp;
+        }
+    }
+    timeStamp->update(m_sensorData->simTime);
+    //TODO vertical and horizontal flip, display timestamp and time box
     return true;
 }
 
@@ -174,7 +222,7 @@ bool DepthCameraDriver::getExtrinsicParam(yarp::sig::Matrix& extrinsic)
 
 bool DepthCameraDriver::getImages(yarp::sig::FlexImage& colorFrame, yarp::sig::ImageOf<yarp::sig::PixelFloat>& depthFrame, yarp::os::Stamp* colorStamp, yarp::os::Stamp* depthStamp)
 {
-    return true;
+    return getDepthImage(depthFrame, depthStamp) && getRgbImage(colorFrame, colorStamp);
 }
 
 yarp::dev::IRGBDSensor::RGBDSensor_status DepthCameraDriver::getSensorStatus()
@@ -184,6 +232,10 @@ yarp::dev::IRGBDSensor::RGBDSensor_status DepthCameraDriver::getSensorStatus()
 
 std::string DepthCameraDriver::getLastErrorMsg(yarp::os::Stamp* timeStamp)
 {
+    if(timeStamp)
+    {
+        timeStamp->update(m_sensorData->simTime);
+    }
     return "No error";
 }
 

@@ -1,4 +1,6 @@
 #include "DepthCamera.hh"
+#include <gz/sensors/RgbdCameraSensor.hh>
+
 using namespace gz;
 using namespace sim;
 using namespace systems;
@@ -72,17 +74,33 @@ void DepthCamera::Configure(const Entity& _entity,
     auto model = Model(_entity);
     auto parentLink = model.LinkByName(_ecm, parentLinkName);
     this->sensor = _ecm.EntityByComponents(components::ParentEntity(parentLink),
-                                            components::Name(sensorName),
-                                            components::Sensor());
-    auto sdfSensor = _ecm.ComponentData<components::RgbdCamera>(sensor).value().Element();
+                                           components::Name(sensorName),
+                                           components::Sensor());
+    
+    auto sdfSensor       = _ecm.ComponentData<components::RgbdCamera>(sensor).value().Element();
+    //auto A = sensorPippo->getDepthCamera();
     auto sdfCamera = sdfSensor->GetElement("camera").get();
     auto sdfImage  = sdfCamera->GetElement("image").get();
 
+    auto sdfDistortion = sdfCamera->GetElement("distortion").get();
+    auto sdfIntrinsics = sdfCamera->GetElement("lens").get()->GetElement("intrinsics").get();
+
     cameraData.init(sdfImage->Get<int>("width"), sdfImage->Get<int>("height"), sensorScopedName);
+    // Let's get the camera data
     cameraData.horizontal_fov = sdfCamera->Get<double>("horizontal_fov");
     cameraData.vertical_fov   = sdfCamera->Get<double>("vertical_fov");
     cameraData.nearPlane      = sdfCamera->GetElement("clip").get()->Get<double>("near");
     cameraData.farPlane       = sdfCamera->GetElement("clip").get()->Get<double>("far");
+    cameraData.focalLengthX   = sdfIntrinsics->Get<double>("fx");
+    cameraData.focalLengthY   = sdfIntrinsics->Get<double>("fy");
+    cameraData.m_distModel.k1 = sdfDistortion->Get<double>("k1");
+    cameraData.m_distModel.k2 = sdfDistortion->Get<double>("k2");
+    cameraData.m_distModel.k3 = sdfDistortion->Get<double>("k3");
+    cameraData.m_distModel.p1 = sdfDistortion->Get<double>("p1");
+    cameraData.m_distModel.p2 = sdfDistortion->Get<double>("p2");
+    auto vectCenter = sdfDistortion->Get<gz::math::Vector2d>("center");
+    cameraData.m_distModel.cx = vectCenter[0];
+    cameraData.m_distModel.cy = vectCenter[1];
     driver_properties.put(YarpDepthCameraScopedName.c_str(), sensorScopedName.c_str());
 
     driver_properties.put("device", "gazebo_depth_camera");
@@ -157,10 +175,12 @@ void DepthCamera::RgbCameraCb(const gz::msgs::Image& _msg)
 {
     std::lock_guard<std::mutex> lock(this->cameraMsgMutex);
     rgbCameraMsg = _msg;
+    cameraData.m_imageFormat = m_format2VocabPixel.at(_msg.pixel_format_type());
 }
 
 void DepthCamera::DepthCameraCb(const gz::msgs::Image& _msg)
 {
     std::lock_guard<std::mutex> lock(this->cameraMsgMutex);
     depthCameraMsg = _msg;
+    cameraData.m_depthFormat = m_format2VocabPixel.at(_msg.pixel_format_type());
 }

@@ -29,6 +29,17 @@ static const std::map<::gz::msgs::PixelFormatType, YarpVocabPixelTypesEnum> m_fo
                                                                                                  {gz::msgs::BAYER_GBRG8, VOCAB_PIXEL_ENCODING_BAYER_GBRG8},
                                                                                                  {gz::msgs::BAYER_GRBG8, VOCAB_PIXEL_ENCODING_BAYER_GRBG8}};
 
+struct DistortionModel
+{
+    double k1{0.0};
+    double k2{0.0};
+    double k3{0.0};
+    double p1{0.0};
+    double p2{0.0};
+    double cx{0.0};
+    double cy{0.0};
+};
+
 struct DepthCameraData
 {
     std::mutex m_mutex;
@@ -44,8 +55,11 @@ struct DepthCameraData
     double vertical_fov{0.0};
     double nearPlane{0.0};
     double farPlane{0.0};
+    double focalLengthX{0.0};
+    double focalLengthY{0.0};
     YarpVocabPixelTypesEnum m_imageFormat{VOCAB_PIXEL_RGB};
     YarpVocabPixelTypesEnum m_depthFormat{VOCAB_PIXEL_MONO_FLOAT};
+    DistortionModel m_distModel;
 
     void init(const int width, const int height, const std::string& _sensorScopedName)
     {

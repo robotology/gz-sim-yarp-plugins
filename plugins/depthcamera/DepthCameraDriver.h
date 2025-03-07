@@ -16,7 +16,6 @@
 #include <yarp/os/Searchable.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/sig/Image.h>
-#include <gz/sensors/RgbdCameraSensor.hh>
 
 
 namespace yarp::dev::gzyarp
