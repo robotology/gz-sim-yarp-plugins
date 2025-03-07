@@ -19,6 +19,10 @@ struct DepthCameraData
     std::unique_ptr<float[]> m_depthFrame_Buffer;
     std::string sensorScopedName="";
     double simTime=0.0;
+    double horizontal_fov{0.0};
+    double vertical_fov{0.0};
+    double nearPlane{0.0};
+    double farPlane{0.0};
 
     void init(const int width, const int height, const std::string& _sensorScopedName)
     {

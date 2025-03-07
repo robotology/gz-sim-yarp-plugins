@@ -75,10 +75,14 @@ void DepthCamera::Configure(const Entity& _entity,
                                             components::Name(sensorName),
                                             components::Sensor());
     auto sdfSensor = _ecm.ComponentData<components::RgbdCamera>(sensor).value().Element();
-    auto sdfImage = sdfSensor.get()->GetElement("camera").get()->GetElement("image").get();
+    auto sdfCamera = sdfSensor->GetElement("camera").get();
+    auto sdfImage  = sdfCamera->GetElement("image").get();
 
     cameraData.init(sdfImage->Get<int>("width"), sdfImage->Get<int>("height"), sensorScopedName);
-
+    cameraData.horizontal_fov = sdfCamera->Get<double>("horizontal_fov");
+    cameraData.vertical_fov   = sdfCamera->Get<double>("vertical_fov");
+    cameraData.nearPlane      = sdfCamera->GetElement("clip").get()->Get<double>("near");
+    cameraData.farPlane       = sdfCamera->GetElement("clip").get()->Get<double>("far");
     driver_properties.put(YarpDepthCameraScopedName.c_str(), sensorScopedName.c_str());
 
     driver_properties.put("device", "gazebo_depth_camera");

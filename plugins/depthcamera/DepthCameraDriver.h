@@ -22,13 +22,14 @@
 namespace yarp::dev::gzyarp
 {
 class DepthCameraDriver : public yarp::dev::DeviceDriver,
-                          public yarp::dev::IRGBDSensor {
+                          public yarp::dev::IRGBDSensor,
+                          public ::gzyarp::IDepthCameraData {
 public:
     DepthCameraDriver() = default;
     virtual ~DepthCameraDriver() = default;
     // yarp::dev::DeviceDriver
-    bool open(yarp::os::Searchable& config) override;
-    bool close() override;
+    bool                  open(yarp::os::Searchable& config) override;
+    bool                  close() override;
     //IRGBDSensor
     int                   getRgbHeight() override;
     int                   getRgbWidth() override;
@@ -57,36 +58,27 @@ public:
     bool                  getExtrinsicParam(yarp::sig::Matrix &extrinsic) override;
     bool                  getImages(yarp::sig::FlexImage& colorFrame, yarp::sig::ImageOf<yarp::sig::PixelFloat>& depthFrame, yarp::os::Stamp* colorStamp=NULL, yarp::os::Stamp* depthStamp=NULL) override;
     RGBDSensor_status     getSensorStatus() override;
-    std::string getLastErrorMsg(yarp::os::Stamp* timeStamp = NULL) override;
+    std::string           getLastErrorMsg(yarp::os::Stamp* timeStamp = NULL) override;
+    // IDepthCameraData
+    void                  setDepthCameraData(::gzyarp::DepthCameraData* dataPtr) override;
 private:
     yarp::os::Property  m_conf;
-
-    int                 m_imageFrame_BufferSize{0};
-    int                 m_depthFrame_BufferSize{0};
 
     int                 m_width{0};
     int                 m_height{0};
     bool                m_vertical_flip{false};
     bool                m_horizontal_flip{false};
-    bool                m_display_time_box{false};
     bool                m_display_timestamp{false};
+    bool                m_display_time_box{false};
 
-    yarp::os::Stamp     m_colorTimestamp; // last timestamp data
-    yarp::os::Stamp     m_depthTimestamp; // last timestamp data
-    std::mutex          m_colorFrameMutex;  //mutex for accessing the data
-    std::mutex          m_depthFrameMutex;  //mutex for accessing the data
-
-    unsigned char*      m_imageFrame_Buffer{nullptr};
-    float*              m_depthFrame_Buffer{nullptr};
-    unsigned char*      m_RGBPointCloud_Buffer{nullptr};
     int                 m_counter{0};
-    std::string              m_error{""};
+    std::string         m_error{""};
 
-    gz::sensors::RgbdCameraSensor*            m_rgbdCameraSensorPtr{nullptr};
+    ::gzyarp::DepthCameraData* m_sensorData;
 
     // Data quantization related parameters
-    bool                             m_depthQuantizationEnabled{false};
-    int                              m_depthDecimalNum{0};
+    bool                m_depthQuantizationEnabled{false};
+    int                 m_depthDecimalNum{0};
 
 
 };

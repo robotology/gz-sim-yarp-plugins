@@ -10,6 +10,23 @@ YARP_LOG_COMPONENT(GZDEPTH, "gz-sim-yarp-plugins.plugins.GzYarpDepthCamera")
 bool DepthCameraDriver::open(yarp::os::Searchable& config)
 {
     yCDebug(GZDEPTH) << "Opening Gazebo Yarp Depth Camera Driver";
+    //Manage depth quantization parameter
+    if(config.check("QUANT_PARAM")) {
+        yarp::os::Property quantCfg;
+        quantCfg.fromString(config.findGroup("QUANT_PARAM").toString());
+        m_depthQuantizationEnabled = true;
+        if (quantCfg.check("depth_quant")) {
+            m_depthDecimalNum = quantCfg.find("depth_quant").asInt32();
+        }
+    }
+
+    m_conf.fromString(config.toString());
+
+    m_vertical_flip     = config.check("vertical_flip");
+    m_horizontal_flip   = config.check("horizontal_flip");
+    m_display_timestamp = config.check("display_timestamp");
+    m_display_time_box  = config.check("display_time_box");
+
     return true;
 }
 
@@ -21,30 +38,30 @@ bool DepthCameraDriver::close()
 
 int DepthCameraDriver::getRgbHeight()
 {
-    return m_height;
+    return m_sensorData->m_height;
 }
 
 int DepthCameraDriver::getRgbWidth()
 {
-    return m_width;
+    return m_sensorData->m_width;
 }
 
 bool DepthCameraDriver::setRgbResolution(int width, int height)
 {
-    m_width = width;
-    m_height = height;
-    return true;
+    yCError(GZDEPTH) << "setRgbResolution: impossible to set resolution";
+    return false;
 }
 
 bool DepthCameraDriver::getRgbFOV(double& horizontalFov, double& verticalFov)
 {
-    horizontalFov = 0.0;
-    verticalFov = 0.0;
+    horizontalFov = m_sensorData->horizontal_fov;
+    verticalFov   = m_sensorData->vertical_fov;
     return true;
 }
 
 bool DepthCameraDriver::setRgbFOV(double horizontalFov, double verticalFov)
 {
+    yCError(GZDEPTH) << "setRgbFOV: impossible to set FOV";
     return true;
 }
 
@@ -56,6 +73,7 @@ bool DepthCameraDriver::getRgbMirroring(bool& mirror)
 
 bool DepthCameraDriver::setRgbMirroring(bool mirror)
 {
+    yCError(GZDEPTH) << "setRgbMirroring: impossible to set mirroring";
     return true;
 }
 
@@ -164,4 +182,9 @@ yarp::dev::IRGBDSensor::RGBDSensor_status DepthCameraDriver::getSensorStatus()
 std::string DepthCameraDriver::getLastErrorMsg(yarp::os::Stamp* timeStamp)
 {
     return "No error";
+}
+
+void DepthCameraDriver::setDepthCameraData(::gzyarp::DepthCameraData* dataPtr)
+{
+    m_sensorData = dataPtr;
 }
