@@ -79,11 +79,14 @@ bool DepthCameraDriver::setRgbMirroring(bool mirror)
 
 bool DepthCameraDriver::getRgbIntrinsicParam(yarp::os::Property& intrinsic)
 {
-    return true;
+    return getDepthIntrinsicParam(intrinsic);
 }
 
 bool DepthCameraDriver::getRgbImage(yarp::sig::FlexImage& rgbImage, yarp::os::Stamp* timeStamp)
 {
+    std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
+    rgbImage.setPixelCode(VOCAB_PIXEL_BGR);
+    rgbImage.resize(m_sensorData->m_width, m_sensorData->m_height);
     return true;
 }
 
