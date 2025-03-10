@@ -24,14 +24,12 @@ DepthCamera::~DepthCamera()
     {
         m_cameraDriver.close();
     }
-    yarp::os::Network::fini();
 }
 
 void DepthCamera::Configure(const Entity& _entity,
                         const std::shared_ptr<const sdf::Element>& _sdf,
                         EntityComponentManager& _ecm,
                         EventManager& /*_eventMgr*/){
-    yarp::os::Network::init();
 
     gzyarp::PluginConfigureHelper configureHelper(_ecm);
 
@@ -47,24 +45,24 @@ void DepthCamera::Configure(const Entity& _entity,
     {
         if (!driver_properties.check("sensorName"))
         {
-            yError() << "gz-sim-yarp-camera-system : missing sensorName parameter";
+            yError() << "gz-sim-yarp-depthcamera-system : missing sensorName parameter";
             return;
         }
         if (!driver_properties.check("parentLinkName"))
         {
-            yError() << "gz-sim-yarp-camera-system : missing parentLinkName parameter";
+            yError() << "gz-sim-yarp-depthcamera-system : missing parentLinkName parameter";
             return;
         }
         if (!driver_properties.check("yarpDeviceName"))
         {
-            yError() << "gz-sim-yarp-camera-system : missing yarpDeviceName parameter";
+            yError() << "gz-sim-yarp-depthcamera-system : missing yarpDeviceName parameter";
             return;
         }
-        yInfo() << "gz-sim-yarp-camera-system: configuration of sensor "
+        yInfo() << "gz-sim-yarp-depthcamera-system: configuration of sensor "
                 << driver_properties.find("sensorName").asString() << " loaded";
     } else
     {
-        yError() << "gz-sim-yarp-camera-system : missing configuration";
+        yError() << "gz-sim-yarp-depthcamera-system : missing configuration";
         return;
     }
 
@@ -109,7 +107,7 @@ void DepthCamera::Configure(const Entity& _entity,
     // Open the driver
     if (!m_cameraDriver.open(driver_properties))
     {
-        yError() << "gz-sim-yarp-camera-system Plugin failed: error in opening yarp driver";
+        yError() << "gz-sim-yarp-depthcamera-system Plugin failed: error in opening yarp driver";
         return;
     }
 
@@ -118,7 +116,7 @@ void DepthCamera::Configure(const Entity& _entity,
 
     if (!viewOk || !iDepthCameraData)
     {
-        yError() << "gz-sim-yarp-camera-system Plugin failed: error in getting "
+        yError() << "gz-sim-yarp-depthcamera-system Plugin failed: error in getting "
                     "IDepthCameraData interface";
         return;
     }
@@ -136,14 +134,14 @@ void DepthCamera::Configure(const Entity& _entity,
     if (!DeviceRegistry::getHandler()
                 ->setDevice(_entity, _ecm, yarpDeviceName, &m_cameraDriver, m_deviceId))
     {
-        yError() << "gz-sim-yarp-camera-system: failed setting scopedDeviceName(=" << m_deviceId
+        yError() << "gz-sim-yarp-depthcamera-system: failed setting scopedDeviceName(=" << m_deviceId
                     << ")";
         return;
     }
     this->m_deviceRegistered = true;
     this->cameraInitialized = false;
     configureHelper.setConfigureIsSuccessful(true);
-    yInfo() << "gz-sim-yarp-camera-system: Registered YARP device with instance name:"
+    yInfo() << "gz-sim-yarp-depthcamera-system: Registered YARP device with instance name:"
             << m_deviceId;
 }
 
@@ -154,9 +152,13 @@ void DepthCamera::PreUpdate(const UpdateInfo& _info, EntityComponentManager& _ec
     {
         this->cameraInitialized = true;
         auto RgbCameraTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value() + "/image";
-        auto DepthCameraTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value() + "/depth";
-        this->node.Subscribe(RgbCameraTopicName, &DepthCamera::RgbCameraCb, this);
-        this->node.Subscribe(DepthCameraTopicName, &DepthCamera::DepthCameraCb, this);
+        auto DepthCameraTopicName = _ecm.ComponentData<components::SensorTopic>(sensor).value() + "/depth_image";
+        auto ok = this->node.Subscribe(RgbCameraTopicName, &DepthCamera::RgbCameraCb, this);
+        ok = ok & this->node.Subscribe(DepthCameraTopicName, &DepthCamera::DepthCameraCb, this);
+        if (!ok)
+        {
+            yError() << "gz-sim-yarp-depthcamera-system: failed to subscribe rgb camera topic:"<<RgbCameraTopicName<<"depth camera topic:"<<DepthCameraTopicName;
+        }
     }
 }
 

@@ -15,6 +15,7 @@ add_subdirectory(laser)
 add_subdirectory(camera)
 add_subdirectory(controlboard)
 add_subdirectory(commons)
+add_subdirectory(depthcamera)
 add_subdirectory(test-helpers)
 add_subdirectory(robotinterface)
 

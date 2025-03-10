@@ -54,6 +54,11 @@ bool DepthCameraDriver::setRgbResolution(int width, int height)
 
 bool DepthCameraDriver::getRgbFOV(double& horizontalFov, double& verticalFov)
 {
+    if(!m_sensorData)
+    {
+        yCError(GZDEPTH) << "getRgbFOV: sensor data not available!";
+        return false;
+    }
     horizontalFov = m_sensorData->horizontal_fov;
     verticalFov   = m_sensorData->vertical_fov;
     return true;
@@ -79,6 +84,11 @@ bool DepthCameraDriver::setRgbMirroring(bool mirror)
 
 bool DepthCameraDriver::getRgbIntrinsicParam(yarp::os::Property& intrinsic)
 {
+    if(!m_sensorData)
+    {
+        yCError(GZDEPTH) << "getRgbIntrinsicParam: sensor data not available!";
+        return false;
+    }
     yarp::os::Value        rectM;
 
     intrinsic.put("physFocalLength", 0.0);
@@ -101,6 +111,11 @@ bool DepthCameraDriver::getRgbIntrinsicParam(yarp::os::Property& intrinsic)
 
 bool DepthCameraDriver::getRgbImage(yarp::sig::FlexImage& rgbImage, yarp::os::Stamp* timeStamp)
 {
+    if(!m_sensorData)
+    {
+        yCError(GZDEPTH) << "getRgbImage: sensor data not available!";
+        return false;
+    }
     if(!timeStamp)
     {
         yCError(GZDEPTH) << "getRgbImage: timestamp pointer invalid!";
@@ -161,6 +176,11 @@ bool DepthCameraDriver::setDepthAccuracy(double accuracy)
 
 bool DepthCameraDriver::getDepthClipPlanes(double& nearPlane, double& farPlane)
 {
+    if(!m_sensorData)
+    {
+        yCError(GZDEPTH) << "getDepthClipPlanes: sensor data not available!";
+        return false;
+    }
     nearPlane = m_sensorData->nearPlane;
     farPlane  = m_sensorData->farPlane;
     return true;
@@ -186,6 +206,11 @@ bool DepthCameraDriver::setDepthMirroring(bool mirror)
 
 bool DepthCameraDriver::getDepthImage(yarp::sig::ImageOf<yarp::sig::PixelFloat>& depthImage, yarp::os::Stamp* timeStamp)
 {
+    if(!m_sensorData)
+    {
+        yCError(GZDEPTH) << "gazeboDepthCameraDriver: sensor data not available!";
+        return false;
+    }
     if(!timeStamp)
     {
         yCError(GZDEPTH)  << "gazeboDepthCameraDriver: timestamp pointer invalid!";
