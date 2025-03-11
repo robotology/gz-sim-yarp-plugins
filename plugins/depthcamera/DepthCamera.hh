@@ -79,8 +79,6 @@ private:
     DepthCameraData cameraData;
     bool cameraInitialized;
     gz::transport::Node node;
-    gz::msgs::Image rgbCameraMsg;
-    gz::msgs::Image depthCameraMsg;
     std::mutex cameraMsgMutex;
     yarp::dev::IRGBDSensor* iRGBDSensor;
     EntityComponentManager* ecm;

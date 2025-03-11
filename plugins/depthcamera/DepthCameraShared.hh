@@ -45,10 +45,8 @@ struct DepthCameraData
     std::mutex m_mutex;
     int m_width=0;
     int m_height=0;
-    int m_imageBufferSize=0;
-    int m_depthFrameBufferSize=0;
-    std::unique_ptr<unsigned char[]> m_imageBuffer;
-    std::unique_ptr<float[]> m_depthFrame_Buffer;
+    gz::msgs::Image rgbCameraMsg;
+    gz::msgs::Image depthCameraMsg;
     std::string sensorScopedName="";
     double simTime=0.0;
     double horizontal_fov{0.0};
@@ -65,10 +63,6 @@ struct DepthCameraData
     {
         this->m_height = height;
         this->m_width = width;
-        this->m_imageBufferSize = 3 * this->m_width * this->m_height;
-        this->m_imageBuffer = std::make_unique<unsigned char[]>(this->m_imageBufferSize);
-        this->m_depthFrameBufferSize = this->m_width * this->m_height;
-        this->m_depthFrame_Buffer = std::make_unique<float[]>(this->m_depthFrameBufferSize);
         this->sensorScopedName = _sensorScopedName;
         return;
     }

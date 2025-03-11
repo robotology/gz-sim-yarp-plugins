@@ -167,8 +167,6 @@ void DepthCamera::PostUpdate(const UpdateInfo& _info, const EntityComponentManag
     if (this->cameraInitialized)
     {
         std::lock_guard<std::mutex> lock(cameraData.m_mutex);
-        memcpy(cameraData.m_imageBuffer.get(), rgbCameraMsg.data().c_str(), cameraData.m_imageBufferSize);
-        memcpy(cameraData.m_depthFrame_Buffer.get(), depthCameraMsg.data().c_str(), cameraData.m_depthFrameBufferSize);
         cameraData.simTime = _info.simTime.count() / 1e9;
     }
 }
@@ -176,13 +174,13 @@ void DepthCamera::PostUpdate(const UpdateInfo& _info, const EntityComponentManag
 void DepthCamera::RgbCameraCb(const gz::msgs::Image& _msg)
 {
     std::lock_guard<std::mutex> lock(this->cameraMsgMutex);
-    rgbCameraMsg = _msg;
+    cameraData.rgbCameraMsg = _msg;
     cameraData.m_imageFormat = m_format2VocabPixel.at(_msg.pixel_format_type());
 }
 
 void DepthCamera::DepthCameraCb(const gz::msgs::Image& _msg)
 {
     std::lock_guard<std::mutex> lock(this->cameraMsgMutex);
-    depthCameraMsg = _msg;
+    cameraData.depthCameraMsg = _msg;
     cameraData.m_depthFormat = m_format2VocabPixel.at(_msg.pixel_format_type());
 }

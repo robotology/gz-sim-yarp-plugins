@@ -124,7 +124,7 @@ bool DepthCameraDriver::getRgbImage(yarp::sig::FlexImage& rgbImage, yarp::os::St
     std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
     rgbImage.setPixelCode(m_sensorData->m_imageFormat);
     rgbImage.resize(m_sensorData->m_width, m_sensorData->m_height);
-    memcpy(rgbImage.getRawImage(), m_sensorData->m_imageBuffer.get(), m_sensorData->m_imageBufferSize);
+    memcpy(rgbImage.getRawImage(), m_sensorData->rgbCameraMsg.data().c_str(), m_sensorData->rgbCameraMsg.ByteSizeLong());
     timeStamp->update(m_sensorData->simTime);
     // TODO vertical and horizontal flip, display timestamp and time box
     return true;
@@ -219,15 +219,15 @@ bool DepthCameraDriver::getDepthImage(yarp::sig::ImageOf<yarp::sig::PixelFloat>&
     std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
     depthImage.resize(m_sensorData->m_width, m_sensorData->m_height);
     if(!m_depthQuantizationEnabled) {
-        memcpy(depthImage.getRawImage(), m_sensorData->m_depthFrame_Buffer.get(), m_sensorData->m_depthFrameBufferSize);
+        memcpy(depthImage.getRawImage(), m_sensorData->depthCameraMsg.data().c_str(), m_sensorData->depthCameraMsg.ByteSizeLong());
     }
     else {
         float nearPlane = (float) m_sensorData->nearPlane;
         float farPlane = (float) m_sensorData->farPlane;
         int intTemp;
         float value;
-        for (int i = 0; i < m_sensorData->m_depthFrameBufferSize; i++) {
-            value = m_sensorData->m_depthFrame_Buffer[i];
+        for (int i = 0; i < m_sensorData->depthCameraMsg.ByteSizeLong(); i++) {
+            value = m_sensorData->depthCameraMsg.data()[i];
             intTemp = (int) ((value - nearPlane) / (farPlane - nearPlane) * 255);
             depthImage.getRawImage()[i] = intTemp;
         }
