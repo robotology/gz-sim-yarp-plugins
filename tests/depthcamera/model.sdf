@@ -80,6 +80,25 @@
         </visual>
         <sensor name="depthcamera_sensor" type="rgbd_camera">
           <camera>
+            <distortion>
+              <k1>1.0</k1>
+              <k2>2.0</k2>
+              <k3>3.0</k3>
+              <p1>4.0</p1>
+              <p2>5.0</p2>
+              <center> 322 243 </center>
+            </distortion>
+            <lens>
+              <type>pinhole</type>
+              <scale_to_hfov>true</scale_to_hfov>
+              <intrinsics>
+                <fx>554.256</fx>
+                <fy>554.256</fy>
+                <cx>320.0</cx>
+                <cy>240.0</cy>
+                <s>0.0</s>
+              </intrinsics>
+            </lens>
             <horizontal_fov>1.5708</horizontal_fov>
             <image>
               <width>640</width>

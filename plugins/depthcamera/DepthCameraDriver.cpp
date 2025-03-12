@@ -67,7 +67,7 @@ bool DepthCameraDriver::getRgbFOV(double& horizontalFov, double& verticalFov)
 bool DepthCameraDriver::setRgbFOV(double horizontalFov, double verticalFov)
 {
     yCError(GZDEPTH) << "setRgbFOV: impossible to set FOV";
-    return true;
+    return false;
 }
 
 bool DepthCameraDriver::getRgbMirroring(bool& mirror)
@@ -79,7 +79,7 @@ bool DepthCameraDriver::getRgbMirroring(bool& mirror)
 bool DepthCameraDriver::setRgbMirroring(bool mirror)
 {
     yCError(GZDEPTH) << "setRgbMirroring: impossible to set mirroring";
-    return true;
+    return false;
 }
 
 bool DepthCameraDriver::getRgbIntrinsicParam(yarp::os::Property& intrinsic)
@@ -241,7 +241,7 @@ bool DepthCameraDriver::getExtrinsicParam(yarp::sig::Matrix& extrinsic)
 {
     extrinsic.resize(4, 4);
     extrinsic.zero();
-    extrinsic[1][1] = extrinsic[2][2] = extrinsic[3][3] = extrinsic[4][4] = 1;
+    extrinsic[0][0] = extrinsic[1][1] = extrinsic[2][2] = extrinsic[3][3] = 1;
     return true;
 }
 
