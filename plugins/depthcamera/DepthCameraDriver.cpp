@@ -9,7 +9,6 @@ YARP_LOG_COMPONENT(GZDEPTH, "gz-sim-yarp-plugins.plugins.GzYarpDepthCamera")
 
 bool DepthCameraDriver::open(yarp::os::Searchable& config)
 {
-    yCDebug(GZDEPTH) << "Opening Gazebo Yarp Depth Camera Driver";
     //Manage depth quantization parameter
     if(config.check("QUANT_PARAM")) {
         yarp::os::Property quantCfg;
@@ -25,7 +24,6 @@ bool DepthCameraDriver::open(yarp::os::Searchable& config)
 
 bool DepthCameraDriver::close()
 {
-    yCDebug(GZDEPTH) << "Closing Gazebo Yarp Depth Camera Driver";
     return true;
 }
 
@@ -119,7 +117,6 @@ bool DepthCameraDriver::getRgbImage(yarp::sig::FlexImage& rgbImage, yarp::os::St
     rgbImage.resize(m_sensorData->m_width, m_sensorData->m_height);
     memcpy(rgbImage.getRawImage(), m_sensorData->rgbCameraMsg.data().c_str(), m_sensorData->rgbCameraMsg.ByteSizeLong());
     timeStamp->update(m_sensorData->simTime);
-    // TODO vertical and horizontal flip, display timestamp and time box
     return true;
 }
 
@@ -236,16 +233,12 @@ bool DepthCameraDriver::getDepthImage(yarp::sig::ImageOf<yarp::sig::PixelFloat>&
         }
     }
     timeStamp->update(m_sensorData->simTime);
-    //TODO vertical and horizontal flip, display timestamp and time box
     return true;
 }
 
 bool DepthCameraDriver::getExtrinsicParam(yarp::sig::Matrix& extrinsic)
 {
-    extrinsic.resize(4, 4);
-    extrinsic.zero();
-    extrinsic[0][0] = extrinsic[1][1] = extrinsic[2][2] = extrinsic[3][3] = 1;
-    return true;
+    return false;
 }
 
 bool DepthCameraDriver::getImages(yarp::sig::FlexImage& colorFrame, yarp::sig::ImageOf<yarp::sig::PixelFloat>& depthFrame, yarp::os::Stamp* colorStamp, yarp::os::Stamp* depthStamp)

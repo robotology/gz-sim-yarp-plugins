@@ -192,15 +192,8 @@ TEST(DepthCameraTest, PluginTest)
         EXPECT_FALSE(irgbdsensor->setDepthClipPlanes(nearPlane, farPlane));
         EXPECT_TRUE(irgbdsensor->getDepthMirroring(mirror));
         EXPECT_FALSE(irgbdsensor->setDepthMirroring(mirror));
-        // yarp::sig::Matrix extrinsic; 
-        // EXPECT_TRUE(irgbdsensor->getExtrinsicParam(extrinsic)); // Probably broken too see https://github.com/robotology/yarp/blob/b9c4888aef50b2014221d53ce8ee9c45175a74dd/src/devices/networkWrappers/RGBDSensorClient/RGBDSensorClient.cpp#L159
-        // yDebug() << extrinsic.rows() << extrinsic.cols();
-        // EXPECT_EQ(extrinsic.rows(), 4);
-        // EXPECT_EQ(extrinsic.cols(), 4);
-        // EXPECT_EQ(extrinsic[0][0], 1);
-        // EXPECT_EQ(extrinsic[1][1], 1);
-        // EXPECT_EQ(extrinsic[2][2], 1);
-        // EXPECT_EQ(extrinsic[3][3], 1);
+        yarp::sig::Matrix extrinsic; 
+        EXPECT_FALSE(irgbdsensor->getExtrinsicParam(extrinsic));
     }
 
     fixture.Server()->Stop();

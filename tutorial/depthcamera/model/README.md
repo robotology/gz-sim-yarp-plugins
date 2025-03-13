@@ -31,9 +31,6 @@
   ~~~
 
 Finally start the simulation in Gazebo.
-- yarpview rgb window
-  ![yarpview rgb window](imgs/yarpview_rgb.png "yarpview rgb window")
-- yarpview depth window
-  ![yarpview depth window](imgs/yarpview_depth.png "yarpview depth window")
-- Gazebo simulation
-  ![Gazebo simulation](imgs/simulation.png "Gazebo simulation")
+
+![421440784-fc1649a6-91a5-47db-ad66-149c8fc0e672](https://github.com/user-attachments/assets/f17796e2-8e6e-4552-8c4a-b848aa4b1acc)
+
