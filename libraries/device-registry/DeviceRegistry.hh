@@ -89,6 +89,27 @@ public:
     }
 
     /**
+     * Insert clock plugin in the DeviceRegistry.
+     */
+    bool insertClockPlugin(const gz::sim::Entity& entity,
+                           const gz::sim::EntityComponentManager& ecm,
+                                 std::string& generatedClockPluginID);
+
+    /**
+     * Remove clock plugin from the DeviceRegistry.
+     */
+    bool removeClockPlugin(const gz::sim::EntityComponentManager& ecm, const std::string& generatedClockPluginID);
+
+    /**
+     * Add a callback when a clock plugin is removed, i.e. removeClockPlugin is called.
+     */
+    template<typename T>
+    gz::common::ConnectionPtr connectClockPluginRemoved(T _subscriber)
+    {
+        return m_clockPluginRemovedEvent.Connect(_subscriber);
+    }
+
+    /**
      * Get all the device ids (aka device database keys) of the devices in the registry for a given gz server.
      */
     std::vector<std::string> getDevicesKeys(const gz::sim::EntityComponentManager& ecm) const;
@@ -201,8 +222,16 @@ private:
     std::unordered_map<std::string, std::unordered_map<std::string, yarp::dev::PolyDriver*>>
         m_devicesMap;
 
+    // Map that stores all the registered clock plugins
+    // The key of the first map is the gz instance id, the elements of the vectors the clock plugin ID
+    std::unordered_map<std::string, std::vector<std::string>>
+        m_clockPluginsMap;
+
     // Event for when a device is removed
-    gz::common::EventT<void (std::string)> m_deviceRemovedEvent;
+    gz::common::EventT<void (std::string, std::string)> m_deviceRemovedEvent;
+
+    // Even when a clock plugin is removed
+    gz::common::EventT<void (std::string, std::string)> m_clockPluginRemovedEvent;
 
     // Number of gz-sim-yarp-plugins YARP devices not loaded correctly for a given ecm
     std::unordered_map<std::string, std::size_t> m_nrOfGzSimYARPPluginsNotSuccessfullyLoaded;
