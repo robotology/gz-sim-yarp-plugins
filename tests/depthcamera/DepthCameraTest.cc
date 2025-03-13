@@ -18,6 +18,10 @@
 
         
 const double depth_tolerance = 0.001; // 1 mm
+int blue[] = {0, 0, 255};
+int dark_blue[] = {0, 0, 100};
+int grey[] = {218, 218, 218};
+int dark_grey[] = {175, 175, 175};
 
 TEST(DepthCameraTest, PluginTest)
 {
@@ -49,11 +53,6 @@ TEST(DepthCameraTest, PluginTest)
 
     yarp::dev::IRGBDSensor* irgbdsensor = nullptr;
 
-    int blue[] = {0, 0, 255};
-    int dark_blue[] = {0, 0, 100};
-    int grey[] = {218, 218, 218};
-    int dark_grey[] = {162, 162, 162};
-
     ASSERT_TRUE(driver.view(irgbdsensor));
     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
     {
@@ -77,20 +76,14 @@ TEST(DepthCameraTest, PluginTest)
         EXPECT_EQ(int(pixel[1]), grey[1]);
         EXPECT_EQ(int(pixel[2]), grey[2]);
 
-        // timestamp - blue
-        // pixel = image.getPixelAddress(35, 22);
-        // EXPECT_EQ(int(pixel[0]), blue[0]);
-        // EXPECT_EQ(int(pixel[1]), blue[1]);
-        // EXPECT_EQ(int(pixel[2]), blue[2]);
-
         // sphere - dark blue
-        pixel = image.getPixelAddress(218, 221);
+        pixel = image.getPixelAddress(152, 204);
         EXPECT_EQ(int(pixel[0]), dark_blue[0]);
         EXPECT_EQ(int(pixel[1]), dark_blue[1]);
         EXPECT_EQ(int(pixel[2]), dark_blue[2]);
 
         // ground plane - dark grey
-        pixel = image.getPixelAddress(289, 246);
+        pixel = image.getPixelAddress(151, 289);
         EXPECT_EQ(int(pixel[0]), dark_grey[0]);
         EXPECT_EQ(int(pixel[1]), dark_grey[1]);
         EXPECT_EQ(int(pixel[2]), dark_grey[2]);
@@ -115,9 +108,9 @@ TEST(DepthCameraTest, PluginTest)
         // background 
         EXPECT_TRUE(std::isinf(depthImage.pixel(0, 40)));
         // sphere
-        EXPECT_NEAR(depthImage.pixel(218, 221), 4.52681, depth_tolerance); // sphere distance in meters
+        EXPECT_NEAR(depthImage.pixel(152, 204), 4.531866, depth_tolerance); // sphere distance in meters
         // ground plane
-        EXPECT_NEAR(depthImage.pixel(289, 246), 4.92327, depth_tolerance); // ground plane distance in meters
+        EXPECT_NEAR(depthImage.pixel(151, 289), 1.11972, depth_tolerance); // ground plane distance in meters
 
     }
 
@@ -145,14 +138,14 @@ TEST(DepthCameraTest, PluginTest)
         EXPECT_EQ(int(pixel[1]), grey[1]);
         EXPECT_EQ(int(pixel[2]), grey[2]);
         // sphere
-        EXPECT_NEAR(depthImage.pixel(218, 221), 4.52681, depth_tolerance); // sphere distance in meters
-        pixel = image.getPixelAddress(218, 221);
+        EXPECT_NEAR(depthImage.pixel(152, 204), 4.531866, depth_tolerance); // sphere distance in meters
+        pixel = image.getPixelAddress(152, 204);
         EXPECT_EQ(int(pixel[0]), dark_blue[0]);
         EXPECT_EQ(int(pixel[1]), dark_blue[1]);
         EXPECT_EQ(int(pixel[2]), dark_blue[2]);
         // ground plane
-        EXPECT_NEAR(depthImage.pixel(289, 246), 4.92327, depth_tolerance); // ground plane distance in meters
-        pixel = image.getPixelAddress(289, 246);
+        EXPECT_NEAR(depthImage.pixel(151, 289), 1.11972, depth_tolerance); // ground plane distance in meters
+        pixel = image.getPixelAddress(151, 289);
         EXPECT_EQ(int(pixel[0]), dark_grey[0]);
         EXPECT_EQ(int(pixel[1]), dark_grey[1]);
         EXPECT_EQ(int(pixel[2]), dark_grey[2]);
@@ -190,11 +183,6 @@ TEST(DepthCameraTest, Functions)
     ASSERT_TRUE(driver.open(option));
 
     yarp::dev::IRGBDSensor* irgbdsensor = nullptr;
-
-    int blue[] = {0, 0, 255};
-    int dark_blue[] = {0, 0, 100};
-    int grey[] = {218, 218, 218};
-    int dark_grey[] = {162, 162, 162};
 
     ASSERT_TRUE(driver.view(irgbdsensor));
     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
@@ -251,210 +239,3 @@ TEST(DepthCameraTest, Functions)
     fixture.Server()->Stop();
 
 }
-
-// TEST(DepthCameraTest, HorizontalFlip)
-// {
-//     yarp::os::NetworkBase::setLocalMode(true);
-
-//     // Maximum verbosity helps with debugging
-//     gz::common::Console::SetVerbosity(4);
-
-//     // Instantiate test fixture
-//     auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model_hor_flip.sdf";
-//     gz::sim::TestFixture fixture(modelPath.string());
-//     fixture.Finalize();
-
-//     int iterations = 1000;
-//     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
-
-//     yarp::os::Property option;
-//     option.put("device", "frameGrabber_nwc_yarp");
-//     option.put("remote", "/camera");
-//     option.put("local", "/DepthCameraTest");
-//     yarp::dev::PolyDriver driver;
-
-//     ASSERT_TRUE(driver.open(option));
-
-//     yarp::dev::IFrameGrabberImage* irgbdsensor = nullptr;
-
-//     ASSERT_TRUE(driver.view(irgbdsensor));
-//     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
-
-//     yarp::sig::ImageOf<yarp::sig::PixelRgb> image;
-
-//     size_t maxNrOfReadingAttempts = 20;
-//     bool readSuccessful = false;
-//     for (size_t i = 0; (i < maxNrOfReadingAttempts) && !readSuccessful; i++)
-//     {
-//         readSuccessful = irgbdsensor->getImage(image);
-//         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-//     }
-//     ASSERT_TRUE(readSuccessful);
-
-//     int blue[] = {0, 0, 255};
-//     int dark_blue[] = {0, 0, 100};
-//     int grey[] = {218, 218, 218};
-//     int dark_grey[] = {162, 162, 162};
-
-//     // background - grey
-//     unsigned char* pixel = image.getPixelAddress(0, 40);
-//     EXPECT_EQ(int(pixel[0]), grey[0]);
-//     EXPECT_EQ(int(pixel[1]), grey[1]);
-//     EXPECT_EQ(int(pixel[2]), grey[2]);
-
-//     // timestamp - blue
-//     pixel = image.getPixelAddress(35, 22);
-//     EXPECT_EQ(int(pixel[0]), blue[0]);
-//     EXPECT_EQ(int(pixel[1]), blue[1]);
-//     EXPECT_EQ(int(pixel[2]), blue[2]);
-
-//     // sphere - dark blue
-//     pixel = image.getPixelAddress(420, 220);
-//     EXPECT_EQ(int(pixel[0]), dark_blue[0]);
-//     EXPECT_EQ(int(pixel[1]), dark_blue[1]);
-//     EXPECT_EQ(int(pixel[2]), dark_blue[2]);
-
-//     // ground plane - dark grey
-//     pixel = image.getPixelAddress(304, 247);
-//     EXPECT_EQ(int(pixel[0]), dark_grey[0]);
-//     EXPECT_EQ(int(pixel[1]), dark_grey[1]);
-//     EXPECT_EQ(int(pixel[2]), dark_grey[2]);
-// }
-
-// TEST(DepthCameraTest, VerticalFlip)
-// {
-//     yarp::os::NetworkBase::setLocalMode(true);
-
-//     // Maximum verbosity helps with debugging
-//     gz::common::Console::SetVerbosity(4);
-
-//     // Instantiate test fixture
-//     auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model_ver_flip.sdf";
-//     gz::sim::TestFixture fixture(modelPath.string());
-//     fixture.Finalize();
-
-//     int iterations = 1000;
-//     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
-
-//     yarp::os::Property option;
-//     option.put("device", "frameGrabber_nwc_yarp");
-//     option.put("remote", "/camera");
-//     option.put("local", "/DepthCameraTest");
-//     yarp::dev::PolyDriver driver;
-
-//     ASSERT_TRUE(driver.open(option));
-
-//     yarp::dev::IFrameGrabberImage* irgbdsensor = nullptr;
-
-//     ASSERT_TRUE(driver.view(irgbdsensor));
-//     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
-
-//     yarp::sig::ImageOf<yarp::sig::PixelRgb> image;
-
-//     size_t maxNrOfReadingAttempts = 20;
-//     bool readSuccessful = false;
-//     for (size_t i = 0; (i < maxNrOfReadingAttempts) && !readSuccessful; i++)
-//     {
-//         readSuccessful = irgbdsensor->getImage(image);
-//         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-//     }
-//     ASSERT_TRUE(readSuccessful);
-
-//     int blue[] = {0, 0, 255};
-//     int dark_blue[] = {0, 0, 100};
-//     int grey[] = {218, 218, 218};
-//     int dark_grey[] = {162, 162, 162};
-
-//     // background - grey
-//     unsigned char* pixel = image.getPixelAddress(270, 400);
-//     EXPECT_EQ(int(pixel[0]), grey[0]);
-//     EXPECT_EQ(int(pixel[1]), grey[1]);
-//     EXPECT_EQ(int(pixel[2]), grey[2]);
-
-//     // timestamp - blue
-//     pixel = image.getPixelAddress(35, 22);
-//     EXPECT_EQ(int(pixel[0]), blue[0]);
-//     EXPECT_EQ(int(pixel[1]), blue[1]);
-//     EXPECT_EQ(int(pixel[2]), blue[2]);
-
-//     // sphere - dark blue
-//     pixel = image.getPixelAddress(219, 254);
-//     EXPECT_EQ(int(pixel[0]), dark_blue[0]);
-//     EXPECT_EQ(int(pixel[1]), dark_blue[1]);
-//     EXPECT_EQ(int(pixel[2]), dark_blue[2]);
-
-//     // ground plane - dark grey
-//     pixel = image.getPixelAddress(380, 232);
-//     EXPECT_EQ(int(pixel[0]), dark_grey[0]);
-//     EXPECT_EQ(int(pixel[1]), dark_grey[1]);
-//     EXPECT_EQ(int(pixel[2]), dark_grey[2]);
-// }
-
-// TEST(DepthCameraTest, HorizontalVerticalFlip)
-// {
-//     yarp::os::NetworkBase::setLocalMode(true);
-
-//     // Maximum verbosity helps with debugging
-//     gz::common::Console::SetVerbosity(4);
-
-//     // Instantiate test fixture
-//     auto modelPath = std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "model_hor_ver_flip.sdf";
-//     gz::sim::TestFixture fixture(modelPath.string());
-//     fixture.Finalize();
-
-//     int iterations = 1000;
-//     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
-
-//     yarp::os::Property option;
-//     option.put("device", "frameGrabber_nwc_yarp");
-//     option.put("remote", "/camera");
-//     option.put("local", "/DepthCameraTest");
-//     yarp::dev::PolyDriver driver;
-
-//     ASSERT_TRUE(driver.open(option));
-
-//     yarp::dev::IFrameGrabberImage* irgbdsensor = nullptr;
-
-//     ASSERT_TRUE(driver.view(irgbdsensor));
-//     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
-
-//     yarp::sig::ImageOf<yarp::sig::PixelRgb> image;
-
-//     size_t maxNrOfReadingAttempts = 20;
-//     bool readSuccessful = false;
-//     for (size_t i = 0; (i < maxNrOfReadingAttempts) && !readSuccessful; i++)
-//     {
-//         readSuccessful = irgbdsensor->getImage(image);
-//         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-//     }
-//     ASSERT_TRUE(readSuccessful);
-
-//     int blue[] = {0, 0, 255};
-//     int dark_blue[] = {0, 0, 100};
-//     int grey[] = {218, 218, 218};
-//     int dark_grey[] = {162, 162, 162};
-
-//     // background - grey
-//     unsigned char* pixel = image.getPixelAddress(301, 389);
-//     EXPECT_EQ(int(pixel[0]), grey[0]);
-//     EXPECT_EQ(int(pixel[1]), grey[1]);
-//     EXPECT_EQ(int(pixel[2]), grey[2]);
-
-//     // timestamp - blue
-//     pixel = image.getPixelAddress(35, 22);
-//     EXPECT_EQ(int(pixel[0]), blue[0]);
-//     EXPECT_EQ(int(pixel[1]), blue[1]);
-//     EXPECT_EQ(int(pixel[2]), blue[2]);
-
-//     // sphere - dark blue
-//     pixel = image.getPixelAddress(416, 259);
-//     EXPECT_EQ(int(pixel[0]), dark_blue[0]);
-//     EXPECT_EQ(int(pixel[1]), dark_blue[1]);
-//     EXPECT_EQ(int(pixel[2]), dark_blue[2]);
-
-//     // ground plane - dark grey
-//     pixel = image.getPixelAddress(334, 233);
-//     EXPECT_EQ(int(pixel[0]), dark_grey[0]);
-//     EXPECT_EQ(int(pixel[1]), dark_grey[1]);
-//     EXPECT_EQ(int(pixel[2]), dark_grey[2]);
-// }

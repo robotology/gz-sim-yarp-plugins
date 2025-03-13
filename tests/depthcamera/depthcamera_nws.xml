@@ -3,13 +3,14 @@
 
 <robot name="camera" portprefix="camera" build="0"  xmlns:xi="http://www.w3.org/2001/XInclude">
     <devices>
-        <device name="depthcamera_nws_yarp" type="rgbdSensor_nws_yarp">            <param name="name"> /depthcamera </param>
+        <device name="depthcamera_nws_yarp" type="rgbdSensor_nws_yarp">            
+        <param name="name"> /depthcamera </param>
             <param name="period"> 0.033333 </param>
             <action phase="startup" level="5" type="attach">
                 <!-- This is the same name that we passed with the yarpDeviceName to the camera plugin -->
                 <param name="device"> depthcamera_plugin_device </param>
             </action>
-            <action phase="shutdown" level="10" type="detach" />
+            <action phase="shutdown" level="5" type="detach" />
         </device>
     </devices>
 </robot>

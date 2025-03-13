@@ -61,14 +61,8 @@ public:
     // IDepthCameraData
     void                  setDepthCameraData(::gzyarp::DepthCameraData* dataPtr) override;
 private:
-    yarp::os::Property  m_conf;
-
     int                 m_width{0};
     int                 m_height{0};
-    bool                m_vertical_flip{false};
-    bool                m_horizontal_flip{false};
-    bool                m_display_timestamp{false};
-    bool                m_display_time_box{false};
 
     int                 m_counter{0};
     std::string         m_error{""};

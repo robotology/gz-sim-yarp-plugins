@@ -20,13 +20,6 @@ bool DepthCameraDriver::open(yarp::os::Searchable& config)
         }
     }
 
-    m_conf.fromString(config.toString());
-
-    m_vertical_flip     = config.check("vertical_flip");
-    m_horizontal_flip   = config.check("horizontal_flip");
-    m_display_timestamp = config.check("display_timestamp");
-    m_display_time_box  = config.check("display_time_box");
-
     return true;
 }
 
@@ -226,10 +219,20 @@ bool DepthCameraDriver::getDepthImage(yarp::sig::ImageOf<yarp::sig::PixelFloat>&
         float farPlane = (float) m_sensorData->farPlane;
         int intTemp;
         float value;
-        for (int i = 0; i < m_sensorData->depthCameraMsg.ByteSizeLong(); i++) {
+        float powCoeff = pow(10.0f, (float) m_depthDecimalNum);
+
+        auto pxPtr = reinterpret_cast<float*>(depthImage.getRawImage());
+        for(int i=0; i< m_sensorData->depthCameraMsg.data().size(); i++){
             value = m_sensorData->depthCameraMsg.data()[i];
-            intTemp = (int) ((value - nearPlane) / (farPlane - nearPlane) * 255);
-            depthImage.getRawImage()[i] = intTemp;
+
+            intTemp = (int) (value * powCoeff);
+            value = ((float) intTemp) / powCoeff;
+
+            if (value < nearPlane) { value = nearPlane; }
+            if (value > farPlane) { value = farPlane; }
+
+            *pxPtr = value;
+            pxPtr++;
         }
     }
     timeStamp->update(m_sensorData->simTime);
