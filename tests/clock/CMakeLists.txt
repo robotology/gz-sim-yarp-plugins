@@ -14,7 +14,9 @@ set(_env_vars)
 list(APPEND _env_vars "GZ_SIM_SYSTEM_PLUGIN_PATH=$<TARGET_FILE_DIR:gz-sim-yarp-clock-system>")
 
 set_tests_properties(ClockTest PROPERTIES
-  ENVIRONMENT "${_env_vars}")
+  ENVIRONMENT "${_env_vars}"
+  ENVIRONMENT_MODIFICATION "GZ_SIM_RESOURCE_PATH=path_list_append:${CMAKE_CURRENT_SOURCE_DIR}")
+
 
 target_compile_definitions(ClockTest
   PRIVATE CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"

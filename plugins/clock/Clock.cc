@@ -32,7 +32,8 @@ using yarp::os::BufferedPort;
 namespace gzyarp
 {
 
-class Clock : public System, public ISystemConfigure, public ISystemPostUpdate
+class Clock : public System, public ISystemConfigure, public ISystemPostUpdate, public ISystemReset
+
 {
 public:
     Clock()
@@ -114,6 +115,16 @@ public:
         m_clockPort.write();
     }
 
+    void Reset(const UpdateInfo& /*_info*/, EntityComponentManager& /*_ecm*/) override
+    {
+        // Nothing special is required for reset, simply the clock at the next `PostUpdate` will
+        // publish a time of 0, and yarp::os::NetworkClock handles it correctly, see
+        // https://github.com/robotology/yarp/blob/v3.11.2/src/libYARP_os/src/yarp/os/NetworkClock.cpp#L112-L116
+
+        // Handlng reset for the clock even if no other plugin implements the reset is important to make sure
+        // that gz-sim works even when YARP_CLOCK=/clock is defined, see https://github.com/robotology/gz-sim-yarp-plugins/issues/252
+    }
+
 private:
     bool m_initialized;
     // True if the YARP network needs to be reset to
@@ -130,4 +141,5 @@ private:
 GZ_ADD_PLUGIN(gzyarp::Clock,
               gz::sim::System,
               gzyarp::Clock::ISystemConfigure,
-              gzyarp::Clock::ISystemPostUpdate)
+              gzyarp::Clock::ISystemPostUpdate,
+              gzyarp::Clock::ISystemReset)
