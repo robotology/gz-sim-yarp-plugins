@@ -1,4 +1,4 @@
-# Run Camera Plugin in Gazebo
+# Run Depth camera Plugin in Gazebo
 
 ## Run model in Gazebo with YARP integration
 
