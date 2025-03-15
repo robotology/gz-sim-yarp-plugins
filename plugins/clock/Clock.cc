@@ -44,7 +44,40 @@ public:
 
     ~Clock()
     {
+        std::cerr << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~> Clock: Destructor " << std::endl;
         m_clockPort.close();
+    }
+
+    // This helper function is used to publish the current time
+    void publishTime(const std::chrono::steady_clock::duration& timeToPublish)
+    {
+        m_lastPublishedTime = timeToPublish;
+        std::chrono::seconds seconds
+            = std::chrono::duration_cast<std::chrono::seconds>(timeToPublish);
+        std::chrono::nanoseconds nanoseconds = timeToPublish - seconds;
+
+        Bottle& b = m_clockPort.prepare();
+        b.clear();
+        b.addInt32(seconds.count());
+        b.addInt32(nanoseconds.count());
+        m_clockPort.write();
+    }
+
+    // This function is used by a thread that publishes increasing time values on the clock
+    // on the event of a reset, to unblock any thread that is waiting for the simulated clock
+    void threadBodyPublishIncreasingTimestampsOnReset()
+    {
+        auto publishingPeriod = std::chrono::milliseconds(10);
+        auto timeWhenToPublish = std::chrono::steady_clock::now();
+        while (m_gazeboResetOngoing) {
+            // We publish time on top of the simulated once
+            auto timeToPublish = m_lastPublishedTime + publishingPeriod;
+            publishTime(timeToPublish);
+
+            // Schedule next execution time
+            timeWhenToPublish += publishingPeriod;
+            std::this_thread::sleep_until(timeWhenToPublish);
+        }
     }
 
     virtual void Configure(const Entity& _entity,
@@ -85,6 +118,14 @@ public:
 
     void PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm) override
     {
+        std::cerr << "==================> PostUpdate: running with simTime" << std::chrono::duration_cast<std::chrono::microseconds>(_info.simTime).count() << " and realtime " << std::chrono::duration_cast<std::chrono::microseconds>(_info.realTime).count()  << std::endl;
+        if (m_gazeboResetOngoing)
+        {
+            // The reset phase has ended, let's stop the thread that publishes increasing time values
+            m_gazeboResetOngoing = false;
+            m_threadPublishIncreasingTimestampsOnReset.join();
+        }
+
         if (_info.paused)
         {
             return;
@@ -103,26 +144,27 @@ public:
             m_resetYARPClockAfterPortCreation = false;
         }
 
-        auto currentTime = _info.simTime;
-        std::chrono::seconds seconds
-            = std::chrono::duration_cast<std::chrono::seconds>(currentTime);
-        std::chrono::nanoseconds nanoseconds = currentTime - seconds;
-
-        Bottle& b = m_clockPort.prepare();
-        b.clear();
-        b.addInt32(seconds.count());
-        b.addInt32(nanoseconds.count());
-        m_clockPort.write();
+        publishTime(_info.simTime);
     }
 
-    void Reset(const UpdateInfo& /*_info*/, EntityComponentManager& /*_ecm*/) override
+    void Reset(const UpdateInfo& _info, EntityComponentManager& /*_ecm*/) override
     {
-        // Nothing special is required for reset, simply the clock at the next `PostUpdate` will
-        // publish a time of 0, and yarp::os::NetworkClock handles it correctly, see
+        std::cerr << "~~~~~~~~~~~~~~~~~> Reset: running with simTime" << std::chrono::duration_cast<std::chrono::microseconds>(_info.simTime).count() << " and realtime " << std::chrono::duration_cast<std::chrono::microseconds>(_info.realTime).count()  << std::endl;
+
+        // At a reset, we setup a separate thread that publish on the port increasing values,
+        // so that any thread that is waiting to exist based on clock data will be unblocked,
+        // solving issues like https://github.com/robotology/gz-sim-yarp-plugins/issues/252
+
+        // At the first PostUpdate after the reset, the thread will be stopped and the clock
+        // will contain the correct time (tipically 0.0), and yarp::os::NetworkClock handles the reset correctly, see
         // https://github.com/robotology/yarp/blob/v3.11.2/src/libYARP_os/src/yarp/os/NetworkClock.cpp#L112-L116
 
-        // Handlng reset for the clock even if no other plugin implements the reset is important to make sure
-        // that gz-sim works even when YARP_CLOCK=/clock is defined, see https://github.com/robotology/gz-sim-yarp-plugins/issues/252
+        // First of all we set the flag that indicates that a reset is ongoing
+        m_gazeboResetOngoing = true;
+
+        // Then we start the thread that publishes increasing time values
+        m_threadPublishIncreasingTimestampsOnReset = std::thread(&Clock::threadBodyPublishIncreasingTimestampsOnReset, this);
+
     }
 
 private:
@@ -133,6 +175,14 @@ private:
     std::unique_ptr<yarp::os::Network> m_network = nullptr;
     std::string m_portName;
     yarp::os::BufferedPort<yarp::os::Bottle> m_clockPort;
+    // Last time published by the clock
+    std::chrono::steady_clock::duration m_lastPublishedTime{0};
+
+    // True between a call to Reset and the first subsequent call to PostUpdate
+    std::atomic<bool> m_gazeboResetOngoing{false};
+
+    // Thread that publishes increasing time values on the clock on reset
+    std::thread m_threadPublishIncreasingTimestampsOnReset;
 };
 
 } // namespace gzyarp
