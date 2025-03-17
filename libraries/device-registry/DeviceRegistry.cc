@@ -258,8 +258,84 @@ bool DeviceRegistry::removeDevice(const gz::sim::EntityComponentManager& ecm,
                 return false;
             }
 
-            m_deviceRemovedEvent(deviceDatabaseKey);
+            m_deviceRemovedEvent(gzInstanceId, deviceDatabaseKey);
             m_devicesMap.at(gzInstanceId).erase(deviceDatabaseKey);
+        }
+    }
+    return true;
+}
+
+bool DeviceRegistry::insertClockPlugin(const gz::sim::Entity& entity,
+    const gz::sim::EntityComponentManager& ecm,
+          std::string& generatedClockPluginID)
+{
+    bool ret = false;
+    generatedClockPluginID = "";
+
+    {
+        std::lock_guard<std::mutex> lock(mutex());
+
+        // Check if the the gz instance has been already added to the map
+        std::string gzInstanceId = getGzInstanceId(ecm);
+        if (auto gzInstance_it = m_clockPluginsMap.find(gzInstanceId);
+            gzInstance_it == m_clockPluginsMap.end())
+        {
+            // If not, insert an empty vector in the map
+            m_clockPluginsMap.insert(std::pair<std::string, std::vector<std::string>>(gzInstanceId, std::vector<std::string>{}));
+        }
+
+        // Check if the device has been already added to the map for the gz instance
+        // We reuse the logic for the yarp device id generation, but as in the case of the plugin
+        // we do not have a yarpDeviceName, we just use an arbitrary string as placeholder
+        std::string clockPluginID = generateDeviceId(entity, ecm, "clockPluginPlaceholderInPlaceOfYarpDeviceName");
+        std::vector<std::string>& vec = m_clockPluginsMap[gzInstanceId];
+
+        // Check if clockPluginID is contained in vec
+        auto clockPlugin_it = std::find(vec.begin(), vec.end(), clockPluginID);
+        if (clockPlugin_it == m_clockPluginsMap[gzInstanceId].end())
+        {
+            // If not, add it
+            m_clockPluginsMap[gzInstanceId].push_back(clockPluginID);
+            generatedClockPluginID = clockPluginID;
+
+            ret = true;
+        } else
+        {
+            yError() << " Error, two clock plugins in the same world have been found";
+            yError() << " This should not happen, check you do not have a duplicated clock in your config file. ";
+            ret = false;
+        }
+    }
+
+    return ret;
+}
+
+bool DeviceRegistry::removeClockPlugin(const gz::sim::EntityComponentManager& ecm, const std::string& generatedClockPluginID)
+{
+    {
+        std::lock_guard<std::mutex> lock(mutex());
+
+        // Check if the the gz instance exists the map
+        std::string gzInstanceId = getGzInstanceId(ecm);
+        if (auto gzInstance_it = m_clockPluginsMap.find(gzInstanceId);
+            gzInstance_it == m_clockPluginsMap.end())
+        {
+            yError() << "Error in gzyarp::DeviceRegistry::removeClockPlugin: gz instance not found";
+            return false;
+        }
+
+        // Check if the device exists in the map
+        std::vector<std::string>& vec = m_clockPluginsMap.at(gzInstanceId);
+        auto clockPlugin_it = std::find(vec.begin(), vec.end(), generatedClockPluginID);
+        if (clockPlugin_it == vec.end())
+        {
+            yError() << "Error in gzyarp::DeviceRegistry::removeClockPlugin: clockPlugin not found";
+            return false;
+        } else
+        {
+            m_clockPluginRemovedEvent(gzInstanceId, generatedClockPluginID);
+            std::vector<std::string>& vec = m_clockPluginsMap[gzInstanceId];
+            vec.erase(std::remove(vec.begin(), vec.end(), generatedClockPluginID), vec.end());
         }
     }
     return true;
