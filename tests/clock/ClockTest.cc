@@ -142,7 +142,7 @@ TEST_F(ClockTestFixture, SimulationResetsIfYARPClockIsSetAndYARPNWSAreUsed)
     EXPECT_TRUE(yarp::os::NetworkBase::exists("/clock")) << "Error: /clock port does not exist";
 
     // Reset
-    // Unfortunatly the reset can only be requested via a transport request
+    // Unfortunately the reset can only be requested via a transport request
     {
       gz::msgs::WorldControl req;
       gz::msgs::Boolean rep;

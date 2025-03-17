@@ -73,7 +73,7 @@ public:
 
     void OnDeviceRemoved(std::string gzInstanceId, std::string removeDeviceRegistryDatabaseKey)
     {
-        // If th device removed is not in the same gz instance of the robotinterface, return
+        // If the device removed is not in the same gz instance of the robotinterface, return
         if (gzInstanceId != m_gzInstanceId)
         {
             return;
@@ -91,7 +91,7 @@ public:
 
     void OnClockPluginRemoved(std::string gzInstanceId, std::string removedClockPluginID)
     {
-        // If th device removed is not in the same gz instance of the robotinterface, return
+        // If the device removed is not in the same gz instance of the robotinterface, return
         if (gzInstanceId != m_gzInstanceId)
         {
             return;
