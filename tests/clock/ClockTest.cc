@@ -50,7 +50,6 @@ protected:
     std::unique_ptr<TinyProcessLib::Process> m_yarpServerProcess;
 };
 
-/*
 TEST_F(ClockTestFixture, GetSimulationTimeFromClockPort)
 {
     // ARRANGE
@@ -69,9 +68,9 @@ TEST_F(ClockTestFixture, GetSimulationTimeFromClockPort)
     int expectedSimTimeSeconds = iterations / 1e3;
     int expectedSimTimeNanoseconds = static_cast<int>(iterations * deltaTns) % 1'000'000'000;
 
-    // ACT*/
-    //fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
-    /*std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // ACT
+    fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     // ASSERT
     yarp::os::Bottle* b = p.read();
@@ -104,14 +103,12 @@ TEST_F(ClockTestFixture, SimulationStartsIfYARPClockAlreadySet)
     const int deltaTns = 1e6; // 1ms
 
     // ACT
-    */
-    //fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
-/*
+    fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
     // ASSERT
     EXPECT_TRUE(yarp::os::Network::checkNetwork(1.0)) << "Error: YARP network not detected";
     // Check if the /clock port has been correctly created
     EXPECT_TRUE(yarp::os::NetworkBase::exists("/clock")) << "Error: /clock port does not exist";
-}*/
+}
 
 
 TEST_F(ClockTestFixture, SimulationResetsIfYARPClockIsSetAndYARPNWSAreUsed)
