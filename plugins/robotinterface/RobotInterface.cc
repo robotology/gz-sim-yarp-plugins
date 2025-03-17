@@ -10,6 +10,7 @@
 #include <gz/common/Event.hh>
 #include <gz/common/events/Types.hh>
 #include <gz/plugin/Register.hh>
+#include <gz/sim/config.hh>
 #include <gz/sim/Entity.hh>
 #include <gz/sim/EntityComponentManager.hh>
 #include <gz/sim/EventManager.hh>
@@ -99,8 +100,16 @@ public:
 
         // If the clock plugin belongs to the same gz instance of the robotinterface and belongs
         // to a ancestor entity, close the robotinterface
+        bool closeRobotInterface = false;
+        // Workaround for https://github.com/robotology/gz-sim-yarp-plugins/pull/253#issuecomment-2730881727
+#if defined(GZ_SIM_MAJOR_VERSION) && (GZ_SIM_MAJOR_VERSION >= 9)
         std::string parentEntityScopedNameWhereClockPluginWasInserted = DeviceRegistry::getParentEntityScopedName(removedClockPluginID);
-        if (m_parentEntityScopedName.rfind(parentEntityScopedNameWhereClockPluginWasInserted) == 0)
+        closeRobotInterface = (m_parentEntityScopedName.rfind(parentEntityScopedNameWhereClockPluginWasInserted) == 0);
+#else
+        // Always close the robotinterface if the clock plugin is removed on gz-sim <= 8
+        closeRobotInterface = true;
+#endif
+        if (closeRobotInterface)
         {
             CloseRobotInterface();
         }
