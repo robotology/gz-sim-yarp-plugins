@@ -626,12 +626,16 @@ bool ControlBoard::tryGetGroup(const Bottle& in,
                                std::vector<double>& out,
                                const std::string& key,
                                const std::string& txt,
-                               int expectedSize)
+                               int expectedSize,
+                               bool isRequired)
 {
     bool vecOk = gzyarp::readVectorFromConfigFile(in, key, out);
     if (!vecOk)
     {
-        yError() << key << " not found";
+        if (isRequired)
+        {
+            yError() << key << " not found";
+        }
         return false;
     }
     if (out.size() != expectedSize)
@@ -886,12 +890,14 @@ bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGen
 
     if (!trajectoryGeneratorsGroup.isNull())
     {
+        bool groupIsRequired = false;
         // Read from configuration
         if (!tryGetGroup(trajectoryGeneratorsGroup,
                          refSpeedGroup,
                          "refSpeed",
                          "",
-                         m_controlBoardData.physicalJoints.size()))
+                         m_controlBoardData.physicalJoints.size(),
+                         groupIsRequired))
         {
             yWarning() << "Parameter refSpeed not found in TRAJECTORY_GENERATION group. Defaults "
                           "will be applied";
@@ -902,7 +908,8 @@ bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGen
                          refAccelerationGroup,
                          "refAcceleration",
                          "",
-                         m_controlBoardData.physicalJoints.size()))
+                         m_controlBoardData.physicalJoints.size(),
+                         groupIsRequired))
         {
             yWarning() << "Parameter refAcceleration not found in TRAJECTORY_GENERATION group. "
                           "Defaults will be applied";

@@ -86,7 +86,8 @@ private:
                      std::vector<double>& out,
                      const std::string& key,
                      const std::string& txt,
-                     int expectedSize);
+                     int expectedSize,
+                     bool isRequired=true);
     bool setYarpPIDsParam(const std::vector<double>& pidParams,
                           const std::string& paramName,
                           std::vector<yarp::dev::Pid>& yarpPIDs,
