@@ -1294,33 +1294,75 @@ bool ControlBoardDriver::getTargetPositions(const int n_joint, const int* joints
 
 bool ControlBoardDriver::velocityMove(int j, double sp)
 {
-    // TODO
-    return true;
+    size_t numberOfJoints = m_controlBoardData->actuatedAxes.size();
+    if (j >= 0 && static_cast<size_t>(j) < numberOfJoints)
+    {
+        m_controlBoardData->actuatedAxes[j].commonJointProperties.refVelocity = sp;
+        m_controlBoardData->actuatedAxes[j].velocity_watchdog->reset();
+        if (m_controlBoardData->actuatedAxes[j].speed_ramp_handler)
+        {
+            double refacc = m_controlBoardData->actuatedAxes[j].trajectoryGenerationRefAcceleration;
+            double refvel = sp;
+            m_controlBoardData->actuatedAxes[j].speed_ramp_handler->setReference(sp, refacc);
+        }
+        return true;
+    }
+    return false;
 }
 bool ControlBoardDriver::velocityMove(const double* sp)
 {
-    // TODO
+    if (!sp) {return false;}
+
+    size_t numberOfJoints = m_controlBoardData->actuatedAxes.size();
+    for (size_t i = 0; i < numberOfJoints; ++i)
+    {
+        velocityMove(i, sp[i]);
+    }
     return true;
 }
 bool ControlBoardDriver::velocityMove(const int n_joint, const int* joints, const double* spds)
 {
-    // TODO
-    return true;
+    if (!joints || !spds) {return false;}
+    
+    bool ret = true;
+    for (int i = 0; i < n_joint && ret; i++)
+    {
+        ret = velocityMove(joints[i], spds[i]);
+    }
+    return ret;
 }
 bool ControlBoardDriver::getRefVelocity(const int joint, double* vel)
 {
-    // TODO
-    return true;
+    size_t numberOfJoints = m_controlBoardData->actuatedAxes.size();
+    if (vel && joint >= 0 && static_cast<size_t>(joint) < numberOfJoints)
+    {
+        *vel = m_controlBoardData->actuatedAxes[joint].commonJointProperties.refVelocity;
+        return true;
+    }
+    return false;
 }
 bool ControlBoardDriver::getRefVelocities(double* vels)
 {
-    // TODO
-    return true;
+    if (!vels) {return false;}
+
+    size_t numberOfJoints = m_controlBoardData->actuatedAxes.size();
+    bool ret = true;
+    for (size_t i = 0; i < numberOfJoints && ret; i++)
+    {
+        ret = getRefVelocity(i, &vels[i]);
+    }
+    return ret;
 }
 bool ControlBoardDriver::getRefVelocities(const int n_joint, const int* joints, double* vels)
 {
-    // TODO
-    return true;
+    if (!joints || !vels) {return false;}
+
+    bool ret = true;
+    for (int i = 0; i < n_joint && ret; i++)
+    {
+        ret = getRefVelocity(joints[i], &vels[i]);
+    }
+    return ret;
 }
 
 // ICurrentControl
@@ -1380,13 +1422,24 @@ bool ControlBoardDriver::getRefCurrent(int m, double* curr)
 
 bool ControlBoardDriver::setPid(const PidControlTypeEnum& pidtype, int j, const Pid& pid)
 {
-    // TODO
+    gz::math::PID gzpid = m_controlBoardData->physicalJoints[j].pidControllers[pidtype];
+    gzpid.SetPGain(pid.kp);
+    gzpid.SetIGain(pid.ki);
+    gzpid.SetDGain(pid.kd);
     return true;
 }
 bool ControlBoardDriver::setPids(const PidControlTypeEnum& pidtype, const Pid* pids)
 {
-    // TODO
-    return true;
+    size_t i = 0;
+    bool ret = true;
+    if (!pids) {return false;}
+    for (auto it = m_controlBoardData->physicalJoints.begin();
+        it != m_controlBoardData->physicalJoints.end();
+        it++)
+    {
+        ret &= setPid(pidtype, i, pids[i]);
+    }
+    return ret;
 }
 bool ControlBoardDriver::setPidReference(const PidControlTypeEnum& pidtype, int j, double ref)
 {
@@ -1430,13 +1483,28 @@ bool ControlBoardDriver::getPidOutputs(const PidControlTypeEnum& pidtype, double
 }
 bool ControlBoardDriver::getPid(const PidControlTypeEnum& pidtype, int j, Pid* pid)
 {
-    // TODO
+    if (!pid) {return false;}
+    gz::math::PID gzpid = m_controlBoardData->physicalJoints[j].pidControllers[pidtype];
+
+    pid->kp = gzpid.PGain();
+    pid->ki = gzpid.IGain();
+    pid->kd = gzpid.DGain();
+
     return true;
 }
 bool ControlBoardDriver::getPids(const PidControlTypeEnum& pidtype, Pid* pids)
 {
-    // TODO
-    return true;
+    size_t i = 0;
+    bool ret = true;
+    if (!pids) {return false;}
+    for (auto it = m_controlBoardData->physicalJoints.begin();
+        it != m_controlBoardData->physicalJoints.end();
+        it++)
+    {
+        ret &= getPid(pidtype, i, &pids[i]);
+        i++;
+    }
+    return ret;
 }
 bool ControlBoardDriver::getPidReference(const PidControlTypeEnum& pidtype, int j, double* ref)
 {

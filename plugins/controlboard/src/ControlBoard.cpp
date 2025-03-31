@@ -308,9 +308,14 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
             return false;
         }
 
-        if (!initializePIDsForPositionControl())
+        if (!initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION))
         {
-            yError() << "Error while initializing PIDs";
+            yError() << "Error while initializing POSITION PIDs";
+            return false;
+        }
+        if (!initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY))
+        {
+            yError() << "Error while initializing VELOCITY PIDs";
             return false;
         }
 
@@ -453,8 +458,15 @@ bool ControlBoard::updateTrajectories(const UpdateInfo& _info, EntityComponentMa
             yError() << "Control mode MIXED not implemented yet";
             break;
         case VOCAB_CM_VELOCITY:
-            // TODO when implementing velocity control mode
-            yError() << "Control mode VELOCITY not implemented yet";
+            if (joint.speed_ramp_handler)
+            {
+                if (joint.velocity_watchdog->isExpired())
+                {
+                    joint.speed_ramp_handler->stop();
+                }
+                joint.speed_ramp_handler->update();
+                //yCDebug(GAZEBOCONTROLBOARD) << m_speed_ramp_handler[j]->getCurrentValue();
+            }
             break;
         }
     }
@@ -503,6 +515,14 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
         case VOCAB_CM_TORQUE:
             forceReference = joint.commonJointProperties.refTorque;
             break;
+        case VOCAB_CM_VELOCITY: {
+            auto& pid = joint.pidControllers[yarp::dev::VOCAB_PIDTYPE_VELOCITY];
+            forceReference
+                = pid.Update(convertUserToGazebo(joint, joint.commonJointProperties.velocity)
+                             - convertUserToGazebo(joint, joint.commonJointProperties.refVelocity),
+                             _info.dt);
+            break;
+        }
         case VOCAB_CM_POSITION:
         case VOCAB_CM_POSITION_DIRECT: {
             // TODO manage motor positions instead of joint positions when implemented
@@ -541,14 +561,29 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
     return true;
 }
 
-bool ControlBoard::initializePIDsForPositionControl()
+bool ControlBoard::initializePIDs(yarp::dev::PidControlTypeEnum pid_type)
 {
-    if (!m_pluginParameters.check("POSITION_CONTROL"))
+    std::string pid_section;
+    if (pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION)
+    {
+        pid_section = "POSITION_CONTROL";
+    }
+    else if (pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY)
+    {
+        pid_section = "POSITION_VELOCITY";
+    }
+    else
+    {
+        yError() << "Invalid PidType in initializePIDs()";
+        return false;
+    }
+
+    if (!m_pluginParameters.check(pid_section))
     {
         yError() << "Group POSITION_CONTROL not found in plugin configuration";
         return false;
     }
-    Bottle pidGroup = m_pluginParameters.findGroup("POSITION_CONTROL");
+    Bottle pidGroup = m_pluginParameters.findGroup(pid_section);
 
     size_t numberOfPhysicalJoints = m_controlBoardData.physicalJoints.size();
     auto cUnits = AngleUnitEnum::DEG;
@@ -570,7 +605,7 @@ bool ControlBoard::initializePIDsForPositionControl()
         }
     } else
     {
-        yError() << "POSITION_CONTROL: 'controlUnits' param missing. Cannot "
+        yError() << pid_section << ": 'controlUnits' param missing. Cannot "
                     "continue";
         return false;
     }
@@ -590,7 +625,7 @@ bool ControlBoard::initializePIDsForPositionControl()
         }
     } else
     {
-        yError() << "POSITION_CONTROL: 'controlLaw' parameter missing";
+        yError() << pid_section << ": 'controlLaw' parameter missing";
         return false;
     }
 
@@ -617,7 +652,7 @@ bool ControlBoard::initializePIDsForPositionControl()
         setYarpPIDsParam(pidParams, param.first, yarpPIDs, numberOfPhysicalJoints);
     }
 
-    setJointPositionPIDs(cUnits, yarpPIDs);
+    setJointPIDs(cUnits, yarpPIDs, pid_type);
 
     return true;
 }
@@ -703,34 +738,34 @@ bool ControlBoard::setYarpPIDsParam(const std::vector<double>& pidParams,
     return true;
 }
 
-void ControlBoard::setJointPositionPIDs(AngleUnitEnum cUnits,
-                                        const std::vector<yarp::dev::Pid>& yarpPIDs)
+void ControlBoard::setJointPIDs(AngleUnitEnum cUnits,
+                                        const std::vector<yarp::dev::Pid>& yarpPIDs,
+                                        yarp::dev::PidControlTypeEnum pid_type)
 {
     for (size_t i = 0; i < m_controlBoardData.physicalJoints.size(); i++)
     {
-        auto& jointPositionPID
-            = m_controlBoardData.physicalJoints[i].pidControllers[yarp::dev::VOCAB_PIDTYPE_POSITION];
+        auto& jointPID = m_controlBoardData.physicalJoints[i].pidControllers[pid_type];
 
         if (cUnits == AngleUnitEnum::DEG)
         {
             auto& joint = m_controlBoardData.physicalJoints.at(i);
-            jointPositionPID.SetPGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].kp)
+            jointPID.SetPGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].kp)
                                       / pow(2, yarpPIDs[i].scale));
-            jointPositionPID.SetIGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].ki)
+            jointPID.SetIGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].ki)
                                       / pow(2, yarpPIDs[i].scale));
-            jointPositionPID.SetDGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].kd)
+            jointPID.SetDGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].kd)
                                       / pow(2, yarpPIDs[i].scale));
         } else if (cUnits == AngleUnitEnum::RAD)
         {
-            jointPositionPID.SetPGain(yarpPIDs[i].kp / pow(2, yarpPIDs[i].scale));
-            jointPositionPID.SetIGain(yarpPIDs[i].ki / pow(2, yarpPIDs[i].scale));
-            jointPositionPID.SetDGain(yarpPIDs[i].kd / pow(2, yarpPIDs[i].scale));
+            jointPID.SetPGain(yarpPIDs[i].kp / pow(2, yarpPIDs[i].scale));
+            jointPID.SetIGain(yarpPIDs[i].ki / pow(2, yarpPIDs[i].scale));
+            jointPID.SetDGain(yarpPIDs[i].kd / pow(2, yarpPIDs[i].scale));
         }
 
-        jointPositionPID.SetIMax(yarpPIDs[i].max_int);
-        jointPositionPID.SetIMin(-yarpPIDs[i].max_int);
-        jointPositionPID.SetCmdMax(yarpPIDs[i].max_output);
-        jointPositionPID.SetCmdMin(-yarpPIDs[i].max_output);
+        jointPID.SetIMax(yarpPIDs[i].max_int);
+        jointPID.SetIMin(-yarpPIDs[i].max_int);
+        jointPID.SetCmdMax(yarpPIDs[i].max_output);
+        jointPID.SetCmdMin(-yarpPIDs[i].max_output);
     }
 }
 
@@ -870,8 +905,9 @@ bool ControlBoard::initializeTrajectoryGenerators()
 
     for (auto& joint : m_controlBoardData.actuatedAxes)
     {
-        joint.trajectoryGenerator
-            = yarp::dev::gzyarp::TrajectoryGeneratorFactory::create(trajectoryType);
+        joint.trajectoryGenerator = yarp::dev::gzyarp::TrajectoryGeneratorFactory::create(trajectoryType);
+        joint.speed_ramp_handler = std::make_unique<yarp::dev::gzyarp::RampFilter>();
+        joint.velocity_watchdog = std::make_unique<yarp::dev::gzyarp::Watchdog>(0.200); //watchdog set to 200ms
     }
 
     if (!initializeTrajectoryGeneratorReferences(trajectoryGeneratorsGroup))
