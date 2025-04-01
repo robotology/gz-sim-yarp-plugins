@@ -11,6 +11,11 @@ on:
   # Execute a "nightly" build at 2 AM UTC
   - cron:  '0 2 * * *'
 
+# Workaround from conflict between GitHub Actions CI upgrading to CMake 4.0.0
+# and jsonCppConfig.cmake file installed by apt that is not compatible with CMake 4.0.0 
+env:
+  CMAKE_POLICY_VERSION_MINIMUM: 3.5
+
 jobs:
   build:
     name: '[${{ matrix.os }}@${{ matrix.build_type }}@yarp:${{ matrix.yarp_tag }}@gazebo:${{ matrix.gazebo_distro }}]'
