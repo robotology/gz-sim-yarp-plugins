@@ -7,6 +7,16 @@ project(gz-sim-yarp-plugins
 find_package(YARP REQUIRED COMPONENTS robotinterface os)
 find_package(YCM REQUIRED)
 
+# Temporary set CMAKE_POLICY_VERSION_MINIMUM 3.5 as a workaround 
+# for https://github.com/robotology/gz-sim-yarp-plugins/pull/258#issue-2963247728
+# Remove once we drop support for compilation on Ubuntu 24.04 with apt dependencies
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.0.0")
+    if(DEFINED CMAKE_POLICY_VERSION_MINIMUM)
+        set(GSYP_CMAKE_POLICY_VERSION_MINIMUM_BACK ${CMAKE_POLICY_VERSION_MINIMUM})
+    endif()
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+endif()
+
 # Initial value of GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION is empty, and then is set to 8 or 9 depending if gz-sim8 or gz-sim9 are available
 set(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION_DOCS "Version of gz-sim used to compile gz-sim-yarp-plugins (either 8 or 9)")
 set(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION "" CACHE STRING ${GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION_DOCS})
@@ -41,6 +51,14 @@ option(GZ_SIM_YARP_PLUGINS_BUILD_TOOLS "If enabled, build command line helper to
 
 if(GZ_SIM_YARP_PLUGINS_BUILD_TOOLS)
     find_package(CLI11 REQUIRED)
+endif()
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.0.0")
+    if(DEFINED GSYP_CMAKE_POLICY_VERSION_MINIMUM_BACK)
+        set(CMAKE_POLICY_VERSION_MINIMUM ${GSYP_CMAKE_POLICY_VERSION_MINIMUM_BACK})
+    else()
+        unset(CMAKE_POLICY_VERSION_MINIMUM)
+    endif()
 endif()
 
 # Defines the CMAKE_INSTALL_LIBDIR, CMAKE_INSTALL_BINDIR and many other useful macros.
