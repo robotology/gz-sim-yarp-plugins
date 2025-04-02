@@ -1,5 +1,6 @@
 
 #include <ControlBoardData.hh>
+#include <Common.hh>
 
 namespace gzyarp
 {
@@ -114,5 +115,28 @@ bool ControlBoardData::setControlMode(int j, int mode) {
         return true;
 }
 
+double ControlBoardData::convertGazeboGainToUserGain(PhysicalJointProperties& joint, double value)
+{
+    // TODO discriminate between joint types
+    return gzyarp::convertRadianGainToDegreeGains(value);
+}
+
+double ControlBoardData::convertGazeboToUser(PhysicalJointProperties& joint, double value)
+{
+    // TODO discriminate between joint types
+    return gzyarp::convertRadiansToDegrees(value);
+}
+
+double ControlBoardData::convertUserToGazebo(PhysicalJointProperties& joint, double value)
+{
+    // TODO discriminate between joint types
+    return gzyarp::convertDegreesToRadians(value);
+}
+
+double ControlBoardData::convertUserGainToGazeboGain(PhysicalJointProperties& joint, double value)
+{
+    // TODO discriminate between joint types
+    return gzyarp::convertDegreeGainToRadianGains(value);
+}
 
 } // namespace gzyarp

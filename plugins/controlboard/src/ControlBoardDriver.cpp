@@ -1297,13 +1297,12 @@ bool ControlBoardDriver::velocityMove(int j, double sp)
     size_t numberOfJoints = m_controlBoardData->actuatedAxes.size();
     if (j >= 0 && static_cast<size_t>(j) < numberOfJoints)
     {
-        m_controlBoardData->actuatedAxes[j].commonJointProperties.refVelocity = sp;
-        m_controlBoardData->actuatedAxes[j].velocity_watchdog->reset();
-        if (m_controlBoardData->actuatedAxes[j].speed_ramp_handler)
+        m_controlBoardData->actuatedAxes[j].velocityWatchdog->reset();
+        if (m_controlBoardData->actuatedAxes[j].speedRampHandler)
         {
             double refacc = m_controlBoardData->actuatedAxes[j].trajectoryGenerationRefAcceleration;
             double refvel = sp;
-            m_controlBoardData->actuatedAxes[j].speed_ramp_handler->setReference(sp, refacc);
+            m_controlBoardData->actuatedAxes[j].speedRampHandler->setReference(refvel, refacc);
         }
         return true;
     }
@@ -1422,10 +1421,20 @@ bool ControlBoardDriver::getRefCurrent(int m, double* curr)
 
 bool ControlBoardDriver::setPid(const PidControlTypeEnum& pidtype, int j, const Pid& pid)
 {
-    gz::math::PID gzpid = m_controlBoardData->physicalJoints[j].pidControllers[pidtype];
+    gz::math::PID& gzpid = m_controlBoardData->physicalJoints[j].pidControllers[pidtype];
     gzpid.SetPGain(pid.kp);
     gzpid.SetIGain(pid.ki);
     gzpid.SetDGain(pid.kd);
+
+    gzpid.SetPGain(m_controlBoardData->convertUserGainToGazeboGain(m_controlBoardData->physicalJoints[j], pid.kp) / pow(2, pid.scale));
+    gzpid.SetIGain(m_controlBoardData->convertUserGainToGazeboGain(m_controlBoardData->physicalJoints[j], pid.ki) / pow(2, pid.scale));
+    gzpid.SetDGain(m_controlBoardData->convertUserGainToGazeboGain(m_controlBoardData->physicalJoints[j], pid.kd) / pow(2, pid.scale));
+
+    gzpid.SetIMax(pid.max_int);
+    gzpid.SetIMin(-pid.max_int);
+    gzpid.SetCmdMax(pid.max_output);
+    gzpid.SetCmdMin(-pid.max_output);
+
     return true;
 }
 bool ControlBoardDriver::setPids(const PidControlTypeEnum& pidtype, const Pid* pids)
@@ -1486,9 +1495,12 @@ bool ControlBoardDriver::getPid(const PidControlTypeEnum& pidtype, int j, Pid* p
     if (!pid) {return false;}
     gz::math::PID gzpid = m_controlBoardData->physicalJoints[j].pidControllers[pidtype];
 
-    pid->kp = gzpid.PGain();
-    pid->ki = gzpid.IGain();
-    pid->kd = gzpid.DGain();
+    pid->scale = 0;
+    pid->kp = m_controlBoardData->convertGazeboGainToUserGain(m_controlBoardData->physicalJoints[j], gzpid.PGain()) * pow(2, pid->scale);
+    pid->ki = m_controlBoardData->convertGazeboGainToUserGain(m_controlBoardData->physicalJoints[j], gzpid.IGain()) * pow(2, pid->scale);
+    pid->kd = m_controlBoardData->convertGazeboGainToUserGain(m_controlBoardData->physicalJoints[j], gzpid.DGain()) * pow(2, pid->scale);
+    pid->max_int = gzpid.IMax();
+    pid->max_output = gzpid.CmdMax();
 
     return true;
 }

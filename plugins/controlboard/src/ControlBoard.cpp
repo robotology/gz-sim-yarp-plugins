@@ -351,7 +351,7 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
 
         if (gzJoint.Position(_ecm).has_value())
         {
-            joint.commonJointProperties.position = convertGazeboToUser(joint, gzJoint.Position(_ecm).value().at(0));
+            joint.commonJointProperties.position = ControlBoardData::convertGazeboToUser(joint, gzJoint.Position(_ecm).value().at(0));
             m_physicalJointsPositionBuffer[i] = joint.commonJointProperties.position;
         } else
         {
@@ -361,7 +361,7 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
 
         if (gzJoint.Velocity(_ecm).has_value())
         {
-            joint.commonJointProperties.velocity = convertGazeboToUser(joint, gzJoint.Velocity(_ecm).value().at(0));
+            joint.commonJointProperties.velocity = ControlBoardData::convertGazeboToUser(joint, gzJoint.Velocity(_ecm).value().at(0));
             m_physicalJointsVelocityBuffer[i] = joint.commonJointProperties.velocity;
         } else
         {
@@ -458,14 +458,15 @@ bool ControlBoard::updateTrajectories(const UpdateInfo& _info, EntityComponentMa
             yError() << "Control mode MIXED not implemented yet";
             break;
         case VOCAB_CM_VELOCITY:
-            if (joint.speed_ramp_handler)
+            if (joint.speedRampHandler)
             {
-                if (joint.velocity_watchdog->isExpired())
+                if (joint.velocityWatchdog->isExpired())
                 {
-                    joint.speed_ramp_handler->stop();
+                    joint.speedRampHandler->stop();
                 }
-                joint.speed_ramp_handler->update();
-                //yCDebug(GAZEBOCONTROLBOARD) << m_speed_ramp_handler[j]->getCurrentValue();
+                joint.speedRampHandler->update();
+                joint.commonJointProperties.refVelocity  = joint.speedRampHandler->getCurrentValue();
+                //yCDebug(GAZEBOCONTROLBOARD) << joint.commonJointProperties.refVelocity;
             }
             break;
         }
@@ -504,6 +505,7 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
         for (int i = 0; i < m_controlBoardData.actuatedAxes.size(); i++)
         {
             m_controlBoardData.physicalJoints[i].commonJointProperties.refPosition = m_controlBoardData.actuatedAxes[i].commonJointProperties.refPosition;
+            m_controlBoardData.physicalJoints[i].commonJointProperties.refVelocity = m_controlBoardData.actuatedAxes[i].commonJointProperties.refVelocity;
             m_controlBoardData.physicalJoints[i].commonJointProperties.refTorque = m_controlBoardData.actuatedAxes[i].commonJointProperties.refTorque;
         }
     }
@@ -518,8 +520,8 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
         case VOCAB_CM_VELOCITY: {
             auto& pid = joint.pidControllers[yarp::dev::VOCAB_PIDTYPE_VELOCITY];
             forceReference
-                = pid.Update(convertUserToGazebo(joint, joint.commonJointProperties.velocity)
-                             - convertUserToGazebo(joint, joint.commonJointProperties.refVelocity),
+                = pid.Update(ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.velocity)
+                             - ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.refVelocity),
                              _info.dt);
             break;
         }
@@ -527,8 +529,8 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
         case VOCAB_CM_POSITION_DIRECT: {
             // TODO manage motor positions instead of joint positions when implemented
             auto& pid = joint.pidControllers[yarp::dev::VOCAB_PIDTYPE_POSITION];
-            forceReference = pid.Update(convertUserToGazebo(joint, joint.commonJointProperties.position)
-                                            - convertUserToGazebo(joint, joint.commonJointProperties.refPosition),
+            forceReference = pid.Update(ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.position)
+                                            - ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.refPosition),
                                         _info.dt);
             break;
         }
@@ -570,7 +572,7 @@ bool ControlBoard::initializePIDs(yarp::dev::PidControlTypeEnum pid_type)
     }
     else if (pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY)
     {
-        pid_section = "POSITION_VELOCITY";
+        pid_section = "VELOCITY_CONTROL";
     }
     else
     {
@@ -749,11 +751,11 @@ void ControlBoard::setJointPIDs(AngleUnitEnum cUnits,
         if (cUnits == AngleUnitEnum::DEG)
         {
             auto& joint = m_controlBoardData.physicalJoints.at(i);
-            jointPID.SetPGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].kp)
+            jointPID.SetPGain(ControlBoardData::convertUserGainToGazeboGain(joint, yarpPIDs[i].kp)
                                       / pow(2, yarpPIDs[i].scale));
-            jointPID.SetIGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].ki)
+            jointPID.SetIGain(ControlBoardData::convertUserGainToGazeboGain(joint, yarpPIDs[i].ki)
                                       / pow(2, yarpPIDs[i].scale));
-            jointPID.SetDGain(convertUserGainToGazeboGain(joint, yarpPIDs[i].kd)
+            jointPID.SetDGain(ControlBoardData::convertUserGainToGazeboGain(joint, yarpPIDs[i].kd)
                                       / pow(2, yarpPIDs[i].scale));
         } else if (cUnits == AngleUnitEnum::RAD)
         {
@@ -767,30 +769,6 @@ void ControlBoard::setJointPIDs(AngleUnitEnum cUnits,
         jointPID.SetCmdMax(yarpPIDs[i].max_output);
         jointPID.SetCmdMin(-yarpPIDs[i].max_output);
     }
-}
-
-double ControlBoard::convertUserGainToGazeboGain(PhysicalJointProperties& joint, double value)
-{
-    // TODO discriminate between joint types
-    return gzyarp::convertDegreeGainToRadianGains(value);
-}
-
-double ControlBoard::convertGazeboGainToUserGain(PhysicalJointProperties& joint, double value)
-{
-    // TODO discriminate between joint types
-    return gzyarp::convertRadianGainToDegreeGains(value);
-}
-
-double ControlBoard::convertGazeboToUser(PhysicalJointProperties& joint, double value)
-{
-    // TODO discriminate between joint types
-    return convertRadiansToDegrees(value);
-}
-
-double ControlBoard::convertUserToGazebo(PhysicalJointProperties& joint, double value)
-{
-    // TODO discriminate between joint types
-    return convertDegreesToRadians(value);
 }
 
 bool ControlBoard::initializeJointPositionLimits(const gz::sim::EntityComponentManager& ecm)
@@ -906,8 +884,8 @@ bool ControlBoard::initializeTrajectoryGenerators()
     for (auto& joint : m_controlBoardData.actuatedAxes)
     {
         joint.trajectoryGenerator = yarp::dev::gzyarp::TrajectoryGeneratorFactory::create(trajectoryType);
-        joint.speed_ramp_handler = std::make_unique<yarp::dev::gzyarp::RampFilter>();
-        joint.velocity_watchdog = std::make_unique<yarp::dev::gzyarp::Watchdog>(0.200); //watchdog set to 200ms
+        joint.speedRampHandler = std::make_unique<yarp::dev::gzyarp::RampFilter>();
+        joint.velocityWatchdog = std::make_unique<yarp::dev::gzyarp::Watchdog>(0.200); //watchdog set to 200ms
     }
 
     if (!initializeTrajectoryGeneratorReferences(trajectoryGeneratorsGroup))
@@ -1037,7 +1015,7 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
         {
             auto& joint = m_controlBoardData.physicalJoints.at(i);
             auto gzPos = initialConfigurations[i];
-            auto userPos = convertGazeboToUser(joint, gzPos);
+            auto userPos = ControlBoardData::convertGazeboToUser(joint, gzPos);
             // Reset joint properties
             joint.commonJointProperties.refPosition = userPos;
             joint.commonJointProperties.position = userPos;
@@ -1058,7 +1036,7 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
             if (gzJoint.Position(ecm).has_value() && gzJoint.Position(ecm).value().size() > 0)
             {
                 auto gzPos = gzJoint.Position(ecm).value().at(0);
-                auto userPos = convertGazeboToUser(joint, gzPos);
+                auto userPos = ControlBoardData::convertGazeboToUser(joint, gzPos);
                 // Reset joint properties
                 joint.commonJointProperties.refPosition = userPos;
                 joint.commonJointProperties.position = userPos;
@@ -1091,6 +1069,7 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
             auto& physJoint = m_controlBoardData.physicalJoints[i];
             actAxis.trajectoryGenerationRefPosition = physJoint.commonJointProperties.refPosition;
             actAxis.commonJointProperties.refPosition = physJoint.commonJointProperties.refPosition;
+            actAxis.commonJointProperties.refVelocity = physJoint.commonJointProperties.refVelocity;
             actAxis.commonJointProperties.position = physJoint.commonJointProperties.position;
         }
     }

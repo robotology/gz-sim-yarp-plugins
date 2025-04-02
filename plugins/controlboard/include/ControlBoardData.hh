@@ -67,8 +67,8 @@ struct ActuatedAxisProperties
 {
     CommonJointProperties commonJointProperties;
     std::unique_ptr<yarp::dev::gzyarp::TrajectoryGenerator> trajectoryGenerator;
-    std::unique_ptr<yarp::dev::gzyarp::RampFilter> speed_ramp_handler;
-    std::unique_ptr<yarp::dev::gzyarp::Watchdog> velocity_watchdog;
+    std::unique_ptr<yarp::dev::gzyarp::RampFilter> speedRampHandler;
+    std::unique_ptr<yarp::dev::gzyarp::Watchdog> velocityWatchdog;
     double trajectoryGenerationRefPosition{0.0};
     double trajectoryGenerationRefSpeed{0.0};
     double trajectoryGenerationRefAcceleration{0.0};
@@ -89,6 +89,11 @@ public:
     bool initCoupledJoints();
     bool setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode);
     bool setControlMode(int j, int mode);
+
+    static double convertUserGainToGazeboGain(PhysicalJointProperties& joint, double value);
+    static double convertGazeboGainToUserGain(PhysicalJointProperties& joint, double value);
+    static double convertGazeboToUser(PhysicalJointProperties& joint, double value);
+    static double convertUserToGazebo(PhysicalJointProperties& joint, double value);
 private:
     yarp::sig::VectorOf<size_t> coupledActuatedAxes, coupledPhysicalJoints;
 };
