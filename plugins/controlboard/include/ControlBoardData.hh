@@ -89,6 +89,11 @@ public:
     bool initCoupledJoints();
     bool setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode);
     bool setControlMode(int j, int mode);
+
+    static double convertUserGainToGazeboGain(PhysicalJointProperties& joint, double value);
+    static double convertGazeboGainToUserGain(PhysicalJointProperties& joint, double value);
+    static double convertGazeboToUser(PhysicalJointProperties& joint, double value);
+    static double convertUserToGazebo(PhysicalJointProperties& joint, double value);
 private:
     yarp::sig::VectorOf<size_t> coupledActuatedAxes, coupledPhysicalJoints;
 };

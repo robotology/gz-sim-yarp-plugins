@@ -93,10 +93,6 @@ private:
                           std::vector<yarp::dev::Pid>& yarpPIDs,
                           size_t numberOfPhysicalJoints);
     void setJointPIDs(AngleUnitEnum cUnits, const std::vector<yarp::dev::Pid>& yarpPIDs,yarp::dev::PidControlTypeEnum pid_type);
-    double convertUserGainToGazeboGain(PhysicalJointProperties& joint, double value);
-    double convertGazeboGainToUserGain(PhysicalJointProperties& joint, double value);
-    double convertGazeboToUser(PhysicalJointProperties& joint, double value);
-    double convertUserToGazebo(PhysicalJointProperties& joint, double value);
     bool initializeJointPositionLimits(const gz::sim::EntityComponentManager& ecm);
     bool initializeTrajectoryGenerators();
     bool initializeTrajectoryGeneratorReferences(yarp::os::Bottle& trajectoryGeneratorsGroup);
