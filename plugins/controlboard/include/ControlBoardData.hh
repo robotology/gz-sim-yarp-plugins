@@ -45,7 +45,8 @@ struct CommonJointProperties {
     double zeroPosition{0.0}; // The zero position is the position of the GAZEBO joint that will be
                               // read as the starting one i.e.
                               // getEncoder(j)=m_zeroPosition+gazebo.getEncoder(j);
-    double refPosition{0.0};
+    double refPosition{0.0};  //for position control mode
+    double refVelocity{0.0};  //for velocity control mode
     double position{0.0}; // Joint position [deg]
     double positionLimitMin{std::numeric_limits<double>::min()};
     double positionLimitMax{std::numeric_limits<double>::max()};
@@ -66,6 +67,8 @@ struct ActuatedAxisProperties
 {
     CommonJointProperties commonJointProperties;
     std::unique_ptr<yarp::dev::gzyarp::TrajectoryGenerator> trajectoryGenerator;
+    std::unique_ptr<yarp::dev::gzyarp::RampFilter> speedRampHandler;
+    std::unique_ptr<yarp::dev::gzyarp::Watchdog> velocityWatchdog;
     double trajectoryGenerationRefPosition{0.0};
     double trajectoryGenerationRefSpeed{0.0};
     double trajectoryGenerationRefAcceleration{0.0};
@@ -86,6 +89,11 @@ public:
     bool initCoupledJoints();
     bool setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode);
     bool setControlMode(int j, int mode);
+
+    static double convertUserGainToGazeboGain(PhysicalJointProperties& joint, double value);
+    static double convertGazeboGainToUserGain(PhysicalJointProperties& joint, double value);
+    static double convertGazeboToUser(PhysicalJointProperties& joint, double value);
+    static double convertUserToGazebo(PhysicalJointProperties& joint, double value);
 private:
     yarp::sig::VectorOf<size_t> coupledActuatedAxes, coupledPhysicalJoints;
 };
