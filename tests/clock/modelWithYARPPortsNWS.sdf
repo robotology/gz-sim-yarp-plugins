@@ -1,0 +1,155 @@
+<?xml version="1.0" ?>
+
+<!-- This is a model that contains both a gzyarp::Clock plugin, and a regular port-based NWS
+     this is used to catch regressions w.r.t. to issues like:
+    * https://github.com/robotology/gz-sim-yarp-plugins/issues/252
+    * https://github.com/robotology/gz-sim-yarp-plugins/issues/182 -->
+
+<sdf version="1.7">
+  <world name="World">
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin
+      filename="gz-sim-physics-system"
+      name="gz::sim::systems::Physics">
+    </plugin>
+    <plugin
+      filename="gz-sim-user-commands-system"
+      name="gz::sim::systems::UserCommands">
+    </plugin>
+    <plugin
+      filename="gz-sim-sensors-system"
+      name="gz::sim::systems::Sensors">
+    </plugin>
+    <plugin
+      filename="gz-sim-scene-broadcaster-system"
+      name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="single_pendulum">
+        <joint name="fixed_base" type="fixed">
+            <parent>world</parent>
+            <child>base_link</child>
+        </joint>
+        <link name='base_link'>
+            <inertial>
+                <pose>0 0 0 0 0 0</pose>
+                <mass>100</mass>
+                <inertia>
+                    <ixx>1</ixx>
+                    <ixy>0</ixy>
+                    <ixz>0</ixz>
+                    <iyy>1</iyy>
+                    <iyz>0</iyz>
+                    <izz>1</izz>
+                </inertia>
+            </inertial>
+            <collision name='base_link_fixed_joint_lump__base_collision'>
+                <pose>0 0 1 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.15 0.15 2.15</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='base_link_fixed_joint_lump__base_visual'>
+                <pose>0 0 1 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.15 0.15 2.15</size>
+                    </box>
+                </geometry>
+            </visual>
+        </link>
+        <joint name='upper_joint' type='revolute'>
+            <pose relative_to='base_link'>0.15 0 2 -1.5708 0 0</pose>
+            <parent>base_link</parent>
+            <child>upper_link</child>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <lower>-5</lower>
+                    <upper>5</upper>
+                    <effort>100</effort>
+                    <velocity>100</velocity>
+                </limit>
+                <dynamics>
+                    <damping>0.0</damping>
+                    <spring_reference>0</spring_reference>
+                    <spring_stiffness>0.0</spring_stiffness>
+                </dynamics>
+            </axis>
+        </joint>
+        <link name='upper_link'>
+            <pose relative_to='upper_joint'>0 0 0 0 0 0</pose>
+            <self_collide>0</self_collide>
+            <inertial>
+                <pose>0 0 0.5 0 0 0</pose>
+                <mass>1</mass>
+                <inertia>
+                    <ixx>0.0852</ixx>
+                    <ixy>0</ixy>
+                    <ixz>0</ixz>
+                    <iyy>0.0852</iyy>
+                    <iyz>0</iyz>
+                    <izz>0.0037</izz>
+                </inertia>
+            </inertial>
+            <collision name='upper_link_collision'>
+                <pose>0 0 0.5 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.15 0.15 1.0</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='upper_link_visual'>
+                <pose>0 0 0.5 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.15 0.15 1.0</size>
+                    </box>
+                </geometry>
+            </visual>
+        </link>
+
+        <!-- Launch the other YARP devices, in this case a controlBoard_nws_yarp to expose the
+        controlboard functionalities via YARP ports -->
+        <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
+            <yarpConfigurationFile>
+                model://conf/gazebo_controlboard.ini
+            </yarpConfigurationFile>
+            <!-- This initialConfiguration is specified here, but it is overriden in single_pendulum_world
+                 to show how to spawn the model in a different configuration from the default one of the model -->
+            <initialConfiguration>0.0</initialConfiguration>
+        </plugin>
+        <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
+            <yarpRobotInterfaceConfigurationFile>
+                model://conf/single_pendulum_nws.xml
+            </yarpRobotInterfaceConfigurationFile>
+        </plugin>
+    </model>
+
+    <plugin
+      filename="gz-sim-yarp-clock-system"
+      name="gzyarp::Clock">
+    </plugin>
+
+  </world>
+</sdf>

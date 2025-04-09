@@ -33,6 +33,7 @@ namespace gzyarp
 {
 
 class Clock : public System, public ISystemConfigure, public ISystemPostUpdate
+
 {
 public:
     Clock()
@@ -43,7 +44,54 @@ public:
 
     ~Clock()
     {
-        m_clockPort.close();
+        if (m_initialized)
+        {
+            m_clockPluginDestructionOngoing = true;
+
+            std::thread threadPublishIncreasingTimestampsOnDestruction = std::thread(&Clock::threadBodyPublishIncreasingTimestampsOnDestruction, this);
+
+            DeviceRegistry::getHandler()->removeClockPlugin(*ecm, m_clockPluginID);
+
+            m_clockPluginDestructionOngoing = false;
+
+            threadPublishIncreasingTimestampsOnDestruction.join();
+
+            m_clockPort.close();
+
+            m_initialized = false;
+        }
+    }
+
+    // This helper function is used to publish the current time
+    void publishTime(const std::chrono::steady_clock::duration& timeToPublish)
+    {
+        m_lastPublishedTime = timeToPublish;
+        std::chrono::seconds seconds
+            = std::chrono::duration_cast<std::chrono::seconds>(timeToPublish);
+        std::chrono::nanoseconds nanoseconds = timeToPublish - seconds;
+
+        Bottle& b = m_clockPort.prepare();
+        b.clear();
+        b.addInt32(seconds.count());
+        b.addInt32(nanoseconds.count());
+        m_clockPort.write();
+    }
+
+    // This function is used by a thread that publishes increasing time values on the clock
+    // on the event the clock plugin is destroyed, to unblock any thread that is waiting for the simulated clock
+    void threadBodyPublishIncreasingTimestampsOnDestruction()
+    {
+        auto publishingPeriod = std::chrono::milliseconds(10);
+        auto timeWhenToPublish = std::chrono::steady_clock::now();
+        while (m_clockPluginDestructionOngoing) {
+            // We publish time on top of the simulated once
+            auto timeToPublish = m_lastPublishedTime + publishingPeriod;
+            publishTime(timeToPublish);
+
+            // Schedule next execution time
+            timeWhenToPublish += publishingPeriod;
+            std::this_thread::sleep_until(timeWhenToPublish);
+        }
     }
 
     virtual void Configure(const Entity& _entity,
@@ -53,6 +101,8 @@ public:
     {
         if (!m_initialized)
         {
+            ecm = &_ecm;
+
             gzyarp::PluginConfigureHelper configureHelper(_ecm);
 
             // To avoid deadlock during initialization if YARP_CLOCK is set,
@@ -70,13 +120,15 @@ public:
                 m_resetYARPClockAfterPortCreation = false;
             }
 
-            m_initialized = true;
             if (!m_clockPort.open(m_portName))
             {
                 yError() << "Failed to open port" << m_portName;
                 return;
             }
 
+            m_gzInstanceId = DeviceRegistry::getGzInstanceId(_ecm);
+            DeviceRegistry::getHandler()->insertClockPlugin(_entity, _ecm, m_clockPluginID);
+            m_initialized = true;
             configureHelper.setConfigureIsSuccessful(true);
             yInfo() << "gz-sim-yarp-clock-system plugin initialized.";
         }
@@ -102,16 +154,7 @@ public:
             m_resetYARPClockAfterPortCreation = false;
         }
 
-        auto currentTime = _info.simTime;
-        std::chrono::seconds seconds
-            = std::chrono::duration_cast<std::chrono::seconds>(currentTime);
-        std::chrono::nanoseconds nanoseconds = currentTime - seconds;
-
-        Bottle& b = m_clockPort.prepare();
-        b.clear();
-        b.addInt32(seconds.count());
-        b.addInt32(nanoseconds.count());
-        m_clockPort.write();
+        publishTime(_info.simTime);
     }
 
 private:
@@ -122,6 +165,20 @@ private:
     std::unique_ptr<yarp::os::Network> m_network = nullptr;
     std::string m_portName;
     yarp::os::BufferedPort<yarp::os::Bottle> m_clockPort;
+    // Last time published by the clock
+    std::chrono::steady_clock::duration m_lastPublishedTime{0};
+
+    // True between during clock plugin destruction and the first subsequent call to PostUpdate
+    std::atomic<bool> m_clockPluginDestructionOngoing{false};
+
+    // The gzInstanceId of the gz instance, assigned by the device registry
+    std::string m_gzInstanceId;
+    // The clock plugin ID assigned by the device registry, used when the clock plugin is removed
+    std::string m_clockPluginID;
+
+    // Backup of the ecm pointer, used in the destructor
+    EntityComponentManager* ecm{nullptr};
+
 };
 
 } // namespace gzyarp
