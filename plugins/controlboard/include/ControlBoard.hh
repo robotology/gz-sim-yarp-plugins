@@ -81,21 +81,18 @@ private:
     double getJointTorqueFromTransmittedWrench(const gz::sim::Joint& gzJoint,
                                                const gz::msgs::Wrench& wrench,
                                                const gz::sim::EntityComponentManager& ecm) const;
-    bool initializePIDsForPositionControl();
+    bool initializePIDs(yarp::dev::PidControlTypeEnum pid_type);
     bool tryGetGroup(const yarp::os::Bottle& in,
                      std::vector<double>& out,
                      const std::string& key,
                      const std::string& txt,
-                     int expectedSize);
+                     int expectedSize,
+                     bool isRequired=true);
     bool setYarpPIDsParam(const std::vector<double>& pidParams,
                           const std::string& paramName,
                           std::vector<yarp::dev::Pid>& yarpPIDs,
                           size_t numberOfPhysicalJoints);
-    void setJointPositionPIDs(AngleUnitEnum cUnits, const std::vector<yarp::dev::Pid>& yarpPIDs);
-    double convertUserGainToGazeboGain(PhysicalJointProperties& joint, double value);
-    double convertGazeboGainToUserGain(PhysicalJointProperties& joint, double value);
-    double convertGazeboToUser(PhysicalJointProperties& joint, double value);
-    double convertUserToGazebo(PhysicalJointProperties& joint, double value);
+    void setJointPIDs(AngleUnitEnum cUnits, const std::vector<yarp::dev::Pid>& yarpPIDs,yarp::dev::PidControlTypeEnum pid_type);
     bool initializeJointPositionLimits(const gz::sim::EntityComponentManager& ecm);
     bool initializeTrajectoryGenerators();
     bool initializeTrajectoryGeneratorReferences(yarp::os::Bottle& trajectoryGeneratorsGroup);
