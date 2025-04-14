@@ -10,6 +10,7 @@
 #include <gz/common/Event.hh>
 #include <gz/common/events/Types.hh>
 #include <gz/plugin/Register.hh>
+#include <gz/sim/config.hh>
 #include <gz/sim/Entity.hh>
 #include <gz/sim/EntityComponentManager.hh>
 #include <gz/sim/EventManager.hh>
@@ -65,13 +66,20 @@ public:
                 yError() << "gz-sim-yarp-robotinterface-system: impossible  to run phase "
                             "ActionPhaseShutdown in robotinterface";
             }
-            m_connection.reset();
+            m_deviceRemovedConnection.reset();
+            m_clockPluginRemovedConnection.reset();
             m_robotInterfaceCorrectlyStarted = false;
         }
     }
 
-    void OnDeviceRemoved(std::string removeDeviceRegistryDatabaseKey)
+    void OnDeviceRemoved(std::string gzInstanceId, std::string removeDeviceRegistryDatabaseKey)
     {
+        // If the device removed is not in the same gz instance of the robotinterface, return
+        if (gzInstanceId != m_gzInstanceId)
+        {
+            return;
+        }
+
         // Check if deviceRegistryDatabaseKey is among the one passed to this instance of gz_yarp_robotinterface
         // If yes, close the robotinterface to avoid crashes due to access to a device that is being deleted
         for (auto&& usedDeviceScopedName: m_deviceScopedNames) {
@@ -81,6 +89,33 @@ public:
         }
         return;
     }
+
+    void OnClockPluginRemoved(std::string gzInstanceId, std::string removedClockPluginID)
+    {
+        // If the device removed is not in the same gz instance of the robotinterface, return
+        if (gzInstanceId != m_gzInstanceId)
+        {
+            return;
+        }
+
+        // If the clock plugin belongs to the same gz instance of the robotinterface and belongs
+        // to a ancestor entity, close the robotinterface
+        bool closeRobotInterface = false;
+        // Workaround for https://github.com/robotology/gz-sim-yarp-plugins/pull/253#issuecomment-2730881727
+#if defined(GZ_SIM_MAJOR_VERSION) && (GZ_SIM_MAJOR_VERSION >= 9)
+        std::string parentEntityScopedNameWhereClockPluginWasInserted = DeviceRegistry::getParentEntityScopedName(removedClockPluginID);
+        closeRobotInterface = (m_parentEntityScopedName.rfind(parentEntityScopedNameWhereClockPluginWasInserted) == 0);
+#else
+        // Always close the robotinterface if the clock plugin is removed on gz-sim <= 8
+        closeRobotInterface = true;
+#endif
+        if (closeRobotInterface)
+        {
+            CloseRobotInterface();
+        }
+        return;
+    }
+
 
     virtual void Configure(const Entity& _entity,
                            const std::shared_ptr<const sdf::Element>& _sdf,
@@ -124,20 +159,29 @@ public:
 
         configureHelper.setConfigureIsSuccessful(true);
         m_robotInterfaceCorrectlyStarted = true;
+
         // If the robotinterface started correctly, add a callback to ensure that it is closed as
         // soon that an external device passed to it is deleted
-        m_connection =
+        m_deviceRemovedConnection =
             DeviceRegistry::getHandler()->connectDeviceRemoved(
-                std::bind(&RobotInterface::OnDeviceRemoved, this, std::placeholders::_1));
+                std::bind(&RobotInterface::OnDeviceRemoved, this, std::placeholders::_1,  std::placeholders::_2));
+
+        // If the robotinterface started correctly, add a callback to ensure that it is closed as
+        // soon that the clock plugin is deleted
+        m_clockPluginRemovedConnection =
+            DeviceRegistry::getHandler()->connectClockPluginRemoved(
+                std::bind(&RobotInterface::OnClockPluginRemoved, this, std::placeholders::_1,  std::placeholders::_2));
     }
 
 private:
     yarp::robotinterface::XMLReaderResult m_xmlRobotInterfaceResult;
     std::vector<std::string> m_deviceScopedNames;
-    gz::common::ConnectionPtr m_connection;
+    gz::common::ConnectionPtr m_deviceRemovedConnection;
+    gz::common::ConnectionPtr m_clockPluginRemovedConnection;
     bool m_robotInterfaceCorrectlyStarted;
     std::string m_yarpRobotInterfaceName;
     std::string m_parentEntityScopedName;
+    std::string m_gzInstanceId;
 
     bool loadYarpRobotInterfaceConfigurationFile(const std::shared_ptr<const sdf::Element>& _sdf,
                                                  const EntityComponentManager& _ecm,
@@ -185,6 +229,7 @@ private:
         }
 
         // Then check if there is any override for the enable and disable tags elements
+        m_gzInstanceId = DeviceRegistry::getHandler()->getGzInstanceId(_ecm);
         m_parentEntityScopedName = gz::sim::scopedName(_entity, _ecm, "/");
         std::unordered_map<std::string, std::string> overridenParameters;
         DeviceRegistry::getHandler()->getConfigurationOverrideForYARPRobotInterface(

@@ -7,7 +7,7 @@ dependencies:
   - make
   - ninja
   - pkg-config
-  - libgz-sim8
+  - libgz-sim9
   - yarp
   - gtest
   - cmake-package-check

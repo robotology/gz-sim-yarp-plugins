@@ -42,9 +42,8 @@ The plugins available in the repo are listed in the following.
 | `gzyarp::Camera` | `gz-sim-yarp-camera-system` | [Missing. If you need it please open an issue.](https://github.com/robotology/gz-sim-yarp-plugins/issues/new)  | [`tutorial/camera`](./tutorial/camera) |
 | `gzyarp::BaseState` | `gz-sim-yarp-basestate-system` | [Missing. If you need it please open an issue.](https://github.com/robotology/gz-sim-yarp-plugins/issues/new)  | [`tutorial/basestate`](./tutorial/basestate) |
 | `gzyarp::RobotInterface` | `gz-sim-yarp-robotinterface-system` | [`plugins/robotinterface/README.md`](./plugins/robotinterface/README.md) | All tutorials in [`tutorial`](./tutorial) make use of the `gzyarp::RobotInterface` plugin. |
-| `gzyarp::Clock` | `gz-sim-yarp-clock-system` | [Missing. If you need it please open an issue.](https://github.com/robotology/gz-sim-yarp-plugins/issues/new)  | [`tutorial/clock`](./tutorial/clock) |
+| `gzyarp::Clock` | `gz-sim-yarp-clock-system` |  [`plugins/clock/README.md`](./plugins/clock/README.md)   | [`tutorial/clock`](./tutorial/clock) |
 | `gzyarp::DepthCamera` | `gz-sim-yarp-depthcamera-system` | [Missing. If you need it please open an issue.](https://github.com/robotology/gz-sim-yarp-plugins/issues/new)  | [`tutorial/depthcamera`](./tutorial/depthcamera) |
-
 
 
 You can see how to use the different plugins by looking in the directories contained in the [tutorial](tutorial/) folder of this repo. Each directory is an example, and contains a README that shows how to run that example.
