@@ -79,10 +79,5 @@
       </include>
     </model>
 
-    <plugin
-      filename="gz-sim-yarp-clock-system"
-      name="gzyarp::Clock">
-    </plugin>
-
   </world>
 </sdf>
