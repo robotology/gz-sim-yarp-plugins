@@ -45,7 +45,7 @@ jobs:
       run: pixi run -e ${{ matrix.pixi_env }} build
 
     # Windows disabled due to https://github.com/robotology/gz-sim-yarp-plugins/issues/205
-    # macOS on Harmonic disabled due to https://github.com/robotology/gz-sim-yarp-plugins/pull/253#issuecomment-2732223851
+    # macOS disabled due to https://github.com/robotology/gz-sim-yarp-plugins/issues/215
     - name: Run tests
-      if: "!contains(matrix.os, 'windows') && !(contains(matrix.os, 'macos') && matrix.pixi_env == 'default')"
+      if: "!contains(matrix.os, 'windows') && !contains(matrix.os, 'macos')"
       run: pixi run -e ${{ matrix.pixi_env }} test
