@@ -85,13 +85,12 @@ jobs:
         cmake --build . --config ${{ matrix.build_type }}
 
     # Tests are Ubuntu-only due to  https://github.com/robotology/gz-sim-yarp-plugins/issues/215 and  https://github.com/robotology/gz-sim-yarp-plugins/issues/205
-    - name: Test_ubuntu
+    - name: Test
       if: contains(matrix.os, 'ubuntu')
       shell: bash -l {0}
       run: |
         cd build
-        # LaserTest and CameraTest are failing on conda-forge on Ubuntu: https://github.com/robotology/gz-sim-yarp-plugins/issues/196
-        ctest -E "^LaserTest|^CameraTest" --output-on-failure -C ${{ matrix.build_type }} .
+        ctest --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Install
       run: |
