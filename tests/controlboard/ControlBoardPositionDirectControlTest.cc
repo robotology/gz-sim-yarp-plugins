@@ -219,19 +219,24 @@ TEST_F(ControlBoardPositionDirectFixture, CheckPositionTrackingUsingPendulumMode
         refTrajectory[i] = value;
     }
 
-    double jointPosition;
+    double jointPosition, jointRefPosition;
 
     testFixture
         .OnPreUpdate([&](const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm) {
             // Set ref position
             iPositionDirectControl->setPosition(0, refTrajectory[iterations]);
+            iPositionDirectControl->getRefPosition(0, &jointRefPosition);
+            EXPECT_EQ(refTrajectory[iterations], jointRefPosition);
+
+            std::cerr << "Joint 0 ref position: " << jointRefPosition << std::endl;
+            std::cerr << "Joint 0 position: " << jointPosition << std::endl;
+
         })
         .OnPostUpdate(
             [&](const gz::sim::UpdateInfo& _info, const gz::sim::EntityComponentManager& _ecm) {
                 // std::cerr << "========== Iteration: " << iterations << std::endl;
 
                 iEncoders->getEncoder(0, &jointPosition);
-
                 // std::cerr << "ref position: " << refTrajectory[iterations] << std::endl;
                 // std::cerr << "joint position: " << jointPosition << std::endl;
 
@@ -277,20 +282,23 @@ TEST_F(ControlBoardPositionDirectCoupledPendulumFixture, CheckPositionTrackingUs
         refTrajectory[i] = value;
     }
 
-    yarp::sig::Vector jointPositions{0.0, 0.0};
+    yarp::sig::Vector jointPositions{0.0, 0.0}, jointRefPositions{0.0, 0.0};
 
     testFixture
         .OnPreUpdate([&](const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm) {
             // Set ref position
             iPositionDirectControl->setPosition(0, refTrajectory[iterations]);
             iPositionDirectControl->setPosition(1, refTrajectory[iterations]);
+            iPositionDirectControl->getRefPositions(jointRefPositions.data());
+            EXPECT_EQ(refTrajectory[iterations], jointRefPositions[0]);
+            EXPECT_EQ(refTrajectory[iterations], jointRefPositions[1]);
         })
         .OnPostUpdate(
             [&](const gz::sim::UpdateInfo& _info, const gz::sim::EntityComponentManager& _ecm) {
                 // std::cerr << "========== Iteration: " << iterations << std::endl;
 
                 iEncoders->getEncoders(jointPositions.data());
-                
+
                 // std::cerr << "ref position: " << refTrajectory[iterations] << std::endl;
                 // std::cerr << "joint position: " << jointPosition << std::endl;
 
