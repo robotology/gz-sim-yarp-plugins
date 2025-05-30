@@ -16,4 +16,8 @@ target_link_libraries(gz-sim-yarp-commons
     YARP::YARP_dev
     YARP::YARP_init)
 
-install(TARGETS gz-sim-yarp-commons)
+install(TARGETS gz-sim-yarp-commons
+        EXPORT ${PROJECT_NAME})
+
+install(FILES Common.hh ConfigurationHelpers.hh
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/gzyarp")
