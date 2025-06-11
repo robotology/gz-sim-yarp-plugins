@@ -1,3 +1,4 @@
+#include <Common.hh>
 #include <ConfigurationHelpers.hh>
 #include <DeviceRegistry.hh>
 #include <ImuDriver.cpp>
@@ -171,9 +172,19 @@ public:
             imuMsg = this->imuMsg;
         }
         std::lock_guard<std::mutex> lock(imuData.m_mutex);
-        imuData.m_data[0] = (imuMsg.orientation().x() != 0) ? imuMsg.orientation().x() : 0;
-        imuData.m_data[1] = (imuMsg.orientation().y() != 0) ? imuMsg.orientation().y() : 0;
-        imuData.m_data[2] = (imuMsg.orientation().w() != 0) ? imuMsg.orientation().w() : 0;
+
+        // Convert quaternion to RPY
+        gz::math::Quaterniond q(imuMsg.orientation().w(),
+                                imuMsg.orientation().x(),
+                                imuMsg.orientation().y(),
+                                imuMsg.orientation().z());
+        double roll = q.Roll();
+        double pitch = q.Pitch();
+        double yaw = q.Yaw();
+
+        imuData.m_data[0] = convertDegreesToRadians(roll);
+        imuData.m_data[1] = convertDegreesToRadians(pitch);
+        imuData.m_data[2] = convertDegreesToRadians(yaw);
         imuData.m_data[3]
             = (imuMsg.linear_acceleration().x() != 0) ? imuMsg.linear_acceleration().x() : 0;
         imuData.m_data[4]
