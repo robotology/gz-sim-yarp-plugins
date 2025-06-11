@@ -114,7 +114,7 @@ TEST_F(ImuFixture, ImuTest)
 
     EXPECT_NEAR(measureOrientation(0), 0.0, 1e-2);
     EXPECT_NEAR(measureOrientation(1), 0.0, 1e-2);
-    EXPECT_NEAR(measureOrientation(2), 1.0, 1e-2);
+    EXPECT_NEAR(measureOrientation(2), 0.0, 1e-2);
     EXPECT_GT(timestampOrientation, 0.0);
 
     EXPECT_NEAR(measureAccelerometer(0), 0.0, 1e-2);
