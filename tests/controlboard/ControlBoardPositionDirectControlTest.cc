@@ -248,9 +248,6 @@ TEST_F(ControlBoardPositionDirectFixture, CheckPositionTrackingUsingPendulumMode
             iPositionDirectControl->getRefPosition(0, &jointRefPosition);
             EXPECT_EQ(refTrajectory[iterations], jointRefPosition);
 
-            // std::cerr << "Joint 0 ref position: " << jointRefPosition << std::endl;
-            // std::cerr << "Joint 0 position: " << jointPosition << std::endl;
-
         })
         .OnPostUpdate(
             [&](const gz::sim::UpdateInfo& _info, const gz::sim::EntityComponentManager& _ecm) {
