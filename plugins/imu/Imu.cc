@@ -182,21 +182,24 @@ public:
         double pitch = q.Pitch();
         double yaw = q.Yaw();
 
-        imuData.m_data[0] = convertDegreesToRadians(roll);
-        imuData.m_data[1] = convertDegreesToRadians(pitch);
-        imuData.m_data[2] = convertDegreesToRadians(yaw);
+        imuData.m_data[0] = convertRadiansToDegrees(roll);
+        imuData.m_data[1] = convertRadiansToDegrees(pitch);
+        imuData.m_data[2] = convertRadiansToDegrees(yaw);
         imuData.m_data[3]
             = (imuMsg.linear_acceleration().x() != 0) ? imuMsg.linear_acceleration().x() : 0;
         imuData.m_data[4]
             = (imuMsg.linear_acceleration().y() != 0) ? imuMsg.linear_acceleration().y() : 0;
         imuData.m_data[5]
             = (imuMsg.linear_acceleration().z() != 0) ? imuMsg.linear_acceleration().z() : 0;
-        imuData.m_data[6] = (imuMsg.angular_velocity().x() != 0) ? imuMsg.angular_velocity().x()
-                                                                 : 0;
-        imuData.m_data[7] = (imuMsg.angular_velocity().y() != 0) ? imuMsg.angular_velocity().y()
-                                                                 : 0;
-        imuData.m_data[8] = (imuMsg.angular_velocity().z() != 0) ? imuMsg.angular_velocity().z()
-                                                                 : 0;
+        imuData.m_data[6] = (imuMsg.angular_velocity().x() != 0)
+                                ? convertRadiansToDegrees(imuMsg.angular_velocity().x())
+                                : 0;
+        imuData.m_data[7] = (imuMsg.angular_velocity().y() != 0)
+                                ? convertRadiansToDegrees(imuMsg.angular_velocity().y())
+                                : 0;
+        imuData.m_data[8] = (imuMsg.angular_velocity().z() != 0)
+                                ? convertRadiansToDegrees(imuMsg.angular_velocity().z())
+                                : 0;
         imuData.simTime = _info.simTime.count() / 1e9;
     }
 
