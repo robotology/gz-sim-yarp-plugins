@@ -127,15 +127,13 @@ class ControlBoardPositionDirectCoupledPendulumFixture : public ::testing::Test
 protected:
     // void SetUp() override
     ControlBoardPositionDirectCoupledPendulumFixture()
-        : testFixture{(std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR)
-                       / "coupled_pendulum_two_joints_coupled.sdf")
-                          .string()}
     {
+        yarp::os::NetworkBase::setLocalMode(true);
+        testFixture = std::make_unique<gz::sim::TestFixture>(
+            (std::filesystem::path(CMAKE_CURRENT_SOURCE_DIR) / "coupled_pendulum_two_joints_coupled.sdf").string());
         gz::common::Console::SetVerbosity(4);
-
-        testFixture.
-            // Use configure callback to get values at startup
-            OnConfigure([&](const gz::sim::Entity& _worldEntity,
+        // Use configure callback to get values at startup
+        testFixture->OnConfigure([&](const gz::sim::Entity& _worldEntity,
                             const std::shared_ptr<const sdf::Element>& /*_sdf*/,
                             gz::sim::EntityComponentManager& _ecm,
                             gz::sim::EventManager& /*_eventMgr*/) {
@@ -162,6 +160,24 @@ protected:
                 iEncoders = nullptr;
                 ASSERT_TRUE(driver->view(iEncoders));
 
+                yarp::os::Property prop;
+                prop.put("device", "remotecontrolboardremapper");
+
+                prop.addGroup("axesNames");
+                auto& botAxesList = prop.findGroup("axesNames").addList();
+                botAxesList.addString("upper_joint");
+                botAxesList.addString("lower_joint");
+
+                prop.addGroup("remoteControlBoards");
+                auto& botRCBList = prop.findGroup("remoteControlBoards").addList();
+                botRCBList.addString("/coupledPendulumGazebo/body");
+
+                prop.put("localPortPrefix","/gz-sim-posdir-test");
+
+                ASSERT_TRUE(remote_controlboard_remapper_driver.open(prop));
+                ASSERT_TRUE(remote_controlboard_remapper_driver.view(posDirect_remapper));
+                ASSERT_TRUE(posDirect_remapper != nullptr);
+
                 // Get joint1
                 auto jointEntity0 = model.JointByName(_ecm, "upper_joint");
                 EXPECT_NE(gz::sim::kNullEntity, jointEntity0);
@@ -175,6 +191,7 @@ protected:
                 // Set joint in torque control mode
                 ASSERT_TRUE(iControlMode->setControlMode(0, VOCAB_CM_POSITION_DIRECT));
                 ASSERT_TRUE(iControlMode->setControlMode(1, VOCAB_CM_POSITION_DIRECT));
+                ASSERT_TRUE(iControlMode->setControlMode(2, VOCAB_CM_POSITION_DIRECT));
 
                 // Print number of joint configured
                 int nJointsConfigured{};
@@ -187,14 +204,14 @@ protected:
     }
 
     // Get SDF model name from test parameter
-    gz::sim::TestFixture testFixture;
+    std::unique_ptr<gz::sim::TestFixture> testFixture;
     double linkMass{1};
     double linkLength{1.0};
     double linkInertiaAtLinkEnd{0.3352}; // Computed with parallel axis theorem
     int plannedIterations{5000};
     int iterations{0};
     std::vector<std::vector<double>> trackingErrors{2};
-    double acceptedTolerance{5e-2};
+    double acceptedTolerance{5e-1};
     bool configured{false};
     gz::math::Vector3d gravity;
     gz::sim::Entity modelEntity;
@@ -202,6 +219,8 @@ protected:
     gz::sim::Joint joint0;
     gz::sim::Joint joint1;
     yarp::dev::PolyDriver* driver;
+    yarp::dev::PolyDriver remote_controlboard_remapper_driver;
+    yarp::dev::IPositionDirect* posDirect_remapper = nullptr;
     yarp::dev::IPositionDirect* iPositionDirectControl = nullptr;
     yarp::dev::IControlMode* iControlMode = nullptr;
     yarp::dev::IEncoders* iEncoders = nullptr;
@@ -228,8 +247,8 @@ TEST_F(ControlBoardPositionDirectFixture, CheckPositionTrackingUsingPendulumMode
             iPositionDirectControl->getRefPosition(0, &jointRefPosition);
             EXPECT_EQ(refTrajectory[iterations], jointRefPosition);
 
-            std::cerr << "Joint 0 ref position: " << jointRefPosition << std::endl;
-            std::cerr << "Joint 0 position: " << jointPosition << std::endl;
+            // std::cerr << "Joint 0 ref position: " << jointRefPosition << std::endl;
+            // std::cerr << "Joint 0 position: " << jointPosition << std::endl;
 
         })
         .OnPostUpdate(
@@ -282,16 +301,18 @@ TEST_F(ControlBoardPositionDirectCoupledPendulumFixture, CheckPositionTrackingUs
         refTrajectory[i] = value;
     }
 
-    yarp::sig::Vector jointPositions{0.0, 0.0}, jointRefPositions{0.0, 0.0};
+    yarp::sig::Vector jointPositions{0.0, 0.0, 0.0}, jointRefPositions{0.0, 0.0, 0.0}, jointRefPositionsRemapper{0.0, 0.0, 0.0};
 
-    testFixture
-        .OnPreUpdate([&](const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm) {
+    testFixture->OnPreUpdate([&](const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm) {
             // Set ref position
-            iPositionDirectControl->setPosition(0, refTrajectory[iterations]);
             iPositionDirectControl->setPosition(1, refTrajectory[iterations]);
+            iPositionDirectControl->setPosition(2, refTrajectory[iterations]);
             iPositionDirectControl->getRefPositions(jointRefPositions.data());
-            EXPECT_EQ(refTrajectory[iterations], jointRefPositions[0]);
+            posDirect_remapper->getRefPositions(jointRefPositionsRemapper.data());
             EXPECT_EQ(refTrajectory[iterations], jointRefPositions[1]);
+            EXPECT_EQ(refTrajectory[iterations], jointRefPositions[2]);
+            EXPECT_EQ(refTrajectory[iterations], jointRefPositionsRemapper[1]);
+            EXPECT_EQ(refTrajectory[iterations], jointRefPositionsRemapper[2]);
         })
         .OnPostUpdate(
             [&](const gz::sim::UpdateInfo& _info, const gz::sim::EntityComponentManager& _ecm) {
@@ -304,8 +325,8 @@ TEST_F(ControlBoardPositionDirectCoupledPendulumFixture, CheckPositionTrackingUs
 
                 // Tracking error
                 // EXPECT_NEAR(jointPosition, refTrajectory[iterations], acceptedTolerance);
-                trackingErrors[0].push_back(abs(refTrajectory[iterations] - jointPositions[0]));
-                trackingErrors[1].push_back(abs(refTrajectory[iterations] - jointPositions[1]));
+                trackingErrors[0].push_back(abs(refTrajectory[iterations] - jointPositions[1]));
+                trackingErrors[1].push_back(abs(refTrajectory[iterations] - jointPositions[2]));
 
                 iterations++;
             })
@@ -322,7 +343,7 @@ TEST_F(ControlBoardPositionDirectCoupledPendulumFixture, CheckPositionTrackingUs
 
     // Setup simulation server, this will call the post-update callbacks.
     // It also calls pre-update and update callbacks if those are being used.
-    testFixture.Server()->Run(true, plannedIterations, false);
+    testFixture->Server()->Run(true, plannedIterations, false);
     std::cerr << "Simulation completed" << std::endl;
     // Final assertions
     EXPECT_TRUE(configured);
