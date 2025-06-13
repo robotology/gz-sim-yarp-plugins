@@ -165,6 +165,7 @@ protected:
 
                 prop.addGroup("axesNames");
                 auto& botAxesList = prop.findGroup("axesNames").addList();
+                botAxesList.addString("fixed_base");
                 botAxesList.addString("upper_joint");
                 botAxesList.addString("lower_joint");
 
@@ -288,7 +289,7 @@ TEST_F(ControlBoardPositionDirectFixture, CheckPositionTrackingUsingPendulumMode
     std::cerr << "Average tracking error: " << avgTrackgingError << std::endl;
     EXPECT_LT(avgTrackgingError, acceptedTolerance);
 }
-
+#if defined GZ_SIM_YARP_PLUGINS_ENABLE_TESTS_WITH_ICUB_MAIN
 TEST_F(ControlBoardPositionDirectCoupledPendulumFixture, CheckPositionTrackingUsingCoupledPendulumModel)
 {
     // Generate ref trajectory
@@ -360,6 +361,8 @@ TEST_F(ControlBoardPositionDirectCoupledPendulumFixture, CheckPositionTrackingUs
     EXPECT_LT(avgTrackgingError0, acceptedTolerance);
     EXPECT_LT(avgTrackgingError1, acceptedTolerance);
 }
+
+#endif // GZ_SIM_YARP_PLUGINS_ENABLE_TESTS_WITH_ICUB_MAIN
 
 } // namespace test
 } // namespace gzyarp
