@@ -171,9 +171,9 @@
         </yarpConfigurationFile>
         <initialConfiguration>0.0</initialConfiguration>
       </plugin>
-      <!-- <plugin name='robotinterface' filename='libgazebo_yarp_robotinterface.so'>
-      <yarpRobotInterfaceConfigurationFile>model://coupled_pendulum/conf/coupled_pendulum_nws.xml</yarpRobotInterfaceConfigurationFile>
-      </plugin> -->
+      <plugin name='robotinterface' filename='libgazebo_yarp_robotinterface.so'>
+      <yarpRobotInterfaceConfigurationFile>model://coupled_pendulum/conf/coupled_pendulum_nwsdafsads.xml</yarpRobotInterfaceConfigurationFile>
+      </plugin>
 
       <frame name='fake_base_fixed_joint' attached_to='base_link'>
         <pose>0 0 0 0 0 0</pose>
