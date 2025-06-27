@@ -254,13 +254,16 @@ TEST_F(ControlBoardPositionFixture, CheckPositionTrackingWithTrajectoryGeneratio
     ASSERT_LT(jointPosError, acceptedTolerance);
 }
 
+#if defined GZ_SIM_YARP_PLUGINS_ENABLE_TESTS_WITH_ICUB_MAIN
+
 TEST_F(ControlBoardPositionCoupledPendulumFixture, CheckPositionTrackingWithTrajectoryGenerationUsingPendulumModel)
 {
     auto refPosition{90.0};
     bool motionDone0{false};
     bool motionDone1{false};
-    yarp::sig::Vector jointPosition{0.0, 0.0};
-    yarp::sig::Vector jointPosError{0.0, 0.0};
+    bool motionDone2{false};
+    yarp::sig::Vector jointPosition{0.0, 0.0, 0.0};
+    yarp::sig::Vector jointPosError{0.0, 0.0, 0.0};
 
     testFixture
         .OnPostUpdate(
@@ -270,6 +273,7 @@ TEST_F(ControlBoardPositionCoupledPendulumFixture, CheckPositionTrackingWithTraj
                 iEncoders->getEncoders(jointPosition.data());
                 iPositionControl->checkMotionDone(0, &motionDone0);
                 iPositionControl->checkMotionDone(1, &motionDone1);
+                iPositionControl->checkMotionDone(2, &motionDone2);
 
                 // std::cerr << "ref position: " << refTrajectory[iterations] << std::endl;
                 // std::cerr << "joint position: " << jointPosition << std::endl;
@@ -282,45 +286,52 @@ TEST_F(ControlBoardPositionCoupledPendulumFixture, CheckPositionTrackingWithTraj
 
     int modeSet0{};
     int modeSet1{};
+    int modeSet2{};
     iControlMode->getControlMode(0, &modeSet0);
     iControlMode->getControlMode(1, &modeSet1);
+    iControlMode->getControlMode(2, &modeSet2);
     ASSERT_TRUE(modeSet0 == VOCAB_CM_POSITION);
     ASSERT_TRUE(modeSet1 == VOCAB_CM_POSITION);
+    ASSERT_TRUE(modeSet2 == VOCAB_CM_POSITION);
 
     // Set reference position
-    iPositionControl->positionMove(0, refPosition);
+    iPositionControl->positionMove(1, refPosition);
 
     // Setup simulation server, this will call the post-update callbacks.
     // It also calls pre-update and update callbacks if those are being used.
-    while (!motionDone0)
-    {
-        std::cerr << "Running server" << std::endl;
-        testFixture.Server()->Run(true, plannedIterations, false);
-        jointPosError[0] = abs(refPosition - jointPosition[0]);
-        std::cerr << "Joint 0 position error: " << jointPosError[0] << std::endl;
-    }
-
-    std::cerr << "Final tracking error for joint 0: " << jointPosError[0] << std::endl;
-    ASSERT_LT(jointPosError[0], acceptedTolerance);
-
-    iPositionControl->positionMove(1, refPosition);
     while (!motionDone1)
     {
         std::cerr << "Running server" << std::endl;
         testFixture.Server()->Run(true, plannedIterations, false);
         jointPosError[1] = abs(refPosition - jointPosition[1]);
-        std::cerr << "Joint 1 position error: " << jointPosError[1] << std::endl;
+        std::cerr << "Joint 0 position error: " << jointPosError[1] << std::endl;
+    }
+
+    std::cerr << "Final tracking error for joint 0: " << jointPosError[0] << std::endl;
+    ASSERT_LT(jointPosError[0], acceptedTolerance);
+
+    iPositionControl->positionMove(2, refPosition);
+    while (!motionDone2)
+    {
+        std::cerr << "Running server" << std::endl;
+        testFixture.Server()->Run(true, plannedIterations, false);
+        jointPosError[1] = abs(refPosition - jointPosition[2]);
+        std::cerr << "Joint 1 position error: " << jointPosError[2] << std::endl;
     }
 
     // Final assertions
     ASSERT_TRUE(configured);
     ASSERT_TRUE(motionDone0);
     ASSERT_TRUE(motionDone1);
+    ASSERT_TRUE(motionDone2);
 
     // Verify that the final error is within the accepted tolerance
     std::cerr << "Final tracking error for joint 1: " << jointPosError[1] << std::endl;
     ASSERT_LT(jointPosError[1], acceptedTolerance);
+    std::cerr << "Final tracking error for joint 2: " << jointPosError[2] << std::endl;
+    ASSERT_LT(jointPosError[2], acceptedTolerance);
 }
+#endif // GZ_SIM_YARP_PLUGINS_ENABLE_TESTS_WITH_ICUB_MAIN
 
 } // namespace test
 } // namespace gzyarp
