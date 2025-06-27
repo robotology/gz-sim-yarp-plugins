@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 project(gz-sim-yarp-plugins
         LANGUAGES CXX C
-        VERSION 0.4.2)
+        VERSION 0.4.3)
 
 find_package(YARP REQUIRED COMPONENTS robotinterface os)
 find_package(YCM REQUIRED)
