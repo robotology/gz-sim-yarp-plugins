@@ -46,6 +46,24 @@
     </model>
 
     <model name="coupled_pendulum">
+      <joint name="fixed_base" type="revolute">
+          <parent>world</parent>
+          <child>base_link</child>
+          <axis>
+              <xyz>1 0 0</xyz>
+              <limit>
+                  <lower>-5</lower>
+                  <upper>5</upper>
+                  <effort>100</effort>
+                  <velocity>100</velocity>
+              </limit>
+              <dynamics>
+                  <damping>0.0</damping>
+                  <spring_reference>0</spring_reference>
+                  <spring_stiffness>0.0</spring_stiffness>
+              </dynamics>
+          </axis>
+      </joint>
       <link name='base_link'>
         <inertial>
           <pose>0 0 0 0 0 0</pose>
@@ -161,13 +179,13 @@
 
       <plugin name="gzyarp::ControlBoard" filename="gz-sim-yarp-controlboard-system">
         <yarpConfigurationFile>
-          model://conf/gazebo_controlboard_multiple_joints.ini
+          model://conf/gazebo_controlboard_coupling.ini
         </yarpConfigurationFile>
         <initialConfiguration>0.0</initialConfiguration>
       </plugin>
-      <!-- <plugin name='robotinterface' filename='libgazebo_yarp_robotinterface.so'>
-      <yarpRobotInterfaceConfigurationFile>model://coupled_pendulum/conf/coupled_pendulum_nws.xml</yarpRobotInterfaceConfigurationFile>
-      </plugin> -->
+      <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
+      <yarpRobotInterfaceConfigurationFile>model://conf/coupled_pendulum_nws.xml</yarpRobotInterfaceConfigurationFile>
+      </plugin>
 
       <frame name='fake_base_fixed_joint' attached_to='base_link'>
         <pose>0 0 0 0 0 0</pose>

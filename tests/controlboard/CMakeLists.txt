@@ -9,7 +9,9 @@ set(TESTS
 
 foreach(TEST ${TESTS})
   add_executable(${TEST} ${TEST}.cc)
-
+  if (GZ_SIM_YARP_PLUGINS_ENABLE_TESTS_WITH_ICUB_MAIN)
+    target_compile_definitions(${TEST} PRIVATE GZ_SIM_YARP_PLUGINS_ENABLE_TESTS_WITH_ICUB_MAIN)
+  endif()
   target_link_libraries(${TEST}
     PRIVATE GTest::gtest_main
             test-helpers
