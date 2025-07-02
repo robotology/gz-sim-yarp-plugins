@@ -1,4 +1,4 @@
-#include <ConfigurationHelpers.hh>
+#include <gzyarp/ConfigurationHelpers.hh>
 
 #include <filesystem>
 #include <regex>
