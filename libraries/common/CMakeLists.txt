@@ -19,5 +19,6 @@ target_link_libraries(gz-sim-yarp-commons
 install(TARGETS gz-sim-yarp-commons
         EXPORT ${PROJECT_NAME})
 
+# NOTE: YarpDevReturnValueCompat.h is intentionally not installed, as it is a private header. Moreover it should not be included in any public header.
 install(FILES gzyarp/Common.hh gzyarp/ConfigurationHelpers.hh
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/gzyarp")
