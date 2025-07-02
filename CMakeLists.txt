@@ -2,12 +2,12 @@ cmake_minimum_required(VERSION 3.22)
 
 project(gz-sim-yarp-plugins
         LANGUAGES CXX C
-        VERSION 0.4.3)
+        VERSION 0.5.0)
 
 find_package(YARP REQUIRED COMPONENTS robotinterface os)
 find_package(YCM REQUIRED)
 
-# Temporary set CMAKE_POLICY_VERSION_MINIMUM 3.5 as a workaround 
+# Temporary set CMAKE_POLICY_VERSION_MINIMUM 3.5 as a workaround
 # for https://github.com/robotology/gz-sim-yarp-plugins/pull/258#issue-2963247728
 # Remove once we drop support for compilation on Ubuntu 24.04 with apt dependencies
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.0.0")
