@@ -1,6 +1,6 @@
-#include <Common.hh>
 #include <ControlBoardDriver.hh>
 #include <DeviceRegistry.hh>
+#include <gzyarp/Common.hh>
 
 #include <gtest/gtest.h>
 

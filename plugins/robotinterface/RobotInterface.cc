@@ -1,5 +1,5 @@
-#include <ConfigurationHelpers.hh>
 #include <DeviceRegistry.hh>
+#include <gzyarp/ConfigurationHelpers.hh>
 
 #include <functional>
 #include <memory>

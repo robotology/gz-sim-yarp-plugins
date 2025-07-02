@@ -1,7 +1,7 @@
-#include <ConfigurationHelpers.hh>
 #include <DeviceRegistry.hh>
 #include <LaserDriver.cpp>
 #include <LaserShared.hh>
+#include <gzyarp/ConfigurationHelpers.hh>
 
 #include <cstddef>
 #include <memory>

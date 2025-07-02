@@ -13,8 +13,7 @@
 #include <yarp/os/Searchable.h>
 #include <yarp/sig/Vector.h>
 
-#include <YarpDevReturnValueCompat.h>
-
+#include <gzyarp/YarpDevReturnValueCompat.h>
 
 namespace yarp
 {

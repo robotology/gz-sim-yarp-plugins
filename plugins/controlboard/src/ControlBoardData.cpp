@@ -1,6 +1,6 @@
 
 #include <ControlBoardData.hh>
-#include <Common.hh>
+#include <gzyarp/Common.hh>
 
 namespace gzyarp
 {

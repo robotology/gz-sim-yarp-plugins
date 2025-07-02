@@ -1,6 +1,6 @@
 # This library is installed as it is a shared library, but no headers are installed,
 # so the headers are effectively private headers, even if the library they belong to is installed
-add_library(gz-sim-yarp-commons SHARED Common.hh ConfigurationHelpers.hh ConfigurationHelpers.cpp)
+add_library(gz-sim-yarp-commons SHARED gzyarp/Common.hh gzyarp/ConfigurationHelpers.hh gzyarp/ConfigurationHelpers.cpp)
 
 target_include_directories(gz-sim-yarp-commons PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
 
@@ -16,4 +16,9 @@ target_link_libraries(gz-sim-yarp-commons
     YARP::YARP_dev
     YARP::YARP_init)
 
-install(TARGETS gz-sim-yarp-commons)
+install(TARGETS gz-sim-yarp-commons
+        EXPORT ${PROJECT_NAME})
+
+# NOTE: YarpDevReturnValueCompat.h is intentionally not installed, as it is a private header. Moreover it should not be included in any public header.
+install(FILES gzyarp/Common.hh gzyarp/ConfigurationHelpers.hh
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/gzyarp")
