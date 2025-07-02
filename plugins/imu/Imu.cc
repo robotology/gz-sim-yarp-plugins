@@ -1,8 +1,8 @@
-#include <Common.hh>
-#include <ConfigurationHelpers.hh>
 #include <DeviceRegistry.hh>
 #include <ImuDriver.cpp>
 #include <ImuShared.hh>
+#include <gzyarp/Common.hh>
+#include <gzyarp/ConfigurationHelpers.hh>
 
 #include <memory>
 #include <mutex>

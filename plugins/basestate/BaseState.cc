@@ -1,7 +1,7 @@
 #include <BaseStateDriver.cpp>
 #include <BaseStateShared.hh>
-#include <ConfigurationHelpers.hh>
 #include <DeviceRegistry.hh>
+#include <gzyarp/ConfigurationHelpers.hh>
 
 #include <memory>
 #include <mutex>

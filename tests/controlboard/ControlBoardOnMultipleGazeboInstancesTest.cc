@@ -1,5 +1,5 @@
-#include <Common.hh>
 #include <DeviceRegistry.hh>
+#include <gzyarp/Common.hh>
 
 #include <algorithm>
 #include <chrono>

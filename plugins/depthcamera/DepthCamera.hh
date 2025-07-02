@@ -2,8 +2,8 @@
 
 #include <DepthCameraDriver.h>
 #include <DepthCameraShared.hh>
-#include <ConfigurationHelpers.hh>
 #include <DeviceRegistry.hh>
+#include <gzyarp/ConfigurationHelpers.hh>
 
 #include <cstddef>
 #include <cstring>
@@ -74,7 +74,7 @@ private:
     yarp::dev::PolyDriver m_cameraDriver;
     std::string m_deviceId;
     std::string sensorScopedName;
-    
+
     bool m_deviceRegistered;
     DepthCameraData cameraData;
     bool cameraInitialized;

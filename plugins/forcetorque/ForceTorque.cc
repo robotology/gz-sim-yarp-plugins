@@ -1,6 +1,6 @@
-#include <ConfigurationHelpers.hh>
 #include <DeviceRegistry.hh>
 #include <ForceTorqueDriver.cpp>
+#include <gzyarp/ConfigurationHelpers.hh>
 
 #include <memory>
 #include <mutex>

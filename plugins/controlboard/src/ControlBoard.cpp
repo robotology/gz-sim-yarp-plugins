@@ -1,11 +1,11 @@
 #include <ControlBoard.hh>
 
-#include <Common.hh>
-#include <ConfigurationHelpers.hh>
 #include <ControlBoardData.hh>
 #include <ControlBoardDriver.hh>
 #include <ControlBoardTrajectory.hh>
 #include <DeviceRegistry.hh>
+#include <gzyarp/Common.hh>
+#include <gzyarp/ConfigurationHelpers.hh>
 
 #include <cmath>
 #include <cstddef>
@@ -274,7 +274,7 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
             yError() << "Error while initializing coupled joints";
             return false;
         }
-        
+
         // Let's initialize all the buffers/vectors
         if (!configureBuffers()) {
             yError() << "Error while configuring buffers";
@@ -339,7 +339,7 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
     Joint gzJoint;
     for (int i =0; i<m_controlBoardData.physicalJoints.size(); i++)
     {
-        auto& joint = m_controlBoardData.physicalJoints[i];      
+        auto& joint = m_controlBoardData.physicalJoints[i];
         try
         {
             gzJoint = Joint(model.JointByName(_ecm, joint.commonJointProperties.name));
@@ -443,10 +443,10 @@ bool ControlBoard::updateTrajectories(const UpdateInfo& _info, EntityComponentMa
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
 
     // TODO: execute the following at control update time
-    
+
     for (auto& joint : m_controlBoardData.actuatedAxes)
     {
-        
+
         switch (joint.commonJointProperties.controlMode)
         {
         case VOCAB_CM_POSITION:
@@ -820,7 +820,7 @@ bool ControlBoard::initializeJointPositionLimits(const gz::sim::EntityComponentM
             actuatedAxis.commonJointProperties.positionLimitMin = actuatedAxisPosLimitsMin.at(i);
             actuatedAxis.commonJointProperties.positionLimitMax = actuatedAxisPosLimitsMax.at(i);
         }
-       
+
     }
     else {
         // If no coupling is present, the actuated axes are the same as the physical joints

@@ -1,7 +1,7 @@
 #include <CameraDriver.cpp>
 #include <CameraShared.hh>
-#include <ConfigurationHelpers.hh>
 #include <DeviceRegistry.hh>
+#include <gzyarp/ConfigurationHelpers.hh>
 
 #include <cstddef>
 #include <cstring>
