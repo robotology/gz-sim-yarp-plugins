@@ -32,32 +32,37 @@ public:
     //IRGBDSensor
     int                   getRgbHeight() override;
     int                   getRgbWidth() override;
-    bool                  setRgbResolution(int width, int height) override;
-    bool                  getRgbFOV(double& horizontalFov, double& verticalFov) override;
-    bool                  setRgbFOV(double horizontalFov, double verticalFov) override;
-    bool                  getRgbMirroring(bool& mirror) override;
-    bool                  setRgbMirroring(bool mirror) override;
-    bool                  getRgbIntrinsicParam(yarp::os::Property& intrinsic) override;
-    bool                  getRgbImage(yarp::sig::FlexImage& rgbImage, yarp::os::Stamp* timeStamp = NULL) override;
+    yarp::dev::ReturnValue   getRgbResolution(int& width, int& height) override;
+    yarp::dev::ReturnValue   setRgbResolution(int width, int height) override;
+    yarp::dev::ReturnValue   getRgbFOV(double& horizontalFov, double& verticalFov) override;
+    yarp::dev::ReturnValue   setRgbFOV(double horizontalFov, double verticalFov) override;
+    yarp::dev::ReturnValue   getRgbMirroring(bool& mirror) override;
+    yarp::dev::ReturnValue   setRgbMirroring(bool mirror) override;
+    yarp::dev::ReturnValue   getRgbIntrinsicParam(yarp::os::Property& intrinsic) override;
+    yarp::dev::ReturnValue   getRgbImage(yarp::sig::FlexImage& rgbImage, yarp::os::Stamp* timeStamp = NULL) override;
+    yarp::dev::ReturnValue   getRgbSupportedConfigurations(std::vector<yarp::dev::CameraConfig>& configurations) override;
 
     int                   getDepthHeight() override;
     int                   getDepthWidth() override;
-    bool                  setDepthResolution(int width, int height) override;
-    bool                  getDepthFOV(double& horizontalFov, double& verticalFov) override;
-    bool                  setDepthFOV(double horizontalFov, double verticalFov) override;
-    bool                  getDepthIntrinsicParam(yarp::os::Property& intrinsic) override;
-    double                getDepthAccuracy() override;
-    bool                  setDepthAccuracy(double accuracy) override;
-    bool                  getDepthClipPlanes(double& nearPlane, double& farPlane) override;
-    bool                  setDepthClipPlanes(double nearPlane, double farPlane) override;
-    bool                  getDepthMirroring(bool& mirror) override;
-    bool                  setDepthMirroring(bool mirror) override;
-    bool                  getDepthImage(yarp::sig::ImageOf<yarp::sig::PixelFloat>& depthImage, yarp::os::Stamp* timeStamp = NULL) override;
+    yarp::dev::ReturnValue   getDepthResolution(int& width, int& height) override;
+    yarp::dev::ReturnValue   setDepthResolution(int width, int height) override;
+    yarp::dev::ReturnValue   getDepthFOV(double& horizontalFov, double& verticalFov) override;
+    yarp::dev::ReturnValue   setDepthFOV(double horizontalFov, double verticalFov) override;
+    yarp::dev::ReturnValue   getDepthIntrinsicParam(yarp::os::Property& intrinsic) override;
+    yarp::dev::ReturnValue   getDepthAccuracy(double& accuracy) override;
+    yarp::dev::ReturnValue   setDepthAccuracy(double accuracy) override;
+    yarp::dev::ReturnValue   getDepthClipPlanes(double& nearPlane, double& farPlane) override;
+    yarp::dev::ReturnValue   setDepthClipPlanes(double nearPlane, double farPlane) override;
+    yarp::dev::ReturnValue   getDepthMirroring(bool& mirror) override;
+    yarp::dev::ReturnValue   setDepthMirroring(bool mirror) override;
+    yarp::dev::ReturnValue   getDepthImage(yarp::sig::ImageOf<yarp::sig::PixelFloat>& depthImage, yarp::os::Stamp* timeStamp = NULL) override;
 
-    bool                  getExtrinsicParam(yarp::sig::Matrix &extrinsic) override;
-    bool                  getImages(yarp::sig::FlexImage& colorFrame, yarp::sig::ImageOf<yarp::sig::PixelFloat>& depthFrame, yarp::os::Stamp* colorStamp=NULL, yarp::os::Stamp* depthStamp=NULL) override;
-    RGBDSensor_status     getSensorStatus() override;
-    std::string           getLastErrorMsg(yarp::os::Stamp* timeStamp = NULL) override;
+    yarp::dev::ReturnValue   getExtrinsicParam(yarp::sig::Matrix &extrinsic) override;
+    yarp::dev::ReturnValue   getImages(yarp::sig::FlexImage& colorFrame, yarp::sig::ImageOf<yarp::sig::PixelFloat>& depthFrame, yarp::os::Stamp* colorStamp=NULL, yarp::os::Stamp* depthStamp=NULL) override;
+    yarp::dev::ReturnValue   getSensorStatus(RGBDSensor_status& status) override;
+    yarp::dev::ReturnValue   getLastErrorMsg(std::string& msg, yarp::os::Stamp* timeStamp = NULL) override;
+
+    
     // IDepthCameraData
     void                  setDepthCameraData(::gzyarp::DepthCameraData* dataPtr) override;
 private:

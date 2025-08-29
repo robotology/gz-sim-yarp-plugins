@@ -1,6 +1,7 @@
 #include "DepthCameraDriver.h"
 
 
+using namespace yarp::dev;
 using namespace yarp::dev::gzyarp;
 
 
@@ -37,48 +38,42 @@ int DepthCameraDriver::getRgbWidth()
     return m_sensorData->m_width;
 }
 
-bool DepthCameraDriver::setRgbResolution(int width, int height)
-{
-    yCError(GZDEPTH) << "setRgbResolution: impossible to set resolution";
-    return false;
-}
-
-bool DepthCameraDriver::getRgbFOV(double& horizontalFov, double& verticalFov)
+ReturnValue DepthCameraDriver::getRgbFOV(double& horizontalFov, double& verticalFov)
 {
     if(!m_sensorData)
     {
         yCError(GZDEPTH) << "getRgbFOV: sensor data not available!";
-        return false;
+        return ReturnValue::return_code::return_value_error_not_ready;
     }
     horizontalFov = m_sensorData->horizontal_fov;
     verticalFov   = m_sensorData->vertical_fov;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool DepthCameraDriver::setRgbFOV(double horizontalFov, double verticalFov)
+ReturnValue DepthCameraDriver::setRgbFOV(double horizontalFov, double verticalFov)
 {
     yCError(GZDEPTH) << "setRgbFOV: impossible to set FOV";
-    return false;
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool DepthCameraDriver::getRgbMirroring(bool& mirror)
+ReturnValue DepthCameraDriver::getRgbMirroring(bool& mirror)
 {
     mirror = false;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool DepthCameraDriver::setRgbMirroring(bool mirror)
+ReturnValue DepthCameraDriver::setRgbMirroring(bool mirror)
 {
     yCError(GZDEPTH) << "setRgbMirroring: impossible to set mirroring";
-    return false;
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool DepthCameraDriver::getRgbIntrinsicParam(yarp::os::Property& intrinsic)
+ReturnValue DepthCameraDriver::getRgbIntrinsicParam(yarp::os::Property& intrinsic)
 {
     if(!m_sensorData)
     {
         yCError(GZDEPTH) << "getRgbIntrinsicParam: sensor data not available!";
-        return false;
+        return ReturnValue::return_code::return_value_error_not_ready;
     }
     yarp::os::Value        rectM;
 
@@ -97,27 +92,27 @@ bool DepthCameraDriver::getRgbIntrinsicParam(yarp::os::Property& intrinsic)
     intrinsic.put("rectificationMatrix", rectM.makeList("1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0"));
     intrinsic.put("distortionModel", "plumb_bob");
     intrinsic.put("stamp",           m_sensorData->simTime);
-    return true;
+    return ReturnValue_ok;
 }
 
-bool DepthCameraDriver::getRgbImage(yarp::sig::FlexImage& rgbImage, yarp::os::Stamp* timeStamp)
+ReturnValue DepthCameraDriver::getRgbImage(yarp::sig::FlexImage& rgbImage, yarp::os::Stamp* timeStamp)
 {
     if(!m_sensorData)
     {
         yCError(GZDEPTH) << "getRgbImage: sensor data not available!";
-        return false;
+        return ReturnValue::return_code::return_value_error_not_ready;
     }
     if(!timeStamp)
     {
         yCError(GZDEPTH) << "getRgbImage: timestamp pointer invalid!";
-        return false;
+        return ReturnValue::return_code::return_value_error_not_ready;
     }
     std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
     rgbImage.setPixelCode(m_sensorData->m_imageFormat);
     rgbImage.resize(m_sensorData->m_width, m_sensorData->m_height);
     memcpy(rgbImage.getRawImage(), m_sensorData->rgbCameraMsg.data().c_str(), m_sensorData->rgbCameraMsg.ByteSizeLong());
     timeStamp->update(m_sensorData->simTime);
-    return true;
+    return ReturnValue_ok;
 }
 
 int DepthCameraDriver::getDepthHeight()
@@ -130,81 +125,102 @@ int DepthCameraDriver::getDepthWidth()
     return getRgbWidth();
 }
 
-bool DepthCameraDriver::setDepthResolution(int width, int height)
+ReturnValue DepthCameraDriver::setDepthResolution(int width, int height)
 {
     yCError(GZDEPTH) << "setDepthResolution: impossible to set resolution";
-    return false;
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool DepthCameraDriver::getDepthFOV(double& horizontalFov, double& verticalFov)
+ReturnValue DepthCameraDriver::getDepthResolution(int& width, int& height)
+{
+    width=getRgbWidth();
+    height=getDepthHeight();
+    return ReturnValue_ok;
+}
+
+ReturnValue DepthCameraDriver::setRgbResolution(int width, int height)
+{
+    yCError(GZDEPTH) << "setRgbResolution: impossible to set resolution";
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
+}
+
+ReturnValue DepthCameraDriver::getRgbResolution(int& width, int& height)
+{
+    width=getRgbWidth();
+    height=getDepthHeight();
+    return ReturnValue_ok;
+}
+
+ReturnValue DepthCameraDriver::getDepthFOV(double& horizontalFov, double& verticalFov)
 {
     return getRgbFOV(horizontalFov, verticalFov);
 }
 
-bool DepthCameraDriver::setDepthFOV(double horizontalFov, double verticalFov)
+ReturnValue DepthCameraDriver::setDepthFOV(double horizontalFov, double verticalFov)
 {
     yCError(GZDEPTH) << "setDepthFOV: impossible to set FOV";
-    return false;
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
 
-bool DepthCameraDriver::getDepthIntrinsicParam(yarp::os::Property& intrinsic)
+ReturnValue DepthCameraDriver::getDepthIntrinsicParam(yarp::os::Property& intrinsic)
 {
     return getRgbIntrinsicParam(intrinsic);
 }
 
-double DepthCameraDriver::getDepthAccuracy()
+ReturnValue DepthCameraDriver::getDepthAccuracy(double& accuracy)
 {
-    return 0.00001;
+    accuracy = 0.00001;
+    return ReturnValue_ok;
 }
 
-bool DepthCameraDriver::setDepthAccuracy(double accuracy)
+ReturnValue DepthCameraDriver::setDepthAccuracy(double accuracy)
 {
     yCError(GZDEPTH)  << "setDepthAccuracy: impossible to set accuracy";
-    return false;
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool DepthCameraDriver::getDepthClipPlanes(double& nearPlane, double& farPlane)
+ReturnValue DepthCameraDriver::getDepthClipPlanes(double& nearPlane, double& farPlane)
 {
     if(!m_sensorData)
     {
         yCError(GZDEPTH) << "getDepthClipPlanes: sensor data not available!";
-        return false;
+        return ReturnValue::return_code::return_value_error_not_ready;
     }
     nearPlane = m_sensorData->nearPlane;
     farPlane  = m_sensorData->farPlane;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool DepthCameraDriver::setDepthClipPlanes(double nearPlane, double farPlane)
+ReturnValue DepthCameraDriver::setDepthClipPlanes(double nearPlane, double farPlane)
 {
     yCError(GZDEPTH)  << "setDepthClipPlanes: impossible to set clip planes";
-    return false;
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool DepthCameraDriver::getDepthMirroring(bool& mirror)
+ReturnValue DepthCameraDriver::getDepthMirroring(bool& mirror)
 {
     mirror = false;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool DepthCameraDriver::setDepthMirroring(bool mirror)
+ReturnValue DepthCameraDriver::setDepthMirroring(bool mirror)
 {
     yCError(GZDEPTH)  << "setDepthMirroring: impossible to set mirroring";
-    return false;
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool DepthCameraDriver::getDepthImage(yarp::sig::ImageOf<yarp::sig::PixelFloat>& depthImage, yarp::os::Stamp* timeStamp)
+ReturnValue DepthCameraDriver::getDepthImage(yarp::sig::ImageOf<yarp::sig::PixelFloat>& depthImage, yarp::os::Stamp* timeStamp)
 {
     if(!m_sensorData)
     {
         yCError(GZDEPTH) << "gazeboDepthCameraDriver: sensor data not available!";
-        return false;
+        return ReturnValue::return_code::return_value_error_not_ready;
     }
     if(!timeStamp)
     {
         yCError(GZDEPTH)  << "gazeboDepthCameraDriver: timestamp pointer invalid!";
-        return false;
+        return ReturnValue::return_code::return_value_error_not_ready;
     }
     std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
     depthImage.resize(m_sensorData->m_width, m_sensorData->m_height);
@@ -233,34 +249,43 @@ bool DepthCameraDriver::getDepthImage(yarp::sig::ImageOf<yarp::sig::PixelFloat>&
         }
     }
     timeStamp->update(m_sensorData->simTime);
-    return true;
+    return ReturnValue_ok;
 }
 
-bool DepthCameraDriver::getExtrinsicParam(yarp::sig::Matrix& extrinsic)
+ReturnValue DepthCameraDriver::getExtrinsicParam(yarp::sig::Matrix& extrinsic)
 {
-    return false;
+    yCError(GZDEPTH)  << "setDepthMirroring: impossible to getExtrinsicParam";
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool DepthCameraDriver::getImages(yarp::sig::FlexImage& colorFrame, yarp::sig::ImageOf<yarp::sig::PixelFloat>& depthFrame, yarp::os::Stamp* colorStamp, yarp::os::Stamp* depthStamp)
+ReturnValue DepthCameraDriver::getImages(yarp::sig::FlexImage& colorFrame, yarp::sig::ImageOf<yarp::sig::PixelFloat>& depthFrame, yarp::os::Stamp* colorStamp, yarp::os::Stamp* depthStamp)
 {
     return getDepthImage(depthFrame, depthStamp) && getRgbImage(colorFrame, colorStamp);
 }
 
-yarp::dev::IRGBDSensor::RGBDSensor_status DepthCameraDriver::getSensorStatus()
+ReturnValue DepthCameraDriver::getSensorStatus(yarp::dev::IRGBDSensor::RGBDSensor_status& status)
 {
-    return yarp::dev::IRGBDSensor::RGBDSensor_status::RGBD_SENSOR_OK_IN_USE;
+    status =  yarp::dev::IRGBDSensor::RGBDSensor_status::RGBD_SENSOR_OK_IN_USE;
+    return ReturnValue_ok;
 }
 
-std::string DepthCameraDriver::getLastErrorMsg(yarp::os::Stamp* timeStamp)
+ReturnValue DepthCameraDriver::getLastErrorMsg(std::string& msg, yarp::os::Stamp* timeStamp)
 {
     if(timeStamp)
     {
         timeStamp->update(m_sensorData->simTime);
     }
-    return "No error";
+    msg="No error";
+    return ReturnValue_ok;
 }
 
 void DepthCameraDriver::setDepthCameraData(::gzyarp::DepthCameraData* dataPtr)
 {
     m_sensorData = dataPtr;
+}
+
+ReturnValue DepthCameraDriver::getRgbSupportedConfigurations(std::vector<yarp::dev::CameraConfig>& configurations)
+{
+    yCError(GZDEPTH)  << "setDepthMirroring: impossible to getRgbSupportedConfigurations";
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }

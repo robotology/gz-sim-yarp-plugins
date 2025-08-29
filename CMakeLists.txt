@@ -4,7 +4,9 @@ project(gz-sim-yarp-plugins
         LANGUAGES CXX C
         VERSION 0.5.0)
 
-find_package(YARP REQUIRED COMPONENTS robotinterface os)
+set(YARP_REQUIRED_VERSION 4.0.0)
+
+find_package(YARP ${YARP_REQUIRED_VERSION} REQUIRED COMPONENTS robotinterface os)
 find_package(YCM REQUIRED)
 
 # Temporary set CMAKE_POLICY_VERSION_MINIMUM 3.5 as a workaround

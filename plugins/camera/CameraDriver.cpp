@@ -80,7 +80,7 @@ public:
     }
 
     // IFRAMEGRABBER IMAGE
-    bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& _image) override
+    ReturnValue getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& _image) override
     {
         std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
         _image.resize(width(), height());
@@ -173,7 +173,7 @@ public:
                 print(pBuffer, width(), height(), 0, 0, txtbuf, len);
         }
 
-        return true;
+        return ReturnValue_ok;
     }
 
     int height() const override
