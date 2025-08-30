@@ -21,7 +21,7 @@ jobs:
         build_type: [Release, Debug]
         os: [ubuntu-24.04]
         ycm_tag: [v0.16.2]
-        yarp_tag: [v3.10.1]
+        yarp_tag: [v3.11.2]
         gazebo_distro: [harmonic]
 
     steps:
