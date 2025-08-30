@@ -67,7 +67,7 @@ public:
                    EventManager& /*_eventMgr*/) override
     {
 
-        std::string netWrapper = "analogServer";
+        std::string netWrapper = "multipleanalogsensorsserver";
 
         gzyarp::PluginConfigureHelper configureHelper(_ecm);
 
@@ -225,27 +225,30 @@ public:
 
             m_baseStateData.dataAvailable = true;
 
-            // Serialize the state vector
-            m_baseStateData.data[0] = worldBasePose.Pos().X();
-            m_baseStateData.data[1] = worldBasePose.Pos().Y();
-            m_baseStateData.data[2] = worldBasePose.Pos().Z();
-            m_baseStateData.data[3] = worldBasePose.Rot().Roll();
-            m_baseStateData.data[4] = worldBasePose.Rot().Pitch();
-            m_baseStateData.data[5] = worldBasePose.Rot().Yaw();
+            // Write to split buffers
+            m_baseStateData.position[0] = worldBasePose.Pos().X();
+            m_baseStateData.position[1] = worldBasePose.Pos().Y();
+            m_baseStateData.position[2] = worldBasePose.Pos().Z();
 
-            m_baseStateData.data[6] = worldBaseLinVel.X();
-            m_baseStateData.data[7] = worldBaseLinVel.Y();
-            m_baseStateData.data[8] = worldBaseLinVel.Z();
-            m_baseStateData.data[9] = worldBaseAngVel.X();
-            m_baseStateData.data[10] = worldBaseAngVel.Y();
-            m_baseStateData.data[11] = worldBaseAngVel.Z();
+            m_baseStateData.orientation[0] = worldBasePose.Rot().Roll();
+            m_baseStateData.orientation[1] = worldBasePose.Rot().Pitch();
+            m_baseStateData.orientation[2] = worldBasePose.Rot().Yaw();
 
-            m_baseStateData.data[12] = worldBaseLinAcc.X();
-            m_baseStateData.data[13] = worldBaseLinAcc.Y();
-            m_baseStateData.data[14] = worldBaseLinAcc.Z();
-            m_baseStateData.data[15] = worldBaseAngAcc.X();
-            m_baseStateData.data[16] = worldBaseAngAcc.Y();
-            m_baseStateData.data[17] = worldBaseAngAcc.Z();
+            m_baseStateData.linVel[0] = worldBaseLinVel.X();
+            m_baseStateData.linVel[1] = worldBaseLinVel.Y();
+            m_baseStateData.linVel[2] = worldBaseLinVel.Z();
+
+            m_baseStateData.angVel[0] = worldBaseAngVel.X();
+            m_baseStateData.angVel[1] = worldBaseAngVel.Y();
+            m_baseStateData.angVel[2] = worldBaseAngVel.Z();
+
+            m_baseStateData.linAcc[0] = worldBaseLinAcc.X();
+            m_baseStateData.linAcc[1] = worldBaseLinAcc.Y();
+            m_baseStateData.linAcc[2] = worldBaseLinAcc.Z();
+
+            m_baseStateData.angAcc[0] = worldBaseAngAcc.X();
+            m_baseStateData.angAcc[1] = worldBaseAngAcc.Y();
+            m_baseStateData.angAcc[2] = worldBaseAngAcc.Z();
 
             m_baseStateData.simTimestamp.update(_info.simTime.count() / 1e9);
         }
