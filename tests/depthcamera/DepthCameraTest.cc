@@ -41,7 +41,11 @@ TEST(DepthCameraTest, PluginTest)
     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
 
     yarp::os::Property option;
+#if defined(YARP_DEV_RETURN_VALUE_IS_GE_40)
+    option.put("device", "RGBDSensor_nwc_yarp");
+#else
     option.put("device", "RGBDSensorClient");
+#endif
     option.put("localImagePort", "/RGBD_nwc/Image:o");
     option.put("localDepthPort", "/RGBD_nwc/Depth:o");
     option.put("remoteImagePort", "/depthcamera/rgbImage:o");
