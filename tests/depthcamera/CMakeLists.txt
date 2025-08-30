@@ -4,6 +4,7 @@ target_link_libraries(DepthCameraTest
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
   gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
   ${YARP_LIBRARIES}
+  gz-sim-yarp-commons
 )
 add_test(NAME DepthCameraTest COMMAND DepthCameraTest)
 set_tests_properties(DepthCameraTest PROPERTIES
