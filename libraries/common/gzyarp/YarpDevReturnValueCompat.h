@@ -5,11 +5,17 @@
 #include <yarp/conf/version.h>
 
 // These macros simplify the migration of the devices implementation from YARP 3.11 to YARP 3.12,
+// and from YARP 3.12 to 4.0
 // where the interfaces migrated from using bool as return values to use yarp::dev::ReturnValue,
 // see https://github.com/robotology/yarp/discussions/3168
 //
 // For the latest version of this header, check https://gist.github.com/traversaro/ab7ab377c70c50d312a7b5edd4da6242
 //
+// For example on how to use this header, see the following PRs:
+// * https://github.com/robotology/gz-sim-yarp-plugins/pull/281
+// * https://github.com/robotology/gz-sim-yarp-plugins/pull/240
+// * https://github.com/robotology/icub-main/pull/1022
+// * https://github.com/robotology/gazebo-yarp-plugins/pull/696
 
 #if (YARP_VERSION_MAJOR > 3) || \
     (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR > 11) || \
