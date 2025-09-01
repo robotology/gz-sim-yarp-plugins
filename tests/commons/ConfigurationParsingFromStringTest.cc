@@ -58,7 +58,7 @@ TEST(ConfigurationParsingTest, LoadPluginsWithYarpConfigurationString)
     std::cerr << "Testing Imu configuration" << std::endl;
     auto imuDrivers
         = gzyarp::testing::TestHelpers::getDevicesOfType<yarp::dev::IThreeAxisGyroscopes>(*ecm);
-    EXPECT_EQ(imuDrivers.size(), 1);
+    EXPECT_EQ(imuDrivers.size(), 2); // Both IMU and basestate plugins implement this interface
     EXPECT_TRUE(imuDrivers[0] != nullptr);
 
     // Test Laser
