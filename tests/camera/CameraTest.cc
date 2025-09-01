@@ -13,6 +13,7 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/Property.h>
 #include <yarp/sig/Image.h>
+#include <gzyarp/YarpDevReturnValueCompat.h>
 
 TEST(CameraTest, PluginTest)
 {

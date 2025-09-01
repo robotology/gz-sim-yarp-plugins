@@ -4,6 +4,7 @@ target_link_libraries(CameraTest
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
   gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
   ${YARP_LIBRARIES}
+  gz-sim-yarp-commons
 )
 add_test(NAME CameraTest COMMAND CameraTest)
 set_tests_properties(CameraTest PROPERTIES

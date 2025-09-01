@@ -14,6 +14,7 @@
 #include <yarp/os/Property.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/sig/Image.h>
+#include <gzyarp/YarpDevReturnValueCompat.h>
 
 
         
@@ -40,7 +41,11 @@ TEST(DepthCameraTest, PluginTest)
     fixture.Server()->Run(/*_blocking=*/true, iterations, /*_paused=*/false);
 
     yarp::os::Property option;
+#if defined(YARP_DEV_RETURN_VALUE_IS_GE_40)
+    option.put("device", "RGBDSensor_nwc_yarp");
+#else
     option.put("device", "RGBDSensorClient");
+#endif
     option.put("localImagePort", "/RGBD_nwc/Image:o");
     option.put("localDepthPort", "/RGBD_nwc/Depth:o");
     option.put("remoteImagePort", "/depthcamera/rgbImage:o");
@@ -183,7 +188,13 @@ TEST(DepthCameraTest, PluginTest)
         EXPECT_TRUE(irgbdsensor->getDepthFOV(horizontalFov, verticalFov));
         EXPECT_FALSE(irgbdsensor->setDepthFOV(horizontalFov, verticalFov));
         EXPECT_TRUE(irgbdsensor->getDepthIntrinsicParam(intrinsic));
+#if defined(YARP_DEV_RETURN_VALUE_IS_GE_40)
+        double accuracy = 0.0;
+        EXPECT_TRUE(irgbdsensor->getDepthAccuracy(accuracy));
+        EXPECT_EQ(accuracy, 0.00001);
+#else
         EXPECT_EQ(irgbdsensor->getDepthAccuracy(), 0.00001);
+#endif
         double nearPlane, farPlane;
         EXPECT_TRUE(irgbdsensor->getDepthClipPlanes(nearPlane, farPlane));
         EXPECT_EQ(nearPlane, 0.1);

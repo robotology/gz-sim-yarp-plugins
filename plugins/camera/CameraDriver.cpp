@@ -9,6 +9,7 @@
 #include <string>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IFrameGrabberImage.h>
+#include <gzyarp/YarpDevReturnValueCompat.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Searchable.h>
@@ -80,7 +81,7 @@ public:
     }
 
     // IFRAMEGRABBER IMAGE
-    bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& _image) override
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& _image) override
     {
         std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
         _image.resize(width(), height());
@@ -173,7 +174,7 @@ public:
                 print(pBuffer, width(), height(), 0, 0, txtbuf, len);
         }
 
-        return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
     }
 
     int height() const override
