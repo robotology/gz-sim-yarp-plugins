@@ -1,5 +1,6 @@
 #include <BaseStateShared.hh>
 #include <DeviceRegistry.hh>
+#include <gzyarp/Common.hh>
 
 #include <cstddef>
 #include <mutex>
@@ -254,9 +255,9 @@ public:
             return false;
         }
         // Convert from radians (Gazebo) to degrees (YARP)
-        rpy[0] = rad2deg(m_baseLinkData->orientation[0]);
-        rpy[1] = rad2deg(m_baseLinkData->orientation[1]);
-        rpy[2] = rad2deg(m_baseLinkData->orientation[2]);
+        rpy[0] = ::gzyarp::convertRadiansToDegrees(m_baseLinkData->orientation[0]);
+        rpy[1] = ::gzyarp::convertRadiansToDegrees(m_baseLinkData->orientation[1]);
+        rpy[2] = ::gzyarp::convertRadiansToDegrees(m_baseLinkData->orientation[2]);
         ts = m_baseLinkData->simTimestamp.getTime();
         return true;
     }
@@ -356,9 +357,9 @@ public:
             return false;
         }
         // Convert from rad/s to deg/s
-        out[0] = rad2deg(m_baseLinkData->angVel[0]);
-        out[1] = rad2deg(m_baseLinkData->angVel[1]);
-        out[2] = rad2deg(m_baseLinkData->angVel[2]);
+        out[0] = ::gzyarp::convertRadiansToDegrees(m_baseLinkData->angVel[0]);
+        out[1] = ::gzyarp::convertRadiansToDegrees(m_baseLinkData->angVel[1]);
+        out[2] = ::gzyarp::convertRadiansToDegrees(m_baseLinkData->angVel[2]);
         ts = m_baseLinkData->simTimestamp.getTime();
         return true;
     }
@@ -461,9 +462,9 @@ public:
             return false;
         }
         // Convert from rad/s^2 to deg/s^2
-        out[0] = rad2deg(m_baseLinkData->angAcc[0]);
-        out[1] = rad2deg(m_baseLinkData->angAcc[1]);
-        out[2] = rad2deg(m_baseLinkData->angAcc[2]);
+        out[0] = ::gzyarp::convertRadiansToDegrees(m_baseLinkData->angAcc[0]);
+        out[1] = ::gzyarp::convertRadiansToDegrees(m_baseLinkData->angAcc[1]);
+        out[2] = ::gzyarp::convertRadiansToDegrees(m_baseLinkData->angAcc[2]);
         ts = m_baseLinkData->simTimestamp.getTime();
         return true;
     }
@@ -477,9 +478,4 @@ public:
 private:
     ::gzyarp::BaseStateData* m_baseLinkData = nullptr;
     std::string m_baseLinkName;
-
-    static inline double rad2deg(double r)
-    {
-        return r * 57.2957795130823208768; // 180 / pi
-    }
 };
