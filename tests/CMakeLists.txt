@@ -9,6 +9,7 @@ if (GZ_SIM_YARP_PLUGINS_ENABLE_TESTS_WITH_ICUB_MAIN)
   find_package(ICUB REQUIRED)
 endif()
 
+add_subdirectory(basestate)
 add_subdirectory(forcetorque)
 add_subdirectory(imu)
 add_subdirectory(laser)
