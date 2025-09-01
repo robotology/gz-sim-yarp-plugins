@@ -3,8 +3,8 @@
 
 <robot name="basestate" portprefix="basestate" build="0"  xmlns:xi="http://www.w3.org/2001/XInclude">
     <devices>
-        <device name="basestate_nws_yarp" type="analogServer">
-            <!-- See https://www.yarp.it/git-master/classAnalogWrapper.html#details for parameter documentation -->
+        <device name="basestate_nws_yarp" type="multipleanalogsensorsserver">
+            <!-- See https://www.yarp.it/latest/classMultipleAnalogSensorsServer.html for parameter documentation -->
             <param name="name"> /basestate </param>
             <param name="period"> 50 </param>
             <action phase="startup" level="5" type="attach">
