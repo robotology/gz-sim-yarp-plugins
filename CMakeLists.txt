@@ -4,8 +4,12 @@ project(gz-sim-yarp-plugins
         LANGUAGES CXX C
         VERSION 0.5.0)
 
-find_package(YARP REQUIRED COMPONENTS robotinterface os)
 find_package(YCM REQUIRED)
+find_package(YARP REQUIRED COMPONENTS robotinterface os)
+
+if(YARP_VERSION VERSION_LESS "3.11.0")
+    message(FATAL_ERROR "The minimum version of YARP required to build gz-sim-yarp-plugins is 3.11")
+endif()
 
 # Temporary set CMAKE_POLICY_VERSION_MINIMUM 3.5 as a workaround
 # for https://github.com/robotology/gz-sim-yarp-plugins/pull/258#issue-2963247728
