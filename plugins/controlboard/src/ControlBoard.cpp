@@ -302,6 +302,12 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
             return false;
         }
 
+        if (!initializeJointVelocityLimits(_ecm))
+        {
+            yError() << "Error while setting joint velocity limits";
+            return false;
+        }
+
         if (!initializeTrajectoryGenerators())
         {
             yError() << "Error while setting trajectory generators";
@@ -830,6 +836,38 @@ bool ControlBoard::initializeJointPositionLimits(const gz::sim::EntityComponentM
             actuatedAxis.commonJointProperties.positionLimitMin = m_controlBoardData.physicalJoints[i].commonJointProperties.positionLimitMin;
             actuatedAxis.commonJointProperties.positionLimitMax = m_controlBoardData.physicalJoints[i].commonJointProperties.positionLimitMax;
         }
+    }
+
+    return true;
+}
+
+bool ControlBoard::initializeJointVelocityLimits(const gz::sim::EntityComponentManager& ecm)
+{
+    if (!m_pluginParameters.check("LIMITS"))
+    {
+        return true; // velocity limits are optional
+    }
+
+    Bottle limitsGroup = m_pluginParameters.findGroup("LIMITS");
+    std::vector<double> limitMaxGroup;
+
+    if (!tryGetGroup(limitsGroup, limitMaxGroup, "jntVelMax", "", m_controlBoardData.physicalJoints.size()))
+    {
+        return true; // velocity limits are optional
+    }
+
+    for (size_t i = 0; i < m_controlBoardData.physicalJoints.size(); ++i)
+    {
+        auto& joint = m_controlBoardData.physicalJoints[i];
+        joint.commonJointProperties.velocityLimitMin = 0.0;
+        joint.commonJointProperties.velocityLimitMax = limitMaxGroup.at(i);
+    }
+
+    for (size_t i = 0; i < m_controlBoardData.actuatedAxes.size(); ++i)
+    {
+        auto& actuatedAxis = m_controlBoardData.actuatedAxes[i];
+        actuatedAxis.commonJointProperties.velocityLimitMin = m_controlBoardData.physicalJoints[i].commonJointProperties.velocityLimitMin;
+        actuatedAxis.commonJointProperties.velocityLimitMax = m_controlBoardData.physicalJoints[i].commonJointProperties.velocityLimitMax;
     }
 
     return true;
