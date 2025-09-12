@@ -94,6 +94,7 @@ private:
                           size_t numberOfPhysicalJoints);
     void setJointPIDs(AngleUnitEnum cUnits, const std::vector<yarp::dev::Pid>& yarpPIDs,yarp::dev::PidControlTypeEnum pid_type);
     bool initializeJointPositionLimits(const gz::sim::EntityComponentManager& ecm);
+    bool initializeJointVelocityLimits(const gz::sim::EntityComponentManager& ecm);
     bool initializeTrajectoryGenerators();
     bool initializeTrajectoryGeneratorReferences(yarp::os::Bottle& trajectoryGeneratorsGroup);
     bool parseInitialConfiguration(std::vector<double>& initialConfigurations);
