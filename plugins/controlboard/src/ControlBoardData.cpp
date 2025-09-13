@@ -52,7 +52,8 @@ bool ControlBoardData::setInteractionMode(int axis, yarp::dev::InteractionModeEn
     return true;
 }
 
-bool ControlBoardData::setControlMode(int j, int mode) {
+bool ControlBoardData::setControlMode(int j, int mode)
+{
     int desired_mode = mode;
 
     if (j < 0 || j >= this->actuatedAxes.size())
@@ -64,19 +65,36 @@ bool ControlBoardData::setControlMode(int j, int mode) {
     // Only accept supported control modes
     // The only not supported control mode is
     // (for now) VOCAB_CM_MIXED
-    if (!(mode == VOCAB_CM_POSITION || mode == VOCAB_CM_POSITION_DIRECT || mode == VOCAB_CM_VELOCITY
-          || mode == VOCAB_CM_TORQUE || mode == VOCAB_CM_MIXED || mode == VOCAB_CM_PWM
-          || mode == VOCAB_CM_CURRENT || mode == VOCAB_CM_IDLE || mode == VOCAB_CM_FORCE_IDLE))
+    switch (mode)
     {
-        yWarning() << "request control mode " << yarp::os::Vocab32::decode(mode)
-                   << " that is not supported by "
-                   << " gz-sim-yarp-controlboard-system plugin.";
+    case VOCAB_CM_POSITION:
+    case VOCAB_CM_POSITION_DIRECT:
+    case VOCAB_CM_VELOCITY:
+    case VOCAB_CM_TORQUE:
+    case VOCAB_CM_MIXED:
+    case VOCAB_CM_PWM:
+    case VOCAB_CM_CURRENT:
+    case VOCAB_CM_IDLE:
+    case VOCAB_CM_FORCE_IDLE:
+        break; // no-op
+    default:
+        yWarning() << "Requested a control mode" << yarp::os::Vocab32::decode(mode)
+                   << "that is not supported by"
+                   << "gz-sim-yarp-controlboard-system plugin.";
         return false;
     }
 
+    auto& actAxis = this->actuatedAxes.at(j);
+    auto& physJoint = this->physicalJoints.at(j);
+
+    if (actAxis.commonJointProperties.controlMode == desired_mode)
+    {
+        // Nothing to do
+        return true;
+    }
+
     // If joint is in hw fault, only a force idle command can recover it
-    if (this->actuatedAxes.at(j).commonJointProperties.controlMode == VOCAB_CM_HW_FAULT
-        && mode != VOCAB_CM_FORCE_IDLE)
+    if (actAxis.commonJointProperties.controlMode == VOCAB_CM_HW_FAULT && mode != VOCAB_CM_FORCE_IDLE)
     {
         return true;
     }
@@ -87,11 +105,11 @@ bool ControlBoardData::setControlMode(int j, int mode) {
         desired_mode = VOCAB_CM_IDLE;
     }
 
-    // If there is coupling let's check if we have to change the interaction mode for all the coupled joints
+    // If there is coupling let's check if we have to change the control mode for all the coupled joints
     if (this->ijointcoupling)
     {
-        // If the joint is coupled, we have to change the interaction mode for all the coupled joints
-        if(std::find(coupledActuatedAxes.begin(), coupledActuatedAxes.end(), j) != coupledActuatedAxes.end())
+        // If the joint is coupled, we have to change the control mode for all the coupled joints
+        if (std::find(coupledActuatedAxes.begin(), coupledActuatedAxes.end(), j) != coupledActuatedAxes.end())
         {
             for (auto& actuatedAxis : coupledActuatedAxes)
             {
@@ -101,18 +119,35 @@ bool ControlBoardData::setControlMode(int j, int mode) {
             {
                 this->physicalJoints.at(physicalJoint).commonJointProperties.controlMode = desired_mode;
             }
-        } // if the joint is not coupled, we change the interaction mode only for the selected joint
+        } // if the joint is not coupled, we change the control mode only for the selected joint
         else
         {
-            this->actuatedAxes.at(j).commonJointProperties.controlMode = desired_mode;
-            this->physicalJoints.at(j).commonJointProperties.controlMode = desired_mode;
+            actAxis.commonJointProperties.controlMode = desired_mode;
+            physJoint.commonJointProperties.controlMode = desired_mode;
         }
-    } // No coupling, we change the interaction mode only for the selected joint
+    } // No coupling, we change the control mode only for the selected joint
     else {
-        this->physicalJoints.at(j).commonJointProperties.controlMode = desired_mode;
-        this->actuatedAxes.at(j).commonJointProperties.controlMode = desired_mode;
+        physJoint.commonJointProperties.controlMode = desired_mode;
+        actAxis.commonJointProperties.controlMode = desired_mode;
     }
-        return true;
+
+    // Reset reference values when switching control mode
+    actAxis.commonJointProperties.refPosition = actAxis.commonJointProperties.position;
+    actAxis.commonJointProperties.refVelocity = 0.0;
+    actAxis.commonJointProperties.refTorque = 0.0;
+    actAxis.trajectoryGenerationRefPosition = actAxis.commonJointProperties.position;
+
+    if (desired_mode == VOCAB_CM_POSITION)
+    {
+        actAxis.trajectoryGenerator->initTrajectory(
+            actAxis.commonJointProperties.position,
+            actAxis.trajectoryGenerationRefPosition,
+            actAxis.trajectoryGenerationRefSpeed,
+            actAxis.trajectoryGenerationRefAcceleration,
+            this->controlUpdatePeriod);
+    }
+
+    return true;
 }
 
 double ControlBoardData::convertGazeboGainToUserGain(PhysicalJointProperties& joint, double value)
