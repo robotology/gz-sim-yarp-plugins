@@ -9,10 +9,8 @@ namespace gzyarp
 
 struct LaserData
 {
-    std::mutex m_mutex;
     std::vector<double> m_data;
-    std::string sensorScopedName;
-    double simTime;
+    double              m_simTime;
 };
 
 class ILaserData
