@@ -75,6 +75,8 @@ protected:
                 ASSERT_TRUE(driver != nullptr);
                 iPositionControl = nullptr;
                 ASSERT_TRUE(driver->view(iPositionControl));
+                iPositionDirect = nullptr;
+                ASSERT_TRUE(driver->view(iPositionDirect));
                 iControlMode = nullptr;
                 ASSERT_TRUE(driver->view(iControlMode));
                 iEncoders = nullptr;
@@ -115,6 +117,7 @@ protected:
     gz::sim::Joint joint;
     yarp::dev::PolyDriver* driver;
     yarp::dev::IPositionControl* iPositionControl = nullptr;
+    yarp::dev::IPositionDirect* iPositionDirect = nullptr;
     yarp::dev::IControlMode* iControlMode = nullptr;
     yarp::dev::IEncoders* iEncoders = nullptr;
 };
@@ -332,6 +335,88 @@ TEST_F(ControlBoardPositionCoupledPendulumFixture, CheckPositionTrackingWithTraj
     ASSERT_LT(jointPosError[2], acceptedTolerance);
 }
 #endif // GZ_SIM_YARP_PLUGINS_ENABLE_TESTS_WITH_ICUB_MAIN
+
+TEST_F(ControlBoardPositionFixture, CheckModeChangeWithTrajectoryGenerationUsingPendulumModel)
+{
+    auto refPosition{10.0};
+    bool motionDone{false};
+    double jointPosition, jointPosError;
+
+    testFixture
+        .OnPostUpdate(
+            [&](const gz::sim::UpdateInfo& _info, const gz::sim::EntityComponentManager& _ecm) {
+                iEncoders->getEncoder(0, &jointPosition);
+                iPositionControl->checkMotionDone(0, &motionDone);
+                iterations++;
+            })
+        .
+        // The moment we finalize, the configure callback is called
+        Finalize();
+
+    int modeSet{};
+    ASSERT_TRUE(iControlMode->getControlMode(0, &modeSet));
+    ASSERT_TRUE(modeSet == VOCAB_CM_POSITION);
+
+    // Set reference position (position mode)
+    ASSERT_TRUE(iPositionControl->positionMove(0, refPosition));
+
+    // Setup simulation server, this will call the post-update callbacks.
+    // It also calls pre-update and update callbacks if those are being used.
+    while (!motionDone)
+    {
+        std::cerr << "Running server (1)" << std::endl;
+        testFixture.Server()->Run(true, plannedIterations, false);
+        jointPosError = abs(refPosition - jointPosition);
+        std::cerr << "Joint position error: " << jointPosError << std::endl;
+    }
+
+    // Final assertions
+    ASSERT_TRUE(configured);
+    ASSERT_TRUE(motionDone);
+
+    // Verify that the final position has been reached
+    ASSERT_LT(jointPosError, acceptedTolerance);
+
+    // Switch to position direct mode
+    ASSERT_TRUE(iControlMode->setControlMode(0, VOCAB_CM_POSITION_DIRECT));
+    ASSERT_TRUE(iControlMode->getControlMode(0, &modeSet));
+    ASSERT_TRUE(modeSet == VOCAB_CM_POSITION_DIRECT);
+
+    // Update variables for next phase
+    refPosition = 0.0;
+    motionDone = false;
+
+    // Set reference position (position direct mode)
+    ASSERT_TRUE(iPositionDirect->setPosition(0, refPosition));
+
+    // Run simulation
+    testFixture.Server()->Run(true, plannedIterations, false);
+    jointPosError = abs(refPosition - jointPosition);
+    std::cerr << "Joint position error: " << jointPosError << std::endl;
+
+    // Verify that the final position has been reached
+    ASSERT_LT(jointPosError, acceptedTolerance);
+
+    // Switch back to position mode
+    ASSERT_TRUE(iControlMode->setControlMode(0, VOCAB_CM_POSITION));
+    ASSERT_TRUE(iControlMode->getControlMode(0, &modeSet));
+    ASSERT_TRUE(modeSet == VOCAB_CM_POSITION);
+
+    // Reset variables for next phase
+    motionDone = false;
+
+    // Run simulation
+    while (!motionDone)
+    {
+        std::cerr << "Running server (2)" << std::endl;
+        testFixture.Server()->Run(true, plannedIterations, false);
+        jointPosError = abs(refPosition - jointPosition);
+        std::cerr << "Joint position error: " << jointPosError << std::endl;
+    }
+
+    // Verify that the final position has been maintained
+    ASSERT_LT(jointPosError, acceptedTolerance);
+}
 
 } // namespace test
 } // namespace gzyarp
