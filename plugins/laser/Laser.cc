@@ -136,7 +136,6 @@ public:
                         "ILaserData interface";
             return;
         }
-        //m_iLaserData->setLaserData(&m_laserData);
 
         auto yarpDeviceNamee = driver_properties.find("yarpDeviceName").asString();
 
@@ -171,14 +170,14 @@ public:
             laserMsg = m_laserMsg;
         }
 
-        m_laserData.m_data.resize(laserMsg.ranges().size());
+        m_gzlaserData.m_data.resize(laserMsg.ranges().size());
         for (size_t i = 0; i < laserMsg.ranges().size(); i++)
         {
-            m_laserData.m_data[i] = laserMsg.ranges(i);
+            m_gzlaserData.m_data[i] = laserMsg.ranges(i);
         }
-        m_laserData.m_simTime = _info.simTime.count() / 1e9;
+        m_gzlaserData.m_simTime = _info.simTime.count() / 1e9;
 
-        m_iLaserData->setLaserData(&m_laserData);
+        m_iLaserData->updateLaserMeasurements(m_gzlaserData);
     }
 
     void laserCb(const gz::msgs::LaserScan& _msg)
@@ -193,7 +192,7 @@ private:
     std::string m_deviceId;
     std::string sensorScopedName;
     bool m_deviceRegistered;
-    LaserData m_laserData;
+    LaserData m_gzlaserData;
     bool laserInitialized{false};
     gz::transport::Node node;
     gz::msgs::LaserScan m_laserMsg;

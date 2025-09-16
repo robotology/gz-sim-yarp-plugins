@@ -16,7 +16,7 @@ struct LaserData
 class ILaserData
 {
 public:
-    virtual void setLaserData(LaserData* dataPtr) = 0;
+    virtual void updateLaserMeasurements(const LaserData& gzdata) = 0;
 
     virtual ~ILaserData() {};
 };

@@ -48,20 +48,7 @@ public:
     bool open(yarp::os::Searchable& config) override
     {
         std::string sensorScopedName(config.find(YarpLaserScopedName.c_str()).asString().c_str());
-
-        /*
-        std::string separator = "/";
-        auto pos = config.find("sensor_name").asString().find_last_of(separator);
-        if (pos == std::string::npos)
-        {
-            m_sensorName = config.find("sensor_name").asString();
-        } else
-        {
-            m_sensorName = config.find("sensor_name").asString().substr(pos + separator.size() - 1);
-        }
-        m_frameName = m_sensorName;
-        */
-        
+       
         if (this->parseConfiguration(config) == false)
         {
             yCError(GZ_SIM_LIDAR) << "error parsing parameters";
@@ -113,39 +100,34 @@ public:
     }
 
     // ILaserData
-    void setLaserData(::gzyarp::LaserData* dataPtr) override
+    void updateLaserMeasurements(const ::gzyarp::LaserData& gzdata) override
     {
-        if (dataPtr==nullptr) return;
-        
         std::lock_guard<std::mutex> guard(m_mutex);
-        
-        ::gzyarp::LaserData* sensorData = dataPtr;
 
-        if (sensorData->m_data.size() == 0)
+        if (gzdata.m_data.size() == 0)
         {
-           yCErrorThrottle(GZ_SIM_LIDAR, 3.0) << "No data received, simulation not started yet?";
+           //yCErrorThrottle(GZ_SIM_LIDAR, 3.0) << "No data received, simulation not started yet?";
            m_device_status = yarp::dev::IRangefinder2D::Device_status::DEVICE_GENERAL_ERROR;
            return;    
         }
-        else if (sensorData->m_data.size() != m_laser_data.size())
+        else if (gzdata.m_data.size() != m_laser_data.size())
         {
            yCErrorThrottle(GZ_SIM_LIDAR, 3.0)  << "Data size error, expected: " << m_laser_data.size() 
-                                << " samples, got: " << sensorData->m_data.size();
+                                << " samples, got: " << gzdata.m_data.size();
            m_device_status = yarp::dev::IRangefinder2D::Device_status::DEVICE_GENERAL_ERROR;
            return;
         }
 
-        for (size_t i = 0; i < sensorData->m_data.size(); i++)
+        //Sets the measurements into the variable m_laser_data (defined in
+        //yarp::dev::Lidar2DDeviceBase) and apply range limits on it.
+        //The values of m_laser_data are retrieved through yarp::dev::Lidar2DDeviceBase methods.
+        for (size_t i = 0; i < gzdata.m_data.size(); i++)
         {
-            m_laser_data[i] = sensorData->m_data[i];
+            m_laser_data[i] = gzdata.m_data[i];
         }
         this->applyLimitsOnLaserData();
         
-        m_timestamp.update(sensorData->m_simTime);
+        m_timestamp.update(gzdata.m_simTime);
         m_device_status = yarp::dev::IRangefinder2D::Device_status::DEVICE_OK_IN_USE;
     }
-
-private:
-    //std::string m_sensorName;
-    //std::string m_frameName;
 };
