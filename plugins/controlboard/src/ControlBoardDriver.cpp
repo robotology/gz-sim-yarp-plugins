@@ -1322,7 +1322,7 @@ bool ControlBoardDriver::velocityMove(const double* sp)
 bool ControlBoardDriver::velocityMove(const int n_joint, const int* joints, const double* spds)
 {
     if (!joints || !spds) {return false;}
-    
+
     bool ret = true;
     for (int i = 0; i < n_joint && ret; i++)
     {
@@ -1716,18 +1716,45 @@ bool ControlBoardDriver::getEncoderSpeeds(double* spds)
     return true;
 }
 
-bool ControlBoardDriver::getEncoderAcceleration(int j, double* spds)
+bool ControlBoardDriver::getEncoderAcceleration(int j, double* acc)
 {
-    // TODO
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
-    return false;
+    if (!acc)
+    {
+        yError() << "Error while getting encoder acceleration: acc is null";
+        return false;
+    }
+
+    if (j < 0 || j >= m_controlBoardData->actuatedAxes.size())
+    {
+        yError() << "Error while getting encoder acceleration: joint index " + std::to_string(j)
+                        + " out of range";
+        return false;
+    }
+
+    *acc = m_controlBoardData->actuatedAxes.at(j).commonJointProperties.acceleration;
+
+    return true;
 }
 
 bool ControlBoardDriver::getEncoderAccelerations(double* accs)
 {
-    // TODO
+    if (!accs)
+    {
+        yError() << "Error while getting encoder accelerations: accs array is null";
+        return false;
+    }
 
-    return false;
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
+    {
+        if (!ControlBoardDriver::getEncoderAcceleration(i, &accs[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool ControlBoardDriver::getEncoderTimed(int j, double* encs, double* time)
