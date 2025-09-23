@@ -208,9 +208,9 @@ void ControlBoard::PreUpdate(const UpdateInfo& _info, EntityComponentManager& _e
 
 void ControlBoard::PostUpdate(const UpdateInfo& _info, const EntityComponentManager& _ecm)
 {
-    updateSimTime(_info);
+    double dt = updateSimTime(_info);
 
-    if (!readJointsMeasurements(_ecm))
+    if (!readJointsMeasurements(_ecm, dt))
     {
         yError() << "Error while reading joints measurements";
     }
@@ -330,14 +330,16 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
     return true;
 }
 
-void ControlBoard::updateSimTime(const UpdateInfo& _info)
+double ControlBoard::updateSimTime(const UpdateInfo& _info)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
 
+    double previousSimTime = m_controlBoardData.simTime.getTime();
     m_controlBoardData.simTime.update(_info.simTime.count() / 1e9);
+    return m_controlBoardData.simTime.getTime() - previousSimTime;
 }
 
-bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager& _ecm)
+bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager& _ecm, double dt)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
 
@@ -367,8 +369,11 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
 
         if (gzJoint.Velocity(_ecm).has_value())
         {
+            auto prevVelocity = joint.commonJointProperties.velocity;
             joint.commonJointProperties.velocity = ControlBoardData::convertGazeboToUser(joint, gzJoint.Velocity(_ecm).value().at(0));
             m_physicalJointsVelocityBuffer[i] = joint.commonJointProperties.velocity;
+            joint.commonJointProperties.acceleration = (joint.commonJointProperties.velocity - prevVelocity) / dt;
+            m_physicalJointsAcceleratonBuffer[i] = joint.commonJointProperties.acceleration;
         } else
         {
             yError() << "Error while reading velocity for joint " << joint.commonJointProperties.name;
@@ -392,12 +397,14 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
     if (m_controlBoardData.ijointcoupling){
         m_controlBoardData.ijointcoupling->convertFromPhysicalJointsToActuatedAxesPos(m_physicalJointsPositionBuffer, m_actuatedAxesPositionBuffer);
         m_controlBoardData.ijointcoupling->convertFromPhysicalJointsToActuatedAxesVel(m_physicalJointsPositionBuffer, m_physicalJointsVelocityBuffer, m_actuatedAxesVelocityBuffer);
+        m_controlBoardData.ijointcoupling->convertFromPhysicalJointsToActuatedAxesAcc(m_physicalJointsPositionBuffer, m_physicalJointsVelocityBuffer, m_physicalJointsAcceleratonBuffer, m_actuatedAxesAcceleratonBuffer);
         m_controlBoardData.ijointcoupling->convertFromPhysicalJointsToActuatedAxesTrq(m_physicalJointsPositionBuffer, m_physicalJointsTorqueBuffer, m_actuatedAxesTorqueBuffer);
 
         for (int i = 0; i < m_controlBoardData.actuatedAxes.size(); i++)
         {
             m_controlBoardData.actuatedAxes[i].commonJointProperties.position = m_actuatedAxesPositionBuffer[i];
             m_controlBoardData.actuatedAxes[i].commonJointProperties.velocity = m_actuatedAxesVelocityBuffer[i];
+            m_controlBoardData.actuatedAxes[i].commonJointProperties.acceleration = m_actuatedAxesAcceleratonBuffer[i];
             m_controlBoardData.actuatedAxes[i].commonJointProperties.torque = m_actuatedAxesTorqueBuffer[i];
         }
     }
@@ -407,6 +414,7 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
         {
             m_controlBoardData.actuatedAxes[i].commonJointProperties.position = m_controlBoardData.physicalJoints[i].commonJointProperties.position;
             m_controlBoardData.actuatedAxes[i].commonJointProperties.velocity = m_controlBoardData.physicalJoints[i].commonJointProperties.velocity;
+            m_controlBoardData.actuatedAxes[i].commonJointProperties.acceleration = m_controlBoardData.physicalJoints[i].commonJointProperties.acceleration;
             m_controlBoardData.actuatedAxes[i].commonJointProperties.torque = m_controlBoardData.physicalJoints[i].commonJointProperties.torque;
         }
     }
@@ -1156,10 +1164,12 @@ bool ControlBoard::configureBuffers() {
     m_controlBoardData.actuatedAxes.resize(nrOfActuatedAxes);
     m_actuatedAxesPositionBuffer.resize(nrOfActuatedAxes);
     m_actuatedAxesVelocityBuffer.resize(nrOfActuatedAxes);
+    m_actuatedAxesAcceleratonBuffer.resize(nrOfActuatedAxes);
     m_actuatedAxesTorqueBuffer.resize(nrOfActuatedAxes);
     m_controlBoardData.physicalJoints.resize(nrOfPhysicalJoints);
     m_physicalJointsPositionBuffer.resize(nrOfPhysicalJoints);
     m_physicalJointsVelocityBuffer.resize(nrOfPhysicalJoints);
+    m_physicalJointsAcceleratonBuffer.resize(nrOfPhysicalJoints);
     m_physicalJointsTorqueBuffer.resize(nrOfPhysicalJoints);
     return true;
 

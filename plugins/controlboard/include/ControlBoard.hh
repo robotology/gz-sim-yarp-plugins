@@ -62,9 +62,9 @@ private:
     yarp::os::Property m_pluginParameters;
     gz::sim::EntityComponentManager* m_ecm;
     yarp::sig::Vector m_physicalJointsPositionBuffer, m_physicalJointsVelocityBuffer,
-        m_physicalJointsTorqueBuffer;
+        m_physicalJointsAcceleratonBuffer, m_physicalJointsTorqueBuffer;
     yarp::sig::Vector m_actuatedAxesPositionBuffer, m_actuatedAxesVelocityBuffer,
-        m_actuatedAxesTorqueBuffer;
+        m_actuatedAxesAcceleratonBuffer, m_actuatedAxesTorqueBuffer;
 
     enum class AngleUnitEnum
     {
@@ -73,8 +73,8 @@ private:
     };
 
     bool setJointProperties(gz::sim::EntityComponentManager& _ecm);
-    void updateSimTime(const gz::sim::UpdateInfo& _info);
-    bool readJointsMeasurements(const gz::sim::EntityComponentManager& _ecm);
+    double updateSimTime(const gz::sim::UpdateInfo& _info);
+    bool readJointsMeasurements(const gz::sim::EntityComponentManager& _ecm, double dt);
     void checkForJointsHwFault();
     bool updateTrajectories(const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm);
     bool updateReferences(const gz::sim::UpdateInfo& _info, gz::sim::EntityComponentManager& _ecm);
