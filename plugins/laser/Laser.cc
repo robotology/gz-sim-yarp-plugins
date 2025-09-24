@@ -117,7 +117,6 @@ public:
                                                components::Sensor());
 
         sensorScopedName = scopedName(this->sensor, _ecm);
-        this->laserData.sensorScopedName = sensorScopedName;
 
         driver_properties.put(YarpLaserScopedName.c_str(), sensorScopedName.c_str());
 
@@ -129,16 +128,14 @@ public:
             return;
         }
 
-        ILaserData* iLaserData = nullptr;
-        auto viewOk = m_laserDriver.view(iLaserData);
+        auto viewOk = m_laserDriver.view(m_iLaserData);
 
-        if (!viewOk || !iLaserData)
+        if (!viewOk || !m_iLaserData)
         {
             yError() << "gz-sim-yarp-laser-system Plugin failed: error in getting "
                         "ILaserData interface";
             return;
         }
-        iLaserData->setLaserData(&laserData);
 
         auto yarpDeviceNamee = driver_properties.find("yarpDeviceName").asString();
 
@@ -170,24 +167,23 @@ public:
         gz::msgs::LaserScan laserMsg;
         {
             std::lock_guard<std::mutex> lock(this->laserMsgMutex);
-            laserMsg = this->laserMsg;
+            laserMsg = m_laserMsg;
         }
 
-        std::lock_guard<std::mutex> lock(laserData.m_mutex);
-        laserData.m_data.resize(laserMsg.ranges().size());
-
+        m_gzlaserData.m_data.resize(laserMsg.ranges().size());
         for (size_t i = 0; i < laserMsg.ranges().size(); i++)
         {
-            laserData.m_data[i] = laserMsg.ranges(i);
+            m_gzlaserData.m_data[i] = laserMsg.ranges(i);
         }
+        m_gzlaserData.m_simTime = _info.simTime.count() / 1e9;
 
-        laserData.simTime = _info.simTime.count() / 1e9;
+        m_iLaserData->updateLaserMeasurements(m_gzlaserData);
     }
 
     void laserCb(const gz::msgs::LaserScan& _msg)
     {
         std::lock_guard<std::mutex> lock(this->laserMsgMutex);
-        laserMsg = _msg;
+        m_laserMsg = _msg;
     }
 
 private:
@@ -196,12 +192,13 @@ private:
     std::string m_deviceId;
     std::string sensorScopedName;
     bool m_deviceRegistered;
-    LaserData laserData;
+    LaserData m_gzlaserData;
     bool laserInitialized{false};
     gz::transport::Node node;
-    gz::msgs::LaserScan laserMsg;
+    gz::msgs::LaserScan m_laserMsg;
     std::mutex laserMsgMutex;
     EntityComponentManager* ecm;
+    ILaserData* m_iLaserData = nullptr;
 };
 
 } // namespace gzyarp

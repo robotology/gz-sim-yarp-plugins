@@ -28,6 +28,10 @@ class LaserDriver;
 
 const std::string YarpLaserScopedName = "sensorScopedName";
 
+namespace {
+YARP_LOG_COMPONENT(GZ_SIM_LIDAR, "gzyarp.LaserDriver")
+}
+
 class yarp::dev::gzyarp::LaserDriver : public yarp::dev::Lidar2DDeviceBase,
                                        public yarp::dev::DeviceDriver,
                                        public ::gzyarp::ILaserData
@@ -44,24 +48,13 @@ public:
     bool open(yarp::os::Searchable& config) override
     {
         std::string sensorScopedName(config.find(YarpLaserScopedName.c_str()).asString().c_str());
-
-        std::string separator = "/";
-        auto pos = config.find("sensor_name").asString().find_last_of(separator);
-        if (pos == std::string::npos)
-        {
-            m_sensorName = config.find("sensor_name").asString();
-        } else
-        {
-            m_sensorName = config.find("sensor_name").asString().substr(pos + separator.size() - 1);
-        }
-        m_frameName = m_sensorName;
-
+       
         if (this->parseConfiguration(config) == false)
         {
-            yError() << "error parsing parameters";
+            yCError(GZ_SIM_LIDAR) << "error parsing parameters";
             return false;
         }
-        m_device_status = yarp::dev::IRangefinder2D::Device_status::DEVICE_OK_IN_USE;
+        m_device_status = yarp::dev::IRangefinder2D::Device_status::DEVICE_OK_STANDBY;
 
         return true;
     }
@@ -77,58 +70,64 @@ public:
         return true;
     }
 
-    YARP_DEV_RETURN_VALUE_TYPE_CH312 getRawData(yarp::sig::Vector& ranges, double* timestamp) override
-    {
-        std::lock_guard<std::mutex> lock(m_sensorData->m_mutex);
-
-        ranges.resize(m_sensorData->m_data.size(), 0.0);
-        for (size_t i = 0; i < m_sensorData->m_data.size(); i++)
-        {
-            ranges[i] = m_sensorData->m_data[i];
-        }
-        *timestamp = m_sensorData->simTime;
-
-        return YARP_DEV_RETURN_VALUE_OK_CH312;
-    }
-
     // IRangefinder2D
     YARP_DEV_RETURN_VALUE_TYPE_CH312 setDistanceRange(double min, double max) override
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        yError() << "setDistanceRange() Not yet implemented";
+        yCError(GZ_SIM_LIDAR) << "setDistanceRange() Not yet implemented";
         return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH312;
     }
 
     YARP_DEV_RETURN_VALUE_TYPE_CH312 setScanLimits(double min, double max) override
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        yError() << "setScanLimits() Not yet implemented";
+        yCError(GZ_SIM_LIDAR) << "setScanLimits() Not yet implemented";
         return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH312;
     }
 
     YARP_DEV_RETURN_VALUE_TYPE_CH312 setHorizontalResolution(double step) override
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        yError() << "setHorizontalResolution() Not yet implemented";
+        yCError(GZ_SIM_LIDAR) << "setHorizontalResolution() Not yet implemented";
         return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH312;
     }
 
     YARP_DEV_RETURN_VALUE_TYPE_CH312 setScanRate(double rate) override
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        yError() << "setScanRate() Not yet implemented";
+        yCError(GZ_SIM_LIDAR) << "setScanRate() Not yet implemented";
         return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH312;
     }
 
     // ILaserData
-
-    void setLaserData(::gzyarp::LaserData* dataPtr) override
+    void updateLaserMeasurements(const ::gzyarp::LaserData& gzdata) override
     {
-        m_sensorData = dataPtr;
-    }
+        std::lock_guard<std::mutex> guard(m_mutex);
 
-private:
-    ::gzyarp::LaserData* m_sensorData;
-    std::string m_sensorName;
-    std::string m_frameName;
+        if (gzdata.m_data.size() == 0)
+        {
+           //yCErrorThrottle(GZ_SIM_LIDAR, 3.0) << "No data received, simulation not started yet?";
+           m_device_status = yarp::dev::IRangefinder2D::Device_status::DEVICE_GENERAL_ERROR;
+           return;    
+        }
+        else if (gzdata.m_data.size() != m_laser_data.size())
+        {
+           yCErrorThrottle(GZ_SIM_LIDAR, 3.0)  << "Data size error, expected: " << m_laser_data.size() 
+                                << " samples, got: " << gzdata.m_data.size();
+           m_device_status = yarp::dev::IRangefinder2D::Device_status::DEVICE_GENERAL_ERROR;
+           return;
+        }
+
+        //Sets the measurements into the variable m_laser_data (defined in
+        //yarp::dev::Lidar2DDeviceBase) and apply range limits on it.
+        //The values of m_laser_data are retrieved through yarp::dev::Lidar2DDeviceBase methods.
+        for (size_t i = 0; i < gzdata.m_data.size(); i++)
+        {
+            m_laser_data[i] = gzdata.m_data[i];
+        }
+        this->applyLimitsOnLaserData();
+        
+        m_timestamp.update(gzdata.m_simTime);
+        m_device_status = yarp::dev::IRangefinder2D::Device_status::DEVICE_OK_IN_USE;
+    }
 };
