@@ -102,4 +102,4 @@ jobs:
       run: |
         cd build
         export CMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install
-        cmake-package-check gz-sim-yarp-plugins --targets gz-sim-yarp-plugins::gz-sim-yarp-device-registry
+        cmake-package-check gz-sim-yarp-plugins --targets gz-sim-yarp-plugins::gz-sim-yarp-device-registry gz-sim-yarp-plugins::gz-sim-yarp-commons
