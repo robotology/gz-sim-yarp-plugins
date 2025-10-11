@@ -5,9 +5,9 @@ target_include_directories(gz-sim-yarp-depthcamera-system PUBLIC "$<BUILD_INTERF
 target_compile_features(gz-sim-yarp-depthcamera-system PRIVATE cxx_std_17)
 
 target_link_libraries(gz-sim-yarp-depthcamera-system
-  PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
-          gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
-          gz-sensors${GZ_SIM_VER}::gz-sensors${GZ_SIM_VER}
+  PRIVATE gz-plugin${GZ_PLUGIN_VER_OR_EMPTY}::gz-plugin${GZ_PLUGIN_VER_OR_EMPTY}
+          gz-sim${GZ_SIM_VER_OR_EMPTY}::gz-sim${GZ_SIM_VER_OR_EMPTY}
+          gz-sensors${GZ_SIM_VER_OR_EMPTY}::gz-sensors${GZ_SIM_VER_OR_EMPTY}
   
   PRIVATE
     YARP::YARP_dev

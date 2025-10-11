@@ -2,8 +2,8 @@ add_executable(ImuTest ImuTest.cc)
 target_link_libraries(ImuTest
   PRIVATE GTest::gtest_main
           test-helpers
-  PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
-  PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+  PRIVATE gz-sim${GZ_SIM_VER_OR_EMPTY}::gz-sim${GZ_SIM_VER_OR_EMPTY}
+  PRIVATE gz-plugin${GZ_PLUGIN_VER_OR_EMPTY}::gz-plugin${GZ_PLUGIN_VER_OR_EMPTY}
   PRIVATE
         YARP::YARP_dev
         YARP::YARP_os

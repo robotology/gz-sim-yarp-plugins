@@ -6,8 +6,8 @@ target_include_directories(gz-sim-yarp-basestate-system
 target_compile_features(gz-sim-yarp-basestate-system PRIVATE cxx_std_17)
 
 target_link_libraries(gz-sim-yarp-basestate-system
-  PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
-  PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+  PRIVATE gz-plugin${GZ_PLUGIN_VER_OR_EMPTY}::gz-plugin${GZ_PLUGIN_VER_OR_EMPTY}
+  PRIVATE gz-sim${GZ_SIM_VER_OR_EMPTY}::gz-sim${GZ_SIM_VER_OR_EMPTY}
   PRIVATE
     YARP::YARP_dev
     YARP::YARP_os
