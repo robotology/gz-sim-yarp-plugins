@@ -1,8 +1,8 @@
 add_executable(CameraTest CameraTest.cc)
 target_link_libraries(CameraTest
   GTest::gtest_main
-  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
-  gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+  gz-sim::gz-sim
+  gz-plugin::gz-plugin
   ${YARP_LIBRARIES}
   gz-sim-yarp-commons
 )

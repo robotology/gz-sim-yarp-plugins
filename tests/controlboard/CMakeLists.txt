@@ -15,8 +15,8 @@ foreach(TEST ${TESTS})
   target_link_libraries(${TEST}
     PRIVATE GTest::gtest_main
             test-helpers
-    PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
-    PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+    PRIVATE gz-plugin::gz-plugin
+    PRIVATE gz-sim::gz-sim
     PRIVATE
       YARP::YARP_dev
       YARP::YARP_os

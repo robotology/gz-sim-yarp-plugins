@@ -21,8 +21,8 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.0.0")
     set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 endif()
 
-# Initial value of GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION is empty, and then is set to 8 or 9 depending if gz-sim8 or gz-sim9 are available
-set(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION_DOCS "Version of gz-sim used to compile gz-sim-yarp-plugins (either 8 or 9)")
+# Initial value of GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION is empty, and then is set to 8, 9 or >=10 depending if gz-sim8, gz-sim9 or gz-sim are available
+set(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION_DOCS "Version of gz-sim used to compile gz-sim-yarp-plugins")
 set(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION "" CACHE STRING ${GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION_DOCS})
 
 # If GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION is not set, try to guess a suitable value
@@ -32,23 +32,43 @@ if(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION STREQUAL "")
     if(gz-sim8_FOUND)
         set(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION "8" CACHE STRING ${GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION_DOCS} FORCE)
     else()
-        find_package(gz-sim9 REQUIRED)
-        set(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION "9" CACHE STRING ${GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION_DOCS} FORCE)
+        find_package(gz-sim9 QUIET)
+        if(gz-sim9_FOUND)
+            set(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION "9" CACHE STRING ${GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION_DOCS} FORCE)
+        else()
+            find_package(gz-sim REQUIRED)
+            set(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION "${gz-sim_VERSION_MAJOR}" CACHE STRING ${GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION_DOCS} FORCE)
+        endif()
     endif()
 endif()
 
+# This logic sets the GZ_SIM_VER_OR_EMPTY and GZ_PLUGIN_VER_OR_EMPTY variables.
+# This is required as gz-sim8 and gz-sim9 (Harmonic and Ionic) still use versioned
+# CMake packages and targets, while gz-sim >= 10 (Jetty and later) uses unversioned packages and targets.
+# So GZ_SIM_VER_OR_EMPTY is 8 or 9 for gz-sim <= 9 and empty for gz-sim >= 10
+# Similarly, GZ_PLUGIN_VER_OR_EMPTY is 2 for gz-sim8 (Harmonic), 3 for gz-sim9 (Ionic) and empty for gz-sim >= 10
 if(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION STREQUAL "8")
     find_package(gz-sim8 REQUIRED)
-    set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
     find_package(gz-plugin2 REQUIRED COMPONENTS register)
-    set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
+    # gz-sim8 still uses versioned targets,
+    # but we define an alias to versionless targets for keep the code simple
+    add_library(gz-sim::gz-sim ALIAS gz-sim8::gz-sim8)
+    add_library(gz-sensors::gz-sensors ALIAS gz-sensors8::gz-sensors8)
+    add_library(gz-plugin::gz-plugin ALIAS gz-plugin2::gz-plugin2)
+    set(GZ_SIM_CMAKE_PACKAGE "gz-sim8")
 elseif(GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION STREQUAL "9")
     find_package(gz-sim9 REQUIRED)
-    set(GZ_SIM_VER ${gz-sim9_VERSION_MAJOR})
     find_package(gz-plugin3 REQUIRED COMPONENTS register)
-    set(GZ_PLUGIN_VER ${gz-plugin3_VERSION_MAJOR})
+    # gz-sim9 still uses versioned targets,
+    # but we define an alias to versionless targets for keep the code simple
+    add_library(gz-sim::gz-sim ALIAS gz-sim9::gz-sim9)
+    add_library(gz-sensors::gz-sensors ALIAS gz-sensors9::gz-sensors9)
+    add_library(gz-plugin::gz-plugin ALIAS gz-plugin3::gz-plugin3)
+    set(GZ_SIM_CMAKE_PACKAGE "gz-sim9")
 else()
-    message(FATAL_ERROR "Unsupported GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION value ${GZ_SIM_YARP_PLUGINS_USED_GZ_SIM_VERSION}, only 8 or 9 are supported.")
+    find_package(gz-sim REQUIRED)
+    find_package(gz-plugin REQUIRED COMPONENTS register)
+    set(GZ_SIM_CMAKE_PACKAGE "gz-sim")
 endif()
 
 option(GZ_SIM_YARP_PLUGINS_BUILD_TOOLS "If enabled, build command line helper tools" ON)
@@ -111,7 +131,7 @@ Install_basic_package_files(${PROJECT_NAME}
                             COMPATIBILITY AnyNewerVersion
                             VARS_PREFIX ${PROJECT_NAME}
                             NO_CHECK_REQUIRED_COMPONENTS_MACRO
-                            DEPENDENCIES "YARP COMPONENTS robotinterface os" "gz-sim${GZ_SIM_VER}")
+                            DEPENDENCIES "YARP COMPONENTS robotinterface os" "${GZ_SIM_CMAKE_PACKAGE}")
 
 # Add the uninstall target
 include(AddUninstallTarget)

@@ -1,8 +1,8 @@
 add_executable(RobotInterfaceTest RobotInterfaceTest.cc)
 target_link_libraries(RobotInterfaceTest
   GTest::gtest_main
-  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
-  gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+  gz-sim::gz-sim
+  gz-plugin::gz-plugin
   YARP::YARP_dev
 )
 add_test(NAME RobotInterfaceTest

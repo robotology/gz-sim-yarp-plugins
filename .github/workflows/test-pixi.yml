@@ -17,8 +17,9 @@ jobs:
           windows-2022
         ]
         pixi_env: [
-          default,
-          ionic
+          harmonic,
+          ionic,
+          jetty
         ]
 
     steps:
