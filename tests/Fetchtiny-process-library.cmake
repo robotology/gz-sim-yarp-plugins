@@ -1,8 +1,11 @@
 include(FetchContent)
+# We use a fork to workaround https://gitlab.com/eidheim/tiny-process-library/-/issues/62,
+# as since Gazebo Jetty someone is defining the `UNICODE` macro,
+# resulting in the error https://github.com/robotology/gz-sim-yarp-plugins/pull/294#issuecomment-3397545782
 FetchContent_Declare(
   tinyprocesslibrary
-  GIT_REPOSITORY https://gitlab.com/eidheim/tiny-process-library.git
-  GIT_TAG v2.0.4)
+  GIT_REPOSITORY https://gitlab.com/traversaro/tiny-process-library.git
+  GIT_TAG v2.0.4.100)
 
 FetchContent_GetProperties(tinyprocesslibrary)
 
