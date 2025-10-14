@@ -24,7 +24,7 @@ GSYP_BUILD_DIRECTORY_NAME = ".build_harmonic"
 GSYP_BUILD_DIRECTORY_NAME = ".build_ionic"
 
 [feature.jetty.activation.env]
-GSYP_BUILD_DIRECTORY_NAME = ".build_ionic"
+GSYP_BUILD_DIRECTORY_NAME = ".build_jetty"
 
 [tasks]
 
