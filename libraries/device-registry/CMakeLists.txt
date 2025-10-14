@@ -8,8 +8,8 @@ target_include_directories(gz-sim-yarp-device-registry PUBLIC "$<BUILD_INTERFACE
 target_compile_features(gz-sim-yarp-device-registry PRIVATE cxx_std_17)
 
 target_link_libraries(gz-sim-yarp-device-registry
-        PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
-        PUBLIC gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+        PRIVATE gz-plugin::gz-plugin
+        PUBLIC gz-sim::gz-sim
         PRIVATE YARP::YARP_os
         PRIVATE YARP::YARP_init
         PUBLIC  YARP::YARP_dev)

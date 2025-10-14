@@ -11,6 +11,8 @@
 
 ## Installation
 
+Independently from the installation method you choose, all versions of gz-sim after gz-sim 8 (Gazebo Harmonic) are supported.
+
 ### conda (recommended)
 
 You can easily install the C++ and Python library with via [`conda-forge`](https://conda-forge.org) using the following command:

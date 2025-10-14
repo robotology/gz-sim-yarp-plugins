@@ -6,8 +6,8 @@ target_link_libraries(ConfigurationParsingFromFileTest
 PRIVATE
   GTest::gtest_main
   test-helpers
-  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
-  gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+  gz-sim::gz-sim
+  gz-plugin::gz-plugin
   YARP::YARP_dev
   YARP::YARP_os
   YARP::YARP_init
@@ -24,8 +24,8 @@ target_link_libraries(ConfigurationParsingFromStringTest
 PRIVATE
   GTest::gtest_main
   test-helpers
-  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
-  gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+  gz-sim::gz-sim
+  gz-plugin::gz-plugin
   YARP::YARP_dev
   YARP::YARP_os
   YARP::YARP_init
@@ -42,8 +42,8 @@ target_link_libraries(ConcurrentInstancesTest
 PRIVATE
   GTest::gtest_main
   test-helpers
-  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
-  gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+  gz-sim::gz-sim
+  gz-plugin::gz-plugin
   YARP::YARP_dev
   YARP::YARP_os
   YARP::YARP_init

@@ -6,7 +6,7 @@ name = "gz-sim-yarp-plugins"
 version = "0.0.0"
 description = "YARP plugins for Modern Gazebo (gz-sim). "
 authors = ["Alessandro Croci <alessandro.croci@iit.it", "Silvio Traversaro <silvio.traversaro@iit.it>"]
-channels = ["conda-forge"]
+channels = ["https://prefix.dev/conda-forge"]
 platforms = ["linux-64", "linux-aarch64", "osx-arm64", "win-64"]
 
 [activation.env]
@@ -22,6 +22,9 @@ GSYP_BUILD_DIRECTORY_NAME = ".build_harmonic"
 
 [feature.ionic.activation.env]
 GSYP_BUILD_DIRECTORY_NAME = ".build_ionic"
+
+[feature.jetty.activation.env]
+GSYP_BUILD_DIRECTORY_NAME = ".build_jetty"
 
 [tasks]
 
@@ -71,11 +74,16 @@ libopengl-devel = "*"
 libegl-devel = "*"
 
 [feature.harmonic.dependencies]
-libgz-sim8 = "*"
+libgz-sim = "8.*"
 
 [feature.ionic.dependencies]
-libgz-sim9 = "*"
+libgz-sim = "9.*"
+
+[feature.jetty.dependencies]
+libgz-sim = "10.*"
 
 [environments]
-default = ["harmonic"]
+default = ["jetty"]
+harmonic = ["harmonic"]
 ionic = ["ionic"]
+jetty = ["jetty"]

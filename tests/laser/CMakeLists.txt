@@ -1,8 +1,8 @@
 add_executable(LaserTest LaserTest.cc)
 target_link_libraries(LaserTest
   GTest::gtest_main
-  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
-  gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+  gz-sim::gz-sim
+  gz-plugin::gz-plugin
   ${YARP_LIBRARIES}
 )
 add_test(NAME LaserTest
