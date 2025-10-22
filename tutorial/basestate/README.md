@@ -12,7 +12,7 @@
   - Update the `GZ_SIM_RESOURCE_PATH` environment variable to point to the `tutorial` folder:
 
     ~~~
-    export GZ_SIM_RESOURCE_PATH = $GZ_SIM_RESOURCE_PATH:<path-to-tutorial-folder>
+    export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:<path-to-tutorial-folder>
     ~~~
 
   - Then, launch Gazebo:
@@ -69,14 +69,16 @@ Finally start the simulation in Gazebo. The output you will obtain is similar to
 (((-4.15054326805285028386e-16 -7.21724682391673291278e-16 -1.14830415881562789296e-19) 1.02800000000000002487)) (((-1.58584875191673123571e-16 1.49226442801309752287e-15 -0.0073986509109662534911) 1.02800000000000002487)) () (((2.18911500271050701441e-16 2.03312703323072940725e-16 -9.41573617954991387132e-20) 1.02800000000000002487)) () () () () () (((1.77014806748653105552e-19 -1.91250432233356183595e-19 0.0499274833469900911065) 1.02800000000000002487)) (((-6.26056473615039635488e-19 3.59796307152772820966e-19 0.000732466592775309066621) 1.02800000000000002487)) (((-1.71010533573726559884e-12 -1.85277479641055154875e-13 -3.12164509477490255563e-17) 1.02800000000000002487))
 ~~~
 
-On each line are listed 18 elements:
+The `/basestate/measures:o` streams data in the form of [yarp::os::Bottle](https://www.yarp.it/latest/classyarp_1_1os_1_1Bottle.html) objects.
+Indeed, each data is made up of 12 `yarp::os::Bottle` objects. Some of them are empty; others are in the form of `((x,y,z), t)`.
+More precisely:
 
-- X, Y, Z coordinates of the origin of the base link frame expressed in the world reference frame;
-- Roll, Pitch and Yaw angles expressing the orientation of the base link frame with respect to the world reference frame, in radians;
-- Linear velocity of the origin of the base link frame expressed in the world reference frame;
-- Angular velocity of the origin of the base link frame expressed in the world reference frame;
-- Linear acceleration of the origin of the base link frame expressed in the world reference frame;
-- Angular acceleration of the origin of the base link frame expressed in the world reference frame;
+- the **10th object** contains the X, Y, Z coordinates of the origin of the base link frame expressed in the world reference frame, in `[m]`;
+- the **4th object** contains the roll, Pitch and Yaw angles expressing the orientation of the base link frame with respect to the world reference frame, in `[deg]`;
+- the **11th object** contains the linear velocity of the origin of the base link frame expressed in the world reference frame, in, in `[m/s]`;
+- the **1st object** contains the angular velocity of the origin of the base link frame expressed in the world reference frame, in `[deg/s]`;
+- the **2nd object** contains the linear acceleration of the origin of the base link frame expressed in the world reference frame, in `[m/(s^2)]`;
+- the **12th object** contains the angular acceleration of the origin of the base link frame expressed in the world reference frame, in `[deg/(s^2)]`;
 
-As you can observe from the basestate plugin output, the base link frame starts at 0.2m height on Z direction (the 3rd value printed on each line) and when the simulation runs the cube falls on the ground; the Z value then remains constant to ~0.05m.
+As you can observe from the basestate plugin output, the base link frame starts at 0.2m height on Z direction and when the simulation runs the cube falls on the ground; the Z value then remains constant to ~0.05m.
 
