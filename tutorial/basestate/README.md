@@ -32,7 +32,6 @@
 Finally start the simulation in Gazebo. The output you will obtain is similar to the following:
 
 ~~~
-0.0 0.0) 0.0)) (((0.0 0.0 0.0) 0.0))
 (((0.0 0.0 0.0) 0.0)) (((0.0 0.0 0.0) 0.0)) () (((0.0 -0.0 0.0) 0.0)) () () () () () (((0.0 0.0 0.200000000000000011102) 0.0)) (((0.0 0.0 0.0) 0.0)) (((0.0 0.0 0.0) 0.0))
 (((0.0 0.0 0.0) 0.0)) (((0.0 0.0 0.0) 0.0)) () (((0.0 -0.0 0.0) 0.0)) () () () () () (((0.0 0.0 0.200000000000000011102) 0.0)) (((0.0 0.0 0.0) 0.0)) (((0.0 0.0 0.0) 0.0))
 (((0.0 0.0 0.0) 0.0)) (((0.0 0.0 0.0) 0.0)) () (((0.0 -0.0 0.0) 0.0)) () () () () () (((0.0 0.0 0.200000000000000011102) 0.0)) (((0.0 0.0 0.0) 0.0)) (((0.0 0.0 0.0) 0.0))
@@ -71,14 +70,8 @@ Finally start the simulation in Gazebo. The output you will obtain is similar to
 
 The `/basestate/measures:o` streams data in the form of [yarp::os::Bottle](https://www.yarp.it/latest/classyarp_1_1os_1_1Bottle.html) objects.
 Indeed, each data is made up of 12 `yarp::os::Bottle` objects. Some of them are empty; others are in the form of `((x,y,z), t)`.
-More precisely:
-
-- the **10th object** contains the X, Y, Z coordinates of the origin of the base link frame expressed in the world reference frame, in `[m]`;
-- the **4th object** contains the roll, Pitch and Yaw angles expressing the orientation of the base link frame with respect to the world reference frame, in `[deg]`;
-- the **11th object** contains the linear velocity of the origin of the base link frame expressed in the world reference frame, in, in `[m/s]`;
-- the **1st object** contains the angular velocity of the origin of the base link frame expressed in the world reference frame, in `[deg/s]`;
-- the **2nd object** contains the linear acceleration of the origin of the base link frame expressed in the world reference frame, in `[m/(s^2)]`;
-- the **12th object** contains the angular acceleration of the origin of the base link frame expressed in the world reference frame, in `[deg/(s^2)]`;
+For the ordering of these objects please refer to https://www.yarp.it/latest/classMultipleAnalogSensorsClient.html and
+ https://github.com/robotology/yarp/blob/286dea05b502b6082fdc7f759f60f5a624dd5a84/src/devices/messages/multipleAnalogSensorsMsgs/multipleAnalogSensorsSerializations.thrift.
 
 As you can observe from the basestate plugin output, the base link frame starts at 0.2m height on Z direction and when the simulation runs the cube falls on the ground; the Z value then remains constant to ~0.05m.
 
