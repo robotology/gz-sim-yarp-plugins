@@ -12,7 +12,7 @@
   - Update the `GZ_SIM_RESOURCE_PATH` environment variable to point to the `tutorial` folder:
 
     ~~~
-    export GZ_SIM_RESOURCE_PATH = $GZ_SIM_RESOURCE_PATH:<path-to-tutorial-folder>
+    export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:<path-to-tutorial-folder>
     ~~~
 
   - Then, launch Gazebo:
