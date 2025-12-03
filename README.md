@@ -58,7 +58,7 @@ If you are migrating from an existing project made for Gazebo Classic and `gazeb
 
 There are two ways to specify the Yarp configuration of a plugin:
 
-- `yarpConfigurationString`: it allows to directly specify the configuration in a string that must follow the [standard data representation format](https://www.yarp.it/latest/data_rep.html);
+- `yarpConfigurationString`: it allows to directly specify the configuration in a string that must follow the [standard **text** data representation format of YARP](https://www.yarp.it/latest/data_rep.html);
 - `yarpConfigurationFile`: it specifies the location of a [Yarp configuration file](https://www.yarp.it/latest/yarp_config_files.html).
 
 Concerning `yarpConfigurationFile`, the preferred way to specify the path to the configuration file is by using [Gazebo URIs](https://gazebosim.org/api/common/6/classgz_1_1common_1_1URI.html). A URI has the following general scheme:
