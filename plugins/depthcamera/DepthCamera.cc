@@ -75,7 +75,20 @@ void DepthCamera::Configure(const Entity& _entity,
                                            components::Name(sensorName),
                                            components::Sensor());
     
-    auto sdfSensor       = _ecm.ComponentData<components::RgbdCamera>(sensor).value().Element();
+    auto sdfSensS = _ecm.ComponentData<components::RgbdCamera>(sensor);
+    
+    if (!sdfSensS.has_value())
+    {
+        yError() << "gz-sim-yarp-depthcamera-system : the given sensor is not of type='rgbd_camera'";
+        return;
+    }
+    auto sdfSensor  = sdfSensS.value().Element();
+    if (sdfSensor == nullptr)
+    {
+        yError() << "gz-sim-yarp-depthcamera-system : sdfSensS.value().Element() is nullptr";
+        return;
+    }
+    
     //auto A = sensorPippo->getDepthCamera();
     auto sdfCamera = sdfSensor->GetElement("camera").get();
     auto sdfImage  = sdfCamera->GetElement("image").get();
