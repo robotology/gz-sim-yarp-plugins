@@ -86,6 +86,14 @@ In a directory of your choice, create a file called `ergocub-world.sdf` and fill
             filename="gz-sim-contact-system"
             name="gz::sim::systems::Contact">
         </plugin>
+        <plugin
+            filename="gz-sim-forcetorque-system"
+            name="gz::sim::systems::ForceTorque">
+        </plugin>
+        <plugin
+            filename="gz-sim-imu-system"
+            name="gz::sim::systems::Imu">
+        </plugin>
 
         <!-- YARP CLOCK -->
         <plugin
