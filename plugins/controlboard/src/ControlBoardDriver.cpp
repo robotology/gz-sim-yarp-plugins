@@ -1780,6 +1780,7 @@ bool ControlBoardDriver::getEncoderTimed(int j, double* encs, double* time)
 
     *encs
         = m_controlBoardData->actuatedAxes.at(j).commonJointProperties.position - m_controlBoardData->actuatedAxes.at(j).commonJointProperties.zeroPosition;
+    *time = m_controlBoardData->simTime.getTime();
 
     return true;
 }
