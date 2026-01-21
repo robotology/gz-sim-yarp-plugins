@@ -8,3 +8,5 @@ add_subdirectory(basestate)
 add_subdirectory(clock)
 add_subdirectory(controlboard)
 add_subdirectory(configurationoverride)
+add_subdirectory(worldinterface)
+
