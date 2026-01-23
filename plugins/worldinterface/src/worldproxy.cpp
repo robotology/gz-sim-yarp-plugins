@@ -177,14 +177,15 @@ ReturnValue WorldProxy::setPose(std::string id, yarp::sig::Pose6D pose, std::str
    gz::msgs::Pose req;
    req.set_name(id);
 
+   gz::math::Quaterniond q (pose.pitch, pose.roll, pose.yaw);
    req.mutable_position()->set_x(pose.x);
    req.mutable_position()->set_y(pose.y);
    req.mutable_position()->set_z(pose.z);
 
-   req.mutable_orientation()->set_x(0);
-   req.mutable_orientation()->set_y(0);
-   req.mutable_orientation()->set_z(0);
-   req.mutable_orientation()->set_w(1);
+   req.mutable_orientation()->set_x(q.X());
+   req.mutable_orientation()->set_y(q.Y());
+   req.mutable_orientation()->set_z(q.Z());
+   req.mutable_orientation()->set_w(q.W());
 
    // Reply
    gz::msgs::Boolean rep;
@@ -277,9 +278,13 @@ ReturnValue WorldProxy::getPose(std::string id, yarp::sig::Pose6D& pose,  std::s
                       << p.orientation().x() << ", "
                       << p.orientation().y() << ", "
                       << p.orientation().z() ;
+            gz::math::Quaterniond q (p.orientation().x(),p.orientation().y(),p.orientation().z(),p.orientation().w());
             pose.x = p.position().x();
             pose.y = p.position().y();
             pose.z = p.position().z();
+            pose.pitch = q.Pitch();
+            pose.roll = q.Roll();
+            pose.yaw = q.Yaw();
             
             return ReturnValue_ok;
         }
@@ -291,7 +296,79 @@ ReturnValue WorldProxy::getPose(std::string id, yarp::sig::Pose6D& pose,  std::s
 
 ReturnValue WorldProxy::makeModel(std::string id,  std::string filename, yarp::sig::Pose6D pose,  std::string frame_name, bool gravity_enable, bool collision_enable)
 {
-   return ReturnValue_ok;
+    std::string service = "/world/default/create";
+    gz::msgs::EntityFactory req;
+
+    auto it = std::find (m_hobj.begin(), m_hobj.end(), id);
+    if(it != m_hobj.end()) {
+       yError() << "Object: " << id << " already exists, skipping";
+       return ReturnValue::return_code::return_value_error_method_failed;
+    }
+    
+    string boxSDF_String=string(
+    "<?xml version='1.0'?>\
+    <sdf version ='1.4'>\
+        <model name ='MODELNAME'>\
+          <poseRELATIVETO>POSEX POSEY POSEZ  ROLL PITCH YAW</pose>\
+          <link name ='link'>\
+            <pose>0 0 0 0 0 0</pose>\
+            <collision name ='collision'>\
+            </collision>\
+            <visual name='visual'>\
+              <geometry>\
+                <mesh>\
+                <uri>model://DAEFILE</uri>\
+                <scale>SCALE SCALE SCALE</scale>\
+                </mesh>\
+<!--                <mesh filename=\"package://DAEFILE\" scale=\"1.0 1.0 1.0\"/>  --> \
+              </geometry>\
+            </visual>\
+            <gravity>GRAVITY</gravity>\
+          </link>\
+        </model>\
+    </sdf>");
+
+    if (frame_name=="") {replace(boxSDF_String, "RELATIVETO", "");}
+    else                {replace(boxSDF_String, "RELATIVETO", std::string(" relative_to=\"")+ frame_name +"\" ");}
+    
+    replace(boxSDF_String, "MODELNAME", id);
+    replace(boxSDF_String, "POSEX", pose.x);
+    replace(boxSDF_String, "POSEY", pose.y);
+    replace(boxSDF_String, "POSEZ", pose.z);
+    replace(boxSDF_String, "ROLL",  pose.roll);
+    replace(boxSDF_String, "PITCH", pose.pitch);
+    replace(boxSDF_String, "YAW",   pose.yaw);
+    replace(boxSDF_String, "SCALE",   0.001);
+    replace(boxSDF_String, "DAEFILE",filename);
+
+    if (gravity_enable) {replace (boxSDF_String, "GRAVITY", 1);}
+    else {replace (boxSDF_String, "GRAVITY", 0);}
+  
+    // Set the sdf
+yDebug() << boxSDF_String;
+    req.set_sdf(boxSDF_String);
+
+    // Reply
+    gz::msgs::Boolean rep;
+    bool result;
+
+    bool success = m_node->Request(service, req, m_timeout, rep, result);
+
+    if (success && result && rep.data())
+    {
+       yInfo() << "Object creatated:" << id;
+    }
+    else
+    {
+       yError() << "Unable to create object:" << id;
+       return ReturnValue::return_code::return_value_error_method_failed;
+    }
+    
+    //update the list of handled objects
+    m_hobj.push_back(id);
+    
+    if (collision_enable == false) { yError()<< "Gravity Not yet implemented"; }
+    return ReturnValue_ok;
 }
 
 ReturnValue WorldProxy::deleteObject(std::string id)
