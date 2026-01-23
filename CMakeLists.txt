@@ -133,6 +133,10 @@ Install_basic_package_files(${PROJECT_NAME}
                             NO_CHECK_REQUIRED_COMPONENTS_MACRO
                             DEPENDENCIES "YARP COMPONENTS robotinterface os" "${GZ_SIM_CMAKE_PACKAGE}")
 
+# install the models
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/models DESTINATION ${CMAKE_BINARY_DIR})
+install(DIRECTORY ${CMAKE_BINARY_DIR}/models DESTINATION .)
+
 # Add the uninstall target
 include(AddUninstallTarget)
 
