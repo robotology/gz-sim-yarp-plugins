@@ -121,4 +121,4 @@ This project tries to avoid removing functionalities in minor releases, while fu
  
 ## Maintainers
 
-- Nicolo' Genesio (@Nicogene)
+- Nicolo' Genesio ([@Nicogene](https://github.com/Nicogene))
