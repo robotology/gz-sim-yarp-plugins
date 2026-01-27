@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<robot name="worldinterface_model">
+  <gazebo>
+    <plugin filename="gz-sim-yarp-worldinterface-system" name="gzyarp::WorldInterface"/>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
+      <yarpRobotInterfaceConfigurationFile>model://worldinterface/worldinterface_yri.xml</yarpRobotInterfaceConfigurationFile>
+      <yarpRobotInterfaceEnableTags>    (enable_ros2)   </yarpRobotInterfaceEnableTags>
+      <yarpRobotInterfaceDisableTags>  </yarpRobotInterfaceDisableTags>
+    </plugin>
+  </gazebo>
+
+  <link name="dummy_link1">
+    <inertial>
+      <mass value="1"/>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
+  </link>
+  
+  <gazebo reference="dummy_link1">
+  </gazebo>
+  
+  <gazebo>
+    <pose>0 0 0 0 0 0</pose>
+    <static>true</static>
+  </gazebo>
+  
+</robot>
