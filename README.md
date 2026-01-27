@@ -121,5 +121,4 @@ This project tries to avoid removing functionalities in minor releases, while fu
  
 ## Maintainers
 
-- Silvio Traversaro ([@traversaro](https://github.com/traversaro))
-- Alessandro Croci ([@xela-95](https://github.com/xela-95))
+- Nicolo' Genesio (@Nicogene)
