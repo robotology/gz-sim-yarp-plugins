@@ -3,6 +3,7 @@
 #include <ControlBoardData.hh>
 
 #include <string>
+#include <vector>
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAxisInfo.h>
@@ -19,6 +20,7 @@
 #include <yarp/dev/IVelocityControl.h>
 #include <yarp/dev/PidEnums.h>
 #include <yarp/os/Searchable.h>
+#include <gzyarp/YarpDevReturnValueCompat.h>
 
 namespace yarp
 {
@@ -52,156 +54,159 @@ public:
 
     // IAxisInfo
 
-    bool getAxisName(int axis, std::string& name) override;
-    bool getJointType(int axis, yarp::dev::JointTypeEnum& type) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getAxisName(int axis, std::string& name) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getJointType(int axis, yarp::dev::JointTypeEnum& type) override;
 
     // IEncodersTimed
 
-    bool resetEncoder(int j) override;
-    bool resetEncoders() override;
-    bool setEncoder(int j, double val) override;
-    bool setEncoders(const double* vals) override;
-    bool getEncoder(int j, double* v) override;
-    bool getEncoders(double* encs) override;
-    bool getEncoderSpeed(int j, double* sp) override;
-    bool getEncoderSpeeds(double* spds) override;
-    bool getEncoderAcceleration(int j, double* spds) override;
-    bool getEncoderAccelerations(double* accs) override;
-    bool getEncodersTimed(double* encs, double* time) override;
-    bool getEncoderTimed(int j, double* encs, double* time) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 resetEncoder(int j) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 resetEncoders() override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setEncoder(int j, double val) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setEncoders(const double* vals) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getEncoder(int j, double* v) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getEncoders(double* encs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getEncoderSpeed(int j, double* sp) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getEncoderSpeeds(double* spds) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getEncoderAcceleration(int j, double* spds) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getEncoderAccelerations(double* accs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getEncodersTimed(double* encs, double* time) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getEncoderTimed(int j, double* encs, double* time) override;
 
     // IInteractionMode
 
-    bool getInteractionMode(int axis, yarp::dev::InteractionModeEnum* mode) override;
-    bool
-    getInteractionModes(int n_joints, int* joints, yarp::dev::InteractionModeEnum* modes) override;
-    bool getInteractionModes(yarp::dev::InteractionModeEnum* modes) override;
-    bool setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode) override;
-    bool
-    setInteractionModes(int n_joints, int* joints, yarp::dev::InteractionModeEnum* modes) override;
-    bool setInteractionModes(yarp::dev::InteractionModeEnum* modes) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getInteractionMode(int axis, yarp::dev::InteractionModeEnum* mode) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getInteractionModes(int n_joints, int* joints, yarp::dev::InteractionModeEnum* modes) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getInteractionModes(yarp::dev::InteractionModeEnum* modes) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setInteractionModes(int n_joints, int* joints, yarp::dev::InteractionModeEnum* modes) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setInteractionModes(yarp::dev::InteractionModeEnum* modes) override;
 
     // IControlMode
 
-    bool getControlMode(int j, int* mode) override;
-    bool getControlModes(int* modes) override;
-    bool getControlModes(const int n_joint, const int* joints, int* modes) override;
-    bool setControlMode(const int j, const int mode) override;
-    bool setControlModes(const int n_joint, const int* joints, int* modes) override;
-    bool setControlModes(int* modes) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getControlMode(int j, int* mode) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getControlModes(int* modes) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getControlModes(const int n_joint, const int* joints, int* modes) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setControlMode(const int j, const int mode) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setControlModes(const int n_joint, const int* joints, int* modes) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setControlModes(int* modes) override;
 
     // IControlLimits
 
-    bool setLimits(int axis, double min, double max) override;
-    bool getLimits(int axis, double* min, double* max) override;
-    bool setVelLimits(int axis, double min, double max) override;
-    bool getVelLimits(int axis, double* min, double* max) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setPosLimits(int axis, double min, double max) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPosLimits(int axis, double* min, double* max) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setVelLimits(int axis, double min, double max) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getVelLimits(int axis, double* min, double* max) override;
 
     // IRemoteVariables
 
-    bool getRemoteVariable(std::string key, yarp::os::Bottle& val) override;
-    bool setRemoteVariable(std::string key, const yarp::os::Bottle& val) override;
-    bool getRemoteVariablesList(yarp::os::Bottle* listOfKeys) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRemoteVariable(std::string key, yarp::os::Bottle& val) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRemoteVariable(std::string key, const yarp::os::Bottle& val) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRemoteVariablesList(yarp::os::Bottle* listOfKeys) override;
 
     // ITorqueControl
 
-    bool getAxes(int* ax) override;
-    bool getRefTorques(double* t) override;
-    bool getRefTorque(int j, double* t) override;
-    bool setRefTorques(const double* t) override;
-    bool setRefTorque(int j, double t) override;
-    bool setRefTorques(const int n_joint, const int* joints, const double* t) override;
-    bool getMotorTorqueParams(int j, yarp::dev::MotorTorqueParameters* params) override;
-    bool setMotorTorqueParams(int j, const yarp::dev::MotorTorqueParameters params) override;
-    bool getTorque(int j, double* t) override;
-    bool getTorques(double* t) override;
-    bool getTorqueRange(int j, double* min, double* max) override;
-    bool getTorqueRanges(double* min, double* max) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getAxes(int* ax) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefTorques(double* t) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefTorque(int j, double* t) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefTorques(const double* t) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefTorque(int j, double t) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefTorques(const int n_joint, const int* joints, const double* t) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getMotorTorqueParams(int j, yarp::dev::MotorTorqueParameters* params) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setMotorTorqueParams(int j, const yarp::dev::MotorTorqueParameters params) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTorque(int j, double* t) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTorques(double* t) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTorqueRange(int j, double* min, double* max) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTorqueRanges(double* min, double* max) override;
 
     // IPositionDirect
 
-    bool setPosition(int j, double ref) override;
-    bool setPositions(const int n_joint, const int* joints, const double* refs) override;
-    bool setPositions(const double* refs) override;
-    bool getRefPosition(const int joint, double* ref) override;
-    bool getRefPositions(double* refs) override;
-    bool getRefPositions(const int n_joint, const int* joints, double* refs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setPosition(int j, double ref) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setPositions(const int n_joint, const int* joints, const double* refs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setPositions(const double* refs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefPosition(const int joint, double* ref) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefPositions(double* refs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefPositions(const int n_joint, const int* joints, double* refs) override;
 
     // IPositionControl
 
-    bool positionMove(int j, double ref) override;
-    bool positionMove(const double* refs) override;
-    bool relativeMove(int j, double delta) override;
-    bool relativeMove(const double* deltas) override;
-    bool checkMotionDone(int j, bool* flag) override;
-    bool checkMotionDone(bool* flag) override;
-    bool setRefSpeed(int j, double sp) override;
-    bool setRefSpeeds(const double* spds) override;
-    bool setRefAcceleration(int j, double acc) override;
-    bool setRefAccelerations(const double* accs) override;
-    bool getRefSpeed(int j, double* ref) override;
-    bool getRefSpeeds(double* spds) override;
-    bool getRefAcceleration(int j, double* acc) override;
-    bool getRefAccelerations(double* accs) override;
-    bool stop(int j) override;
-    bool stop() override;
-    bool positionMove(const int n_joint, const int* joints, const double* refs) override;
-    bool relativeMove(const int n_joint, const int* joints, const double* deltas) override;
-    bool checkMotionDone(const int n_joint, const int* joints, bool* flag) override;
-    bool setRefSpeeds(const int n_joint, const int* joints, const double* spds) override;
-    bool setRefAccelerations(const int n_joint, const int* joints, const double* accs) override;
-    bool getRefSpeeds(const int n_joint, const int* joints, double* spds) override;
-    bool getRefAccelerations(const int n_joint, const int* joints, double* accs) override;
-    bool stop(const int n_joint, const int* joints) override;
-    bool getTargetPosition(const int joint, double* ref) override;
-    bool getTargetPositions(double* refs) override;
-    bool getTargetPositions(const int n_joint, const int* joints, double* refs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 positionMove(int j, double ref) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 positionMove(const double* refs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 relativeMove(int j, double delta) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 relativeMove(const double* deltas) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(int j, bool* flag) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(bool* flag) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setTrajSpeed(int j, double sp) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setTrajSpeeds(const double* spds) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setTrajAcceleration(int j, double acc) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setTrajAccelerations(const double* accs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTrajSpeed(int j, double* ref) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTrajSpeeds(double* spds) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTrajAcceleration(int j, double* acc) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTrajAccelerations(double* accs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 stop(int j) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 stop() override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 positionMove(const int n_joint, const int* joints, const double* refs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 relativeMove(const int n_joint, const int* joints, const double* deltas) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(const int n_joint, const int* joints, bool* flag) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setTrajSpeeds(const int n_joint, const int* joints, const double* spds) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setTrajAccelerations(const int n_joint, const int* joints, const double* accs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTrajSpeeds(const int n_joint, const int* joints, double* spds) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTrajAccelerations(const int n_joint, const int* joints, double* accs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 stop(const int n_joint, const int* joints) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetPosition(const int joint, double* ref) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetPositions(double* refs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetPositions(const int n_joint, const int* joints, double* refs) override;
 
     // IVelocityControl
 
-    bool velocityMove(int j, double sp) override;
-    bool velocityMove(const double* sp) override;
-    bool velocityMove(const int n_joint, const int* joints, const double* spds) override;
-    bool getRefVelocity(const int joint, double* vel) override;
-    bool getRefVelocities(double* vels) override;
-    bool getRefVelocities(const int n_joint, const int* joints, double* vels) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 velocityMove(int j, double sp) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 velocityMove(const double* sp) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 velocityMove(const int n_joint, const int* joints, const double* spds) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetVelocity(const int joint, double* vel) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetVelocities(double* vels) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetVelocities(const int n_joint, const int* joints, double* vels) override;
 
     // ICurrentControl
 
-    bool getNumberOfMotors(int* ax) override;
-    bool getCurrent(int m, double* curr) override;
-    bool getCurrents(double* currs) override;
-    bool getCurrentRange(int m, double* min, double* max) override;
-    bool getCurrentRanges(double* min, double* max) override;
-    bool setRefCurrents(const double* currs) override;
-    bool setRefCurrent(int m, double curr) override;
-    bool setRefCurrents(const int n_motor, const int* motors, const double* currs) override;
-    bool getRefCurrents(double* currs) override;
-    bool getRefCurrent(int m, double* curr) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getNumberOfMotors(int* ax) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getCurrent(int m, double* curr) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getCurrents(double* currs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getCurrentRange(int m, double* min, double* max) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getCurrentRanges(double* min, double* max) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefCurrents(const double* currs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefCurrent(int m, double curr) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefCurrents(const int n_motor, const int* motors, const double* currs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefCurrents(double* currs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefCurrent(int m, double* curr) override;
 
     // IPidControl
 
-    bool setPid(const PidControlTypeEnum& pidtype, int j, const Pid& pid) override;
-    bool setPids(const PidControlTypeEnum& pidtype, const Pid* pids) override;
-    bool setPidReference(const PidControlTypeEnum& pidtype, int j, double ref) override;
-    bool setPidReferences(const PidControlTypeEnum& pidtype, const double* refs) override;
-    bool setPidErrorLimit(const PidControlTypeEnum& pidtype, int j, double limit) override;
-    bool setPidErrorLimits(const PidControlTypeEnum& pidtype, const double* limits) override;
-    bool getPidError(const PidControlTypeEnum& pidtype, int j, double* err) override;
-    bool getPidErrors(const PidControlTypeEnum& pidtype, double* errs) override;
-    bool getPidOutput(const PidControlTypeEnum& pidtype, int j, double* out) override;
-    bool getPidOutputs(const PidControlTypeEnum& pidtype, double* outs) override;
-    bool getPid(const PidControlTypeEnum& pidtype, int j, Pid* pid) override;
-    bool getPids(const PidControlTypeEnum& pidtype, Pid* pids) override;
-    bool getPidReference(const PidControlTypeEnum& pidtype, int j, double* ref) override;
-    bool getPidReferences(const PidControlTypeEnum& pidtype, double* refs) override;
-    bool getPidErrorLimit(const PidControlTypeEnum& pidtype, int j, double* limit) override;
-    bool getPidErrorLimits(const PidControlTypeEnum& pidtype, double* limits) override;
-    bool resetPid(const PidControlTypeEnum& pidtype, int j) override;
-    bool disablePid(const PidControlTypeEnum& pidtype, int j) override;
-    bool enablePid(const PidControlTypeEnum& pidtype, int j) override;
-    bool setPidOffset(const PidControlTypeEnum& pidtype, int j, double v) override;
-    bool isPidEnabled(const PidControlTypeEnum& pidtype, int j, bool* enabled) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setPid(const PidControlTypeEnum& pidtype, int j, const Pid& pid) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setPids(const PidControlTypeEnum& pidtype, const Pid* pids) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setPidReference(const PidControlTypeEnum& pidtype, int j, double ref) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setPidReferences(const PidControlTypeEnum& pidtype, const double* refs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setPidErrorLimit(const PidControlTypeEnum& pidtype, int j, double limit) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setPidErrorLimits(const PidControlTypeEnum& pidtype, const double* limits) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidError(const PidControlTypeEnum& pidtype, int j, double* err) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidErrors(const PidControlTypeEnum& pidtype, double* errs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidOutput(const PidControlTypeEnum& pidtype, int j, double* out) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidOutputs(const PidControlTypeEnum& pidtype, double* outs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPid(const PidControlTypeEnum& pidtype, int j, Pid* pid) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPids(const PidControlTypeEnum& pidtype, Pid* pids) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidReference(const PidControlTypeEnum& pidtype, int j, double* ref) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidReferences(const PidControlTypeEnum& pidtype, double* refs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidErrorLimit(const PidControlTypeEnum& pidtype, int j, double* limit) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidErrorLimits(const PidControlTypeEnum& pidtype, double* limits) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 resetPid(const PidControlTypeEnum& pidtype, int j) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 disablePid(const PidControlTypeEnum& pidtype, int j) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 enablePid(const PidControlTypeEnum& pidtype, int j) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setPidOffset(const PidControlTypeEnum& pidtype, int j, double v) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setPidFeedforward(const PidControlTypeEnum& pidtype, int j, double v) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidOffset(const PidControlTypeEnum& pidtype, int j, double& v) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidFeedforward(const PidControlTypeEnum& pidtype, int j, double& v) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidExtraInfo(const PidControlTypeEnum& pidtype, int j, yarp::dev::PidExtraInfo& info) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidExtraInfos(const PidControlTypeEnum& pidtype, std::vector<yarp::dev::PidExtraInfo>& info) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 isPidEnabled(const PidControlTypeEnum& pidtype, int j, bool& enabled) override;
 
     // IControlBoardData
 
