@@ -92,8 +92,13 @@ public:
 
     // IControlLimits
 
+#if (YARP_VERSION_MAJOR > 3) || (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR > 12) || (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR == 12 && YARP_VERSION_PATCH >= 100)
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setPosLimits(int axis, double min, double max) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getPosLimits(int axis, double* min, double* max) override;
+#else
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setLimits(int axis, double min, double max) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getLimits(int axis, double* min, double* max) override;
+#endif
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setVelLimits(int axis, double min, double max) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getVelLimits(int axis, double* min, double* max) override;
 
@@ -135,6 +140,16 @@ public:
     YARP_DEV_RETURN_VALUE_TYPE_CH40 relativeMove(const double* deltas) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(int j, bool* flag) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(bool* flag) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 stop(int j) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 stop() override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 positionMove(const int n_joint, const int* joints, const double* refs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 relativeMove(const int n_joint, const int* joints, const double* deltas) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(const int n_joint, const int* joints, bool* flag) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 stop(const int n_joint, const int* joints) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetPosition(const int joint, double* ref) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetPositions(double* refs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetPositions(const int n_joint, const int* joints, double* refs) override;
+#if (YARP_VERSION_MAJOR > 3) || (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR > 12) || (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR == 12 && YARP_VERSION_PATCH >= 100)
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setTrajSpeed(int j, double sp) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setTrajSpeeds(const double* spds) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setTrajAcceleration(int j, double acc) override;
@@ -143,28 +158,39 @@ public:
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getTrajSpeeds(double* spds) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getTrajAcceleration(int j, double* acc) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getTrajAccelerations(double* accs) override;
-    YARP_DEV_RETURN_VALUE_TYPE_CH40 stop(int j) override;
-    YARP_DEV_RETURN_VALUE_TYPE_CH40 stop() override;
-    YARP_DEV_RETURN_VALUE_TYPE_CH40 positionMove(const int n_joint, const int* joints, const double* refs) override;
-    YARP_DEV_RETURN_VALUE_TYPE_CH40 relativeMove(const int n_joint, const int* joints, const double* deltas) override;
-    YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(const int n_joint, const int* joints, bool* flag) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setTrajSpeeds(const int n_joint, const int* joints, const double* spds) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setTrajAccelerations(const int n_joint, const int* joints, const double* accs) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getTrajSpeeds(const int n_joint, const int* joints, double* spds) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getTrajAccelerations(const int n_joint, const int* joints, double* accs) override;
-    YARP_DEV_RETURN_VALUE_TYPE_CH40 stop(const int n_joint, const int* joints) override;
-    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetPosition(const int joint, double* ref) override;
-    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetPositions(double* refs) override;
-    YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetPositions(const int n_joint, const int* joints, double* refs) override;
+#else
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefSpeed(int j, double sp) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefSpeeds(const double* spds) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefAcceleration(int j, double acc) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefAccelerations(const double* accs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefSpeed(int j, double* ref) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefSpeeds(double* spds) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefAcceleration(int j, double* acc) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefAccelerations(double* accs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefSpeeds(const int n_joint, const int* joints, const double* spds) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefAccelerations(const int n_joint, const int* joints, const double* accs) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefSpeeds(const int n_joint, const int* joints, double* spds) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefAccelerations(const int n_joint, const int* joints, double* accs) override;
+#endif
 
     // IVelocityControl
 
     YARP_DEV_RETURN_VALUE_TYPE_CH40 velocityMove(int j, double sp) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 velocityMove(const double* sp) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 velocityMove(const int n_joint, const int* joints, const double* spds) override;
+#if (YARP_VERSION_MAJOR > 3) || (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR > 12) || (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR == 12 && YARP_VERSION_PATCH >= 100)
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetVelocity(const int joint, double* vel) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetVelocities(double* vels) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetVelocities(const int n_joint, const int* joints, double* vels) override;
+#else
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefVelocity(const int joint, double* vel) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefVelocities(double* vels) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefVelocities(const int n_joint, const int* joints, double* vels) override;
+#endif
 
     // ICurrentControl
 
@@ -201,12 +227,16 @@ public:
     YARP_DEV_RETURN_VALUE_TYPE_CH40 disablePid(const PidControlTypeEnum& pidtype, int j) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 enablePid(const PidControlTypeEnum& pidtype, int j) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setPidOffset(const PidControlTypeEnum& pidtype, int j, double v) override;
+#if (YARP_VERSION_MAJOR > 3) || (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR > 12) || (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR == 12 && YARP_VERSION_PATCH >= 100)
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setPidFeedforward(const PidControlTypeEnum& pidtype, int j, double v) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidOffset(const PidControlTypeEnum& pidtype, int j, double& v) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidFeedforward(const PidControlTypeEnum& pidtype, int j, double& v) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidExtraInfo(const PidControlTypeEnum& pidtype, int j, yarp::dev::PidExtraInfo& info) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getPidExtraInfos(const PidControlTypeEnum& pidtype, std::vector<yarp::dev::PidExtraInfo>& info) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 isPidEnabled(const PidControlTypeEnum& pidtype, int j, bool& enabled) override;
+#else
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 isPidEnabled(const PidControlTypeEnum& pidtype, int j, bool* enabled) override;
+#endif
 
     // IControlBoardData
 

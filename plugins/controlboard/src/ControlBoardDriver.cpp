@@ -288,8 +288,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getJointType(int axis, yarp:
 }
 
 // IControlLimits
-
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setPosLimits(int axis, double min, double max)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setLimits(int axis, double min, double max)
+#endif
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
@@ -304,8 +307,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setPosLimits(int axis, doubl
 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
-
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getPosLimits(int axis, double* min, double* max)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getLimits(int axis, double* min, double* max)
+#endif
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
@@ -857,8 +863,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::checkMotionDone(bool* flag)
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
 
-
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajSpeed(int j, double sp)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setRefSpeed(int j, double sp)
+#endif
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
@@ -872,8 +881,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajSpeed(int j, double s
 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
-
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajSpeeds(const double* spds)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setRefSpeeds(const double* spds)
+#endif
 {
     if (!spds)
     {
@@ -883,7 +895,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajSpeeds(const double* 
 
     for (size_t i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
         if (!ControlBoardDriver::setTrajSpeed(i, spds[i]))
+#else
+        if (!ControlBoardDriver::setRefSpeed(i, spds[i]))
+#endif
         {
             return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
         }
@@ -891,8 +907,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajSpeeds(const double* 
 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
-
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajAcceleration(int j, double acc)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setRefAcceleration(int j, double acc)
+#endif
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
@@ -907,7 +926,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajAcceleration(int j, d
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
 
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajAccelerations(const double* accs)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setRefAccelerations(const double* accs)
+#endif
 {
     if (!accs)
     {
@@ -917,7 +940,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajAccelerations(const d
 
     for (size_t i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
         if (!ControlBoardDriver::setTrajAcceleration(i, accs[i]))
+#else
+        if (!ControlBoardDriver::setRefAcceleration(i, accs[i]))
+#endif
         {
             return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
         }
@@ -926,7 +953,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajAccelerations(const d
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
 
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTrajSpeed(int j, double* ref)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getRefSpeed(int j, double* ref)
+#endif
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
@@ -941,7 +972,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTrajSpeed(int j, double* 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
 
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTrajSpeeds(double* spds)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getRefSpeeds(double* spds)
+#endif
 {
     if (!spds)
     {
@@ -951,7 +986,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTrajSpeeds(double* spds)
 
     for (size_t i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
         if (!ControlBoardDriver::getTrajSpeed(i, &spds[i]))
+#else
+        if (!ControlBoardDriver::getRefSpeed(i, &spds[i]))
+#endif
         {
             return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
         }
@@ -960,7 +999,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTrajSpeeds(double* spds)
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
 
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTrajAcceleration(int j, double* acc)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getRefAcceleration(int j, double* acc)
+#endif
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
@@ -975,7 +1018,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTrajAcceleration(int j, d
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
 
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTrajAccelerations(double* accs)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getRefAccelerations(double* accs)
+#endif
 {
     if (!accs)
     {
@@ -985,7 +1032,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTrajAccelerations(double*
 
     for (size_t i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
     {
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
         if (!ControlBoardDriver::getTrajAcceleration(i, &accs[i]))
+#else
+        if (!ControlBoardDriver::getRefAcceleration(i, &accs[i]))
+#endif
         {
             return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
         }
@@ -1116,7 +1167,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::checkMotionDone(const int n_
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
 
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajSpeeds(const int n_joint, const int* joints, const double* spds)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setRefSpeeds(const int n_joint, const int* joints, const double* spds)
+#endif
 {
     if (!joints)
     {
@@ -1131,7 +1186,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajSpeeds(const int n_jo
 
     for (int i = 0; i < n_joint; i++)
     {
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
         if (!ControlBoardDriver::setTrajSpeed(joints[i], spds[i]))
+#else
+        if (!ControlBoardDriver::setRefSpeed(joints[i], spds[i]))
+#endif
         {
             return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
         }
@@ -1139,9 +1198,15 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajSpeeds(const int n_jo
 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajAccelerations(const int n_joint,
                                              const int* joints,
                                              const double* accs)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setRefAccelerations(const int n_joint,
+                                             const int* joints,
+                                             const double* accs)
+#endif
 {
     if (!joints)
     {
@@ -1156,7 +1221,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajAccelerations(const i
 
     for (int i = 0; i < n_joint; i++)
     {
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
         if (!ControlBoardDriver::setTrajAcceleration(joints[i], accs[i]))
+#else
+        if (!ControlBoardDriver::setRefAcceleration(joints[i], accs[i]))
+#endif
         {
             return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
         }
@@ -1165,7 +1234,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajAccelerations(const i
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
 
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTrajSpeeds(const int n_joint, const int* joints, double* spds)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getRefSpeeds(const int n_joint, const int* joints, double* spds)
+#endif
 {
     if (!joints)
     {
@@ -1180,7 +1253,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTrajSpeeds(const int n_jo
 
     for (int i = 0; i < n_joint; i++)
     {
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
         if (!ControlBoardDriver::getTrajSpeed(joints[i], &spds[i]))
+#else
+        if (!ControlBoardDriver::getRefSpeed(joints[i], &spds[i]))
+#endif
         {
             return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
         }
@@ -1189,7 +1266,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTrajSpeeds(const int n_jo
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
 
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTrajAccelerations(const int n_joint, const int* joints, double* accs)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getRefAccelerations(const int n_joint, const int* joints, double* accs)
+#endif
 {
     if (!joints)
     {
@@ -1204,7 +1285,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTrajAccelerations(const i
 
     for (int i = 0; i < n_joint; i++)
     {
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
         if (!ControlBoardDriver::getTrajAcceleration(joints[i], &accs[i]))
+#else
+        if (!ControlBoardDriver::getRefAcceleration(joints[i], &accs[i]))
+#endif
         {
             return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
         }
@@ -1330,7 +1415,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::velocityMove(const int n_joi
     }
     return ret;
 }
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTargetVelocity(const int joint, double* vel)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getRefVelocity(const int joint, double* vel)
+#endif
 {
     size_t numberOfJoints = m_controlBoardData->actuatedAxes.size();
     if (vel && joint >= 0 && static_cast<size_t>(joint) < numberOfJoints)
@@ -1340,7 +1429,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTargetVelocity(const int 
     }
     return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
 }
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTargetVelocities(double* vels)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getRefVelocities(double* vels)
+#endif
 {
     if (!vels) {return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;}
 
@@ -1348,18 +1441,30 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTargetVelocities(double* 
     YARP_DEV_RETURN_VALUE_TYPE_CH40 ret = YARP_DEV_RETURN_VALUE_OK_CH40;
     for (size_t i = 0; i < numberOfJoints && ret; i++)
     {
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
         ret = getTargetVelocity(i, &vels[i]);
+#else
+        ret = getRefVelocity(i, &vels[i]);
+#endif
     }
     return ret;
 }
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getTargetVelocities(const int n_joint, const int* joints, double* vels)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getRefVelocities(const int n_joint, const int* joints, double* vels)
+#endif
 {
     if (!joints || !vels) {return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;}
 
     YARP_DEV_RETURN_VALUE_TYPE_CH40 ret = YARP_DEV_RETURN_VALUE_OK_CH40;
     for (int i = 0; i < n_joint && ret; i++)
     {
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
         ret = getTargetVelocity(joints[i], &vels[i]);
+#else
+        ret = getRefVelocity(joints[i], &vels[i]);
+#endif
     }
     return ret;
 }
@@ -1558,7 +1663,7 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setPidOffset(const PidContro
     // TODO
     return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH40;
 }
-
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setPidFeedforward(const PidControlTypeEnum& pidtype, int j, double v)
 {
     // TODO
@@ -1588,8 +1693,13 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getPidExtraInfos(const PidCo
     // TODO
     return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH40;
 }
+#endif
 
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::isPidEnabled(const PidControlTypeEnum& pidtype, int j, bool& enabled)
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::isPidEnabled(const PidControlTypeEnum& pidtype, int j, bool* enabled)
+#endif
 {
     // TODO
     return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH40;
