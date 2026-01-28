@@ -532,7 +532,7 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
             forceReference = joint.commonJointProperties.refTorque;
             break;
         case VOCAB_CM_VELOCITY: {
-            auto& pid = joint.pidControllers[yarp::dev::VOCAB_PIDTYPE_VELOCITY];
+            auto& pid = joint.pidControllers[yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY];
             forceReference
                 = pid.Update(ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.velocity)
                              - ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.refVelocity),
@@ -542,7 +542,7 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
         case VOCAB_CM_POSITION:
         case VOCAB_CM_POSITION_DIRECT: {
             // TODO manage motor positions instead of joint positions when implemented
-            auto& pid = joint.pidControllers[yarp::dev::VOCAB_PIDTYPE_POSITION];
+            auto& pid = joint.pidControllers[yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION];
             forceReference = pid.Update(ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.position)
                                             - ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.refPosition),
                                         _info.dt);
