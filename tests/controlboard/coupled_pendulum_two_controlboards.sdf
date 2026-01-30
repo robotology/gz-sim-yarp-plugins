@@ -171,7 +171,7 @@
         </yarpConfigurationFile>
         <initialConfiguration>0.0</initialConfiguration>
       </plugin>
-      <plugin name='robotinterface' filename='libgazebo_yarp_robotinterface.so'>
+      <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
       <yarpRobotInterfaceConfigurationFile>model://coupled_pendulum/conf/coupled_pendulum_nwsdafsads.xml</yarpRobotInterfaceConfigurationFile>
       </plugin>
 
