@@ -1,3 +1,11 @@
+if(YARP_VERSION VERSION_GREATER_EQUAL "4.0.0")
+  set(DEPTH_CAMERA_DEVICE_NAME "RGBDSensor_nws_yarp")
+else()
+  set(DEPTH_CAMERA_DEVICE_NAME "rgbdSensor_nws_yarp")
+endif()
+
+configure_file(depthcamera_nws.xml.in depthcamera_nws.xml @ONLY)
+
 add_executable(DepthCameraTest DepthCameraTest.cc)
 target_link_libraries(DepthCameraTest
   GTest::gtest_main
