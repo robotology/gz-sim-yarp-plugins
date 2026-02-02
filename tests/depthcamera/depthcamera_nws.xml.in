@@ -3,7 +3,7 @@
 
 <robot name="camera" portprefix="camera" build="0"  xmlns:xi="http://www.w3.org/2001/XInclude">
     <devices>
-        <device name="depthcamera_nws_yarp" type="RGBDSensor_nws_yarp">
+        <device name="depthcamera_nws_yarp" type="@DEPTH_CAMERA_DEVICE_NAME@">
         <param name="name"> /depthcamera </param>
             <param name="period"> 0.033333 </param>
             <action phase="startup" level="5" type="attach">
