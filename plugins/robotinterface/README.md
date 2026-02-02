@@ -37,6 +37,8 @@ A more complete example of the usage is:
             <yarpRobotInterfaceDisableTags>
             (disable_tagA)
             </yarpRobotInterfaceDisableTags>
+            <!-- This element can be used to override the port prefix with the top-level model name (default: false) -->
+            <yarpRobotInterfaceOverridePortPrefix>true</yarpRobotInterfaceOverridePortPrefix>
         </plugin>
 ```
 
@@ -51,6 +53,7 @@ for example if `model://model_with_robotinterface_inside` is a gz-sim model with
             <yarpPluginConfigurationOverride yarpRobotInterfaceName='all'/>
             <yarpRobotInterfaceEnableTags>(enable_tag1)</yarpRobotInterfaceEnableTags>
             <yarpRobotInterfaceDisableTags>(disable_tagA disable_tagB)</yarpRobotInterfaceDisableTags>
+            <yarpRobotInterfaceOverridePortPrefix>true</yarpRobotInterfaceOverridePortPrefix>
         </plugin>
         <include>
             <uri>model://model_with_robotinterface_inside</uri>
@@ -65,3 +68,4 @@ for example if `model://model_with_robotinterface_inside` is a gz-sim model with
 | `yarpRobotInterfaceConfigurationFile` | The [YARP robotinterface XML file](https://www.yarp.it/latest/group__yarp__robotinterface__xml__config__files.html) that specifies the YARP devices that will be launched by the `gzyarp::RobotInterface` plugin. |
 | `yarpRobotInterfaceEnableTags` | This element can be used to pass "enable" tags to the libYARP_robotinterface instance. |
 | `yarpRobotInterfaceDisableTags` | This element can be used to pass "disable" tags to the libYARP_robotinterface instance. |
+| `yarpRobotInterfaceOverridePortPrefix` | Boolean flag (default: `false`). When set to `true`, the port prefix specified in the robotinterface XML file will be overridden with the top-level model name (the model name specified at the world level in the SDF). When `false`, the original port prefix from the XML file is preserved. |
