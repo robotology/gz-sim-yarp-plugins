@@ -186,7 +186,7 @@ private:
     std::string m_yarpRobotInterfaceName;
     std::string m_parentEntityScopedName;
     std::string m_gzInstanceId;
-    bool m_yarpRobotInterfaceOverridePortPrefix;
+    bool m_yarpRobotInterfaceOverridePortPrefixWithModelName;
 
     gz::sim::Entity FindModel(gz::sim::Entity entity,  const gz::sim::EntityComponentManager &ecm)
     {
@@ -267,9 +267,9 @@ private:
         {
             disableTags = _sdf->Get<std::string>("yarpRobotInterfaceDisableTags");
         }
-        if (_sdf->HasElement("yarpRobotInterfaceOverridePortPrefix"))
+        if (_sdf->HasElement("yarpRobotInterfaceOverridePortPrefixWithModelName"))
         {
-            overridePortPrefix = _sdf->Get<bool>("yarpRobotInterfaceOverridePortPrefix");
+            overridePortPrefix = _sdf->Get<bool>("yarpRobotInterfaceOverridePortPrefixWithModelName");
         }
 
         gz::sim::Entity modelEntity = FindTopLevelModel(_entity,_ecm);
@@ -289,14 +289,14 @@ private:
         {
             disableTags = overridenParameters["gzyarp-xml-element-yarpRobotInterfaceDisableTags"];
         }
-        if (overridenParameters.find("gzyarp-xml-element-yarpRobotInterfaceOverridePortPrefix") != overridenParameters.end())
+        if (overridenParameters.find("gzyarp-xml-element-yarpRobotInterfaceOverridePortPrefixWithModelName") != overridenParameters.end())
         {
-            std::string overridePortPrefixStr = overridenParameters["gzyarp-xml-element-yarpRobotInterfaceOverridePortPrefix"];
+            std::string overridePortPrefixStr = overridenParameters["gzyarp-xml-element-yarpRobotInterfaceOverridePortPrefixWithModelName"];
             overridePortPrefix = (overridePortPrefixStr == "true" || overridePortPrefixStr == "1");
         }
 
         // Store the flag in member variable
-        m_yarpRobotInterfaceOverridePortPrefix = overridePortPrefix;
+        m_yarpRobotInterfaceOverridePortPrefixWithModelName = overridePortPrefix;
 
         // Only override the port prefix with model name if the flag is true
         if (overridePortPrefix)

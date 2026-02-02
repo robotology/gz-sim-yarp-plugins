@@ -142,10 +142,10 @@ public:
                     overridenParameters["gzyarp-xml-element-yarpRobotInterfaceDisableTags"] = sdfClone->Get<std::string>("yarpRobotInterfaceDisableTags");
                 }
 
-                if (sdfClone->HasElement("yarpRobotInterfaceOverridePortPrefix"))
+                if (sdfClone->HasElement("yarpRobotInterfaceOverridePortPrefixWithModelName"))
                 {
-                    bool overrideValue = sdfClone->Get<bool>("yarpRobotInterfaceOverridePortPrefix");
-                    overridenParameters["gzyarp-xml-element-yarpRobotInterfaceOverridePortPrefix"] = overrideValue ? "true" : "false";
+                    bool overrideValue = sdfClone->Get<bool>("yarpRobotInterfaceOverridePortPrefixWithModelName");
+                    overridenParameters["gzyarp-xml-element-yarpRobotInterfaceOverridePortPrefixWithModelName"] = overrideValue ? "true" : "false";
                 }
 
                 if (!DeviceRegistry::getHandler()->addConfigurationOverrideForYARPRobotInterface(
