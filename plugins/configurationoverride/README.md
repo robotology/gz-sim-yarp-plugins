@@ -55,6 +55,7 @@ The parameters and plugins currently supported by the `gzyarp::ConfigurationOver
 | `initialConfiguration`           | `gzyarp::ControlBoard` |
 | `yarpRobotInterfaceEnableTags`   | `gzyarp::RobotInterface` |
 | `yarpRobotInterfaceDisableTags`  | `gzyarp::RobotInterface` |
+| `yarpRobotInterfaceOverridePortPrefix` | `gzyarp::RobotInterface` |
 
 
 Any other parameter is not overriden. The plan for the future is to support more parameters in the `gzyarp::ConfigurationOverride`, if there is some specific parameter that you would like to override via the `gzyarp::ConfigurationOverride`, please [open an issue](https://github.com/robotology/gz-sim-yarp-plugins/issues/new).
