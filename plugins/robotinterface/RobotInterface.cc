@@ -186,6 +186,7 @@ private:
     std::string m_yarpRobotInterfaceName;
     std::string m_parentEntityScopedName;
     std::string m_gzInstanceId;
+    bool m_yarpRobotInterfaceOverridePortPrefix;
 
     gz::sim::Entity FindModel(gz::sim::Entity entity,  const gz::sim::EntityComponentManager &ecm)
     {
@@ -199,6 +200,25 @@ private:
             entity = parent->Data();
         }
         return gz::sim::kNullEntity;
+    }
+
+    gz::sim::Entity FindTopLevelModel(gz::sim::Entity entity,  const gz::sim::EntityComponentManager &ecm)
+    {
+        gz::sim::Entity topModelEntity = gz::sim::kNullEntity;
+
+        while (entity != gz::sim::kNullEntity)
+        {
+            if (ecm.Component<gz::sim::components::Model>(entity))
+            {
+                topModelEntity = entity;
+            }
+
+            auto parent = ecm.Component<gz::sim::components::ParentEntity>(entity);
+            if (!parent) { break; }
+
+            entity = parent->Data();
+        }
+        return topModelEntity;
     }
 
     bool loadYarpRobotInterfaceConfigurationFile(const std::shared_ptr<const sdf::Element>& _sdf,
@@ -218,7 +238,7 @@ private:
             yError() << "yarpRobotInterfaceConfigurationFile element not found";
             return false;
         }
-        
+
         auto robotinterface_file_name = _sdf->Get<std::string>("yarpRobotInterfaceConfigurationFile");
         std::string filepath;
         if (!ConfigurationHelpers::findFile(robotinterface_file_name, filepath))
@@ -238,6 +258,7 @@ private:
         std::string enableTags = "";
         std::string disableTags = "";
         std::string prefixTag = "";
+        bool overridePortPrefix = false;
         if (_sdf->HasElement("yarpRobotInterfaceEnableTags"))
         {
             enableTags = _sdf->Get<std::string>("yarpRobotInterfaceEnableTags");
@@ -246,11 +267,13 @@ private:
         {
             disableTags = _sdf->Get<std::string>("yarpRobotInterfaceDisableTags");
         }
+        if (_sdf->HasElement("yarpRobotInterfaceOverridePortPrefix"))
+        {
+            overridePortPrefix = _sdf->Get<bool>("yarpRobotInterfaceOverridePortPrefix");
+        }
 
-        gz::sim::Entity modelEntity = FindModel(_entity,_ecm);
+        gz::sim::Entity modelEntity = FindTopLevelModel(_entity,_ecm);
         std::string modelName = _ecm.Component<gz::sim::components::Name>(modelEntity)->Data();
-        prefixTag = modelName;
-        if (!prefixTag.empty() && prefixTag[0] != '/') {prefixTag.insert(prefixTag.begin(), '/');}
 
         // Then check if there is any override for the enable and disable tags elements
         m_gzInstanceId = DeviceRegistry::getHandler()->getGzInstanceId(_ecm);
@@ -265,6 +288,21 @@ private:
         if (overridenParameters.find("gzyarp-xml-element-yarpRobotInterfaceDisableTags") != overridenParameters.end())
         {
             disableTags = overridenParameters["gzyarp-xml-element-yarpRobotInterfaceDisableTags"];
+        }
+        if (overridenParameters.find("gzyarp-xml-element-yarpRobotInterfaceOverridePortPrefix") != overridenParameters.end())
+        {
+            std::string overridePortPrefixStr = overridenParameters["gzyarp-xml-element-yarpRobotInterfaceOverridePortPrefix"];
+            overridePortPrefix = (overridePortPrefixStr == "true" || overridePortPrefixStr == "1");
+        }
+
+        // Store the flag in member variable
+        m_yarpRobotInterfaceOverridePortPrefix = overridePortPrefix;
+
+        // Only override the port prefix with model name if the flag is true
+        if (overridePortPrefix)
+        {
+            prefixTag = modelName;
+            if (!prefixTag.empty() && prefixTag[0] != '/') {prefixTag.insert(prefixTag.begin(), '/');}
         }
 
         yarp::os::Property config;
@@ -286,7 +324,7 @@ private:
             bot.fromString(prefixTag);
             config.put("portprefix", bot.get(0));
         }
-                    
+
         m_xmlRobotInterfaceResult = xmlRobotInterfaceReader.getRobotFromFile(filepath, config);
 
         if (!m_xmlRobotInterfaceResult.parsingIsSuccessful)
