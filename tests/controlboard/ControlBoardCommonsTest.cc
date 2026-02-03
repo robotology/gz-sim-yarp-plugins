@@ -114,7 +114,11 @@ TEST(ControlBoardCommonsTest, JointPositionLimitsForMultipleJoints)
     for (int i = 0; i < expectedJointMaxLimits.size(); i++)
     {
         double maxLimit, minLimit;
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
+        iControlLimits->getPosLimits(i, &minLimit, &maxLimit);
+#else
         iControlLimits->getLimits(i, &minLimit, &maxLimit);
+#endif
         EXPECT_DOUBLE_EQ(maxLimit, expectedJointMaxLimits[i]);
         EXPECT_DOUBLE_EQ(minLimit, expectedJointMinLimits[i]);
     }
