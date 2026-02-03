@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE robot PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
 
-<robot name="r1mk3Sim" build="1" portprefix="/r1mk3Sim" xmlns:xi="http://www.w3.org/2001/XInclude">
+<robot name="lidarsensor" build="1" portprefix="/lidarsensor" xmlns:xi="http://www.w3.org/2001/XInclude">
     <devices>
         <xi:include href="./lidarsensor_nws_yarp.xml" />
         <xi:include href="./lidarsensor_nws_ros2.xml" /> enabled_by="enable_ros2" disabled_by="disable_ros2" />

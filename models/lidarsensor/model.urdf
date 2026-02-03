@@ -1,34 +1,35 @@
 <?xml version="1.0"?>
 <robot name="lidarsensor_model">
 
-  <gazebo>
-      <plugin name="gzyarp::Laser" filename="gz-sim-yarp-laser-system">
-        <yarpConfigurationFile>model://lidarsensor/laser.ini</yarpConfigurationFile>
-      </plugin>
-  </gazebo>
-  
-<!--
-      <static>true</static>
-      <pose>0 0 0 0 0 0</pose>
--->
-
   <link name="dummy_link1">
     <visual name="visual">
+      <origin xyz="0 0 0" rpy="1.570796327 0 -1.570796327"/>
       <geometry>
-        <cylinder>
-          <radius>0.1</radius>
-          <length>0.1</length>
-        </cylinder>
+        <mesh filename="package://lidarsensor/lasermesh.stl" scale="0.001 0.001 0.001"/>
       </geometry>
+      <material name="">
+        <color rgba="0.2 0.2 0.2 1"/>
+      </material>
     </visual>
-    <sensor name ="laser_sensor" type="gpu_lidar">
-      <lidar>
+    <inertial>
+      <mass value="1"/>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1" ixy="0" ixz="-0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
+  </link>
+  
+  <gazebo reference="dummy_link1">
+    <sensor name="laser_sensor" type="gpu_lidar">
+      <always_on>1</always_on>
+      <update_rate>40.000000</update_rate>
+      <pose>0 0 0.190 0 0 0 </pose>
+      <ray>
         <scan>
           <horizontal>
             <samples>360</samples>
             <resolution>1</resolution>
-            <min_angle>-3.14159</min_angle>
-            <max_angle>3.14159</max_angle>
+            <min_angle>0</min_angle>
+            <max_angle>6.283185307</max_angle>
           </horizontal>
         </scan>
         <range>
@@ -41,27 +42,28 @@
           <mean>0.0</mean>
           <stddev>0.005</stddev>
         </noise>
-      </lidar>
-      <always_on>1</always_on>
-      <update_rate>30</update_rate>
-      <visualize>true</visualize>
+      </ray>
     </sensor>
-  </link>
-
+  </gazebo>
+  
+  <gazebo>
+      <plugin name="gzyarp::Laser" filename="gz-sim-yarp-laser-system">
+        <yarpConfigurationFile>model://lidarsensor/laser.ini</yarpConfigurationFile>
+      </plugin>
+  </gazebo>
+  
   <gazebo>
     <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
       <yarpRobotInterfaceConfigurationFile>model://lidarsensor/lidarsensor_yri.xml</yarpRobotInterfaceConfigurationFile>
       <yarpRobotInterfaceEnableTags>    (enable_ros2)   </yarpRobotInterfaceEnableTags>
       <yarpRobotInterfaceDisableTags>  </yarpRobotInterfaceDisableTags>
+      <yarpRobotInterfaceOverridePortPrefixWithModelName>  true </yarpRobotInterfaceOverridePortPrefixWithModelName>
     </plugin>
-  </gazebo>
-
-  <gazebo reference="dummy_link1">
   </gazebo>
   
   <gazebo>
     <pose>0 0 0 0 0 0</pose>
     <static>true</static>
   </gazebo>
-  
+
 </robot>
