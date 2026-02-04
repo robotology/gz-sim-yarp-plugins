@@ -62,14 +62,14 @@ bool ControlBoardData::setControlMode(int j, int mode)
         return false;
     }
 
-    // Only accept supported control modes
-    // The only not supported control mode is
-    // (for now) VOCAB_CM_MIXED
     switch (mode)
     {
     case VOCAB_CM_POSITION:
     case VOCAB_CM_POSITION_DIRECT:
     case VOCAB_CM_VELOCITY:
+#if (YARP_VERSION_MAJOR > 3)
+    case VOCAB_CM_VELOCITY_DIRECT:
+#endif
     case VOCAB_CM_TORQUE:
     case VOCAB_CM_MIXED:
     case VOCAB_CM_PWM:

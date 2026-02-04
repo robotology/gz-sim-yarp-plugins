@@ -314,6 +314,43 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
             return false;
         }
 
+#if (YARP_VERSION_MAJOR > 3)
+        if (!initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_1) ||
+            !initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_2) ||
+            !initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_3))
+        {
+            yError() << "Error while initializing POSITION PIDs";
+            return false;
+        }
+        if (!initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT_1) ||
+            !initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT_2) ||
+            !initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT_3))
+        {
+            yError() << "Error while initializing POSITION_DIRECT PIDs";
+            return false;
+        }
+        if (!initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_1) ||
+            !initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_2) ||
+            !initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_3))
+        {
+            yError() << "Error while initializing VELOCITY PIDs";
+            return false;
+        }
+        if (!initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT_1) ||
+            !initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT_2) ||
+            !initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT_3))
+        {
+            yError() << "Error while initializing VELOCITY_DIRECT PIDs";
+            return false;
+        }
+        if (!initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_MIXED_1) ||
+            !initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_MIXED_2) ||
+            !initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_MIXED_3))
+        {
+            yError() << "Error while initializing MIXED PIDs";
+            return false;
+        }
+#else
         if (!initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION))
         {
             yError() << "Error while initializing POSITION PIDs";
@@ -324,6 +361,7 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
             yError() << "Error while initializing VELOCITY PIDs";
             return false;
         }
+#endif
 
     } // lock_guard
 
@@ -471,6 +509,14 @@ bool ControlBoard::updateTrajectories(const UpdateInfo& _info, EntityComponentMa
             // TODO when implementing mixed control mode
             yError() << "Control mode MIXED not implemented yet";
             break;
+#if (YARP_VERSION_MAJOR > 3)
+        case VOCAB_CM_VELOCITY_DIRECT:
+            if (joint.velocityWatchdog->isExpired())
+            {
+                joint.commonJointProperties.refVelocity = 0;
+            }
+            break;
+#endif
         case VOCAB_CM_VELOCITY:
             if (joint.speedRampHandler)
             {
@@ -531,16 +577,51 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
         case VOCAB_CM_TORQUE:
             forceReference = joint.commonJointProperties.refTorque;
             break;
-        case VOCAB_CM_VELOCITY: {
+#if (YARP_VERSION_MAJOR > 3)
+        case VOCAB_CM_VELOCITY_DIRECT:
+        {
+            auto& pid = joint.pidControllers[joint.selected_vel_dir_pid];
+            forceReference = pid.Update(ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.velocity)
+                             - ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.refVelocity),
+                             _info.dt);
+            break;
+        }
+        case VOCAB_CM_VELOCITY:
+        {
+            auto& pid = joint.pidControllers[joint.selected_vel_pid];
+            forceReference = pid.Update(ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.velocity)
+                             - ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.refVelocity),
+                             _info.dt);
+            break;
+        }
+        case VOCAB_CM_POSITION_DIRECT:
+        {
+            auto& pid = joint.pidControllers[joint.selected_pos_dir_pid];
+            forceReference = pid.Update(ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.position)
+                                        - ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.refPosition),
+                                        _info.dt);
+            break;
+        }
+        case VOCAB_CM_POSITION:
+        {
+            auto& pid = joint.pidControllers[joint.selected_pos_pid];
+            forceReference = pid.Update(ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.position)
+                                        - ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.refPosition),
+                                        _info.dt);
+            break;
+        }
+#else
+        case VOCAB_CM_VELOCITY:
+        {
             auto& pid = joint.pidControllers[yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY];
-            forceReference
-                = pid.Update(ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.velocity)
+            forceReference = pid.Update(ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.velocity)
                              - ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.refVelocity),
                              _info.dt);
             break;
         }
         case VOCAB_CM_POSITION:
-        case VOCAB_CM_POSITION_DIRECT: {
+        case VOCAB_CM_POSITION_DIRECT:
+        {
             // TODO manage motor positions instead of joint positions when implemented
             auto& pid = joint.pidControllers[yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION];
             forceReference = pid.Update(ControlBoardData::convertUserToGazebo(joint, joint.commonJointProperties.position)
@@ -548,6 +629,7 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
                                         _info.dt);
             break;
         }
+#endif
         case VOCAB_CM_IDLE:
         case VOCAB_CM_HW_FAULT:
             forceReference = 0.0;
@@ -580,6 +662,35 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
 bool ControlBoard::initializePIDs(yarp::dev::PidControlTypeEnum pid_type)
 {
     std::string pid_section;
+#if (YARP_VERSION_MAJOR > 3)
+    if (pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_1 || 
+        pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_2 ||
+        pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_3 ||
+        pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT_1 || 
+        pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT_2 || 
+        pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT_3 ||
+        pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_MIXED_1 || 
+        pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_MIXED_2 || 
+        pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_MIXED_3)
+    {
+        pid_section = "POSITION_CONTROL";
+    }
+    else 
+    if (pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_1 || 
+        pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_2 ||
+        pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_3 ||
+        pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT_1 || 
+        pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT_2 || 
+        pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT_3)
+    {
+        pid_section = "VELOCITY_CONTROL";
+    }
+    else
+    {
+        yError() << "Invalid PidType in initializePIDs()";
+        return false;
+    }   
+#else
     if (pid_type == yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION)
     {
         pid_section = "POSITION_CONTROL";
@@ -593,6 +704,7 @@ bool ControlBoard::initializePIDs(yarp::dev::PidControlTypeEnum pid_type)
         yError() << "Invalid PidType in initializePIDs()";
         return false;
     }
+#endif
 
     if (!m_pluginParameters.check(pid_section))
     {

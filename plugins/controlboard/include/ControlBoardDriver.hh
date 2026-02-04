@@ -41,6 +41,9 @@ class ControlBoardDriver : public DeviceDriver,
                            public ITorqueControl,
                            public IPositionDirect,
                            public IPositionControl,
+#if (YARP_VERSION_MAJOR > 3)
+                           public IVelocityDirect,
+#endif
                            public IVelocityControl,
                            public ICurrentControl,
                            public IPidControl,
@@ -122,6 +125,16 @@ public:
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getTorques(double* t) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getTorqueRange(int j, double* min, double* max) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getTorqueRanges(double* min, double* max) override;
+
+#if (YARP_VERSION_MAJOR > 3) || (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR > 12) || (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR == 12 && YARP_VERSION_PATCH >= 100)
+    // IVelocityDirect
+    yarp::dev::ReturnValue setRefVelocity(int jnt, double vel) override;
+    yarp::dev::ReturnValue setRefVelocity(const std::vector<double>& vels) override;
+    yarp::dev::ReturnValue setRefVelocity(const std::vector<int>& jnts, const std::vector<double>& vels) override;
+    yarp::dev::ReturnValue getRefVelocity(const int jnt, double& vel) override;
+    yarp::dev::ReturnValue getRefVelocity(std::vector<double>& vels) override;
+    yarp::dev::ReturnValue getRefVelocity(const std::vector<int>& jnts, std::vector<double>& vels) override;
+#endif
 
     // IPositionDirect
 
