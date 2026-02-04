@@ -1072,6 +1072,11 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::stop(int j)
         // TODO velocity control
         yWarning() << "stop not implemented for velocity control mode";
         break;
+#if (YARP_VERSION_MAJOR > 3)
+    case VOCAB_CM_VELOCITY_DIRECT:
+        m_controlBoardData->actuatedAxes.at(j).commonJointProperties.refVelocity = 0;
+        break;
+#endif
     case VOCAB_CM_MIXED:
         yWarning() << "stop not implemented for mixed control mode";
         // TODO mixed control
@@ -1705,10 +1710,67 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::isPidEnabled(const PidContro
     return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH40;
 }
 
+#if (YARP_VERSION_MAJOR > 3)
+// IVelocityDirect
+yarp::dev::ReturnValue setRefVelocity(int jnt, double vel)
+{
+    m_controlBoardData.physicalJoints[jnt].commonJointProperties.refVelocity = vel;
+    return ReturnValue_ok;
+}
+
+yarp::dev::ReturnValue setRefVelocity(const std::vector<double>& vels)
+{
+    ReturnValue ret = ReturnValue_ok;
+    for (int i = 0; i < _njoints; i++) {
+        ret &= setRefVelocity(i, vels[i]);
+    }
+    return ret;
+}
+
+yarp::dev::ReturnValue setRefVelocity(const std::vector<int>& jnts, const std::vector<double>& vels)
+{
+    if (jnts.size() != vels.size()) {
+        return ReturnValue::return_code::return_value_error_method_failed;
+    }
+    ReturnValue ret = ReturnValue_ok;
+    for (int i = 0; i < _njoints; i++) {
+        ret &= setRefVelocity(jnts[i], vels[i]);
+    }
+    return ret;
+}
+
+yarp::dev::ReturnValue getRefVelocity(const int jnt, double& vel)
+{
+    vel = m_controlBoardData.physicalJoints[jnt].commonJointProperties.refVelocity;
+    return ReturnValue_ok;
+}
+
+yarp::dev::ReturnValue getRefVelocity(std::vector<double>& vels)
+{
+    ReturnValue ret = ReturnValue_ok;
+    vels.resize(_njoints);
+    for (int i = 0; i < _njoints; i++) {
+        ret &= getRefVelocity(i, vels[i]);
+    }
+    return ret;
+}
+
+yarp::dev::ReturnValue getRefVelocity(const std::vector<int>& jnts, std::vector<double>& vels)
+{
+    if (jnts.size() != vels.size()) {
+        return ReturnValue::return_code::return_value_error_method_failed;
+    }
+    ReturnValue ret = ReturnValue_ok;
+    vels.resize(_njoints);
+    for (int i = 0; i < _njoints; i++) {
+        ret &= getRefVelocity(jnts[i], vels[i]);
+    }
+    return ret;
+}
+#endif
+
+
 // IEncodersTimed
-
-
-
 /**
  * Since we don't know how to reset gazebo encoders, we will simply add the actual value to the
  * future encoders readings

@@ -62,6 +62,12 @@ struct PhysicalJointProperties
     std::unordered_map<yarp::dev::PidControlTypeEnum, gz::math::PID, PidControlTypeEnumHashFunction>
         pidControllers;
     std::string positionControlLaw; // TODO: verify usefulness of this field
+#if (YARP_VERSION_MAJOR > 3)
+    yarp::dev::PidControlTypeEnum selected_vel_dir_pid = yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT_1;
+    yarp::dev::PidControlTypeEnum selected_vel_pid = yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_1;
+    yarp::dev::PidControlTypeEnum selected_pos_dir_pid = yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT_1;
+    yarp::dev::PidControlTypeEnum selected_pos_pid = yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_1;
+#endif
 };
 
 struct ActuatedAxisProperties
