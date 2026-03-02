@@ -452,7 +452,7 @@ ReturnValue WorldProxy::makeModel(std::string id,  std::string filename, yarp::s
     replace(boxSDF_String, "ROLL",  pose.roll);
     replace(boxSDF_String, "PITCH", pose.pitch);
     replace(boxSDF_String, "YAW",   pose.yaw);
-    replace(boxSDF_String, "SCALE",   0.001);
+    replace(boxSDF_String, "SCALE",   1);
     replace(boxSDF_String, "DAEFILE",filename);
 
     if (gravity_enable) {replace (boxSDF_String, "GRAVITY", 1);}
