@@ -19,6 +19,7 @@ add_subdirectory(commons)
 add_subdirectory(depthcamera)
 add_subdirectory(test-helpers)
 add_subdirectory(robotinterface)
+add_subdirectory(worldinterface)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 include(Fetchtiny-process-library)
