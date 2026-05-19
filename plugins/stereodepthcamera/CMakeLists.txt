@@ -16,6 +16,7 @@ target_link_libraries(gz-sim-yarp-stereodepthcamera-system
         gz-sensors::gz-sensors
         YARP::YARP_os
         YARP::YARP_dev
+        YARP::YARP_sig
         YARP::YARP_init
         gz-sim-yarp-device-registry
         gz-sim-yarp-commons)

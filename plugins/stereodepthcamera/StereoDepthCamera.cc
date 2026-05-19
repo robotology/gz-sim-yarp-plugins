@@ -23,10 +23,15 @@
 #include <yarp/dev/Drivers.h>
 #include <yarp/dev/IRGBDSensor.h>
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/os/BufferedPort.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Property.h>
+#include <yarp/os/Stamp.h>
+#include <yarp/sig/Image.h>
 
+#include <cstdint>
+#include <cstring>
 #include <mutex>
 #include <string>
 
@@ -46,6 +51,7 @@ struct PendingDepthCameraFrame
     gz::msgs::Image depthCameraMsg;
     bool hasRgbCameraMsg{false};
     bool hasDepthCameraMsg{false};
+    std::uint64_t rgbSequence{0};
 };
 
 struct StereoDepthCameraEye
@@ -99,6 +105,12 @@ bool configureCameraData(const Entity& sensor,
 
     return true;
 }
+
+std::int64_t imageStampNs(const gz::msgs::Image& image)
+{
+    const auto& stamp = image.header().stamp();
+    return (static_cast<std::int64_t>(stamp.sec()) * 1000000000LL) + stamp.nsec();
+}
 } // namespace
 
 class StereoDepthCamera : public System,
@@ -121,6 +133,11 @@ public:
         }
         if (m_rightEye.driver.isValid()) {
             m_rightEye.driver.close();
+        }
+
+        if (m_stereoRgbPortOpen) {
+            m_stereoRgbPort.close();
+            m_stereoRgbPortOpen = false;
         }
     }
 
@@ -162,14 +179,31 @@ public:
         m_leftEye.yarpDeviceName = driverProperties.find("leftYarpDeviceName").asString();
         m_rightEye.yarpDeviceName = driverProperties.find("rightYarpDeviceName").asString();
 
+        if (driverProperties.check("stereoRgbPortName")) {
+            m_stereoRgbPortName = driverProperties.find("stereoRgbPortName").asString();
+        }
+
         if (!configureEye(entity, ecm, m_leftEye, "left") ||
             !configureEye(entity, ecm, m_rightEye, "right")) {
             return;
         }
 
+        if (!m_stereoRgbPortName.empty()) {
+            m_stereoRgbPortOpen = m_stereoRgbPort.open(m_stereoRgbPortName);
+            if (!m_stereoRgbPortOpen) {
+                yError() << "gz-sim-yarp-stereodepthcamera-system : failed opening"
+                         << "side-by-side YARP RGB port" << m_stereoRgbPortName;
+                return;
+            }
+        }
+
         configureHelper.setConfigureIsSuccessful(true);
         yInfo() << "gz-sim-yarp-stereodepthcamera-system: registered synchronized devices"
                 << m_leftEye.deviceId << "and" << m_rightEye.deviceId;
+        if (m_stereoRgbPortOpen) {
+            yInfo() << "gz-sim-yarp-stereodepthcamera-system: side-by-side RGB port"
+                    << m_stereoRgbPortName;
+        }
     }
 
     void PreUpdate(const UpdateInfo&, EntityComponentManager& ecm) override
@@ -187,6 +221,7 @@ public:
         const double simTime = info.simTime.count() / 1e9;
         publishEyeSnapshot(m_leftEye, simTime);
         publishEyeSnapshot(m_rightEye, simTime);
+        publishStereoRgbImage(simTime);
     }
 
 private:
@@ -330,6 +365,7 @@ private:
         std::lock_guard<std::mutex> lock(eye.pendingFrame.mutex);
         eye.pendingFrame.rgbCameraMsg = msg;
         eye.pendingFrame.hasRgbCameraMsg = true;
+        eye.pendingFrame.rgbSequence++;
     }
 
     void setDepthCameraMsg(StereoDepthCameraEye& eye, const gz::msgs::Image& msg)
@@ -359,13 +395,108 @@ private:
         setDepthCameraMsg(m_rightEye, msg);
     }
 
+    void publishStereoRgbImage(const double simTime)
+    {
+        if (!m_stereoRgbPortOpen || m_stereoRgbPort.getOutputCount() == 0) {
+            return;
+        }
+
+        gz::msgs::Image leftMsg;
+        gz::msgs::Image rightMsg;
+        std::uint64_t leftSequence = 0;
+        std::uint64_t rightSequence = 0;
+
+        {
+            std::lock_guard<std::mutex> lock(m_leftEye.pendingFrame.mutex);
+            if (!m_leftEye.pendingFrame.hasRgbCameraMsg) {
+                return;
+            }
+            leftMsg = m_leftEye.pendingFrame.rgbCameraMsg;
+            leftSequence = m_leftEye.pendingFrame.rgbSequence;
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(m_rightEye.pendingFrame.mutex);
+            if (!m_rightEye.pendingFrame.hasRgbCameraMsg) {
+                return;
+            }
+            rightMsg = m_rightEye.pendingFrame.rgbCameraMsg;
+            rightSequence = m_rightEye.pendingFrame.rgbSequence;
+        }
+
+        if (leftSequence == m_lastStereoLeftSequence ||
+            rightSequence == m_lastStereoRightSequence) {
+            return;
+        }
+
+        const auto leftStampNs = imageStampNs(leftMsg);
+        const auto rightStampNs = imageStampNs(rightMsg);
+        if (leftStampNs != 0 && rightStampNs != 0 && leftStampNs != rightStampNs) {
+            return;
+        }
+
+        if (leftMsg.width() != rightMsg.width() ||
+            leftMsg.height() != rightMsg.height() ||
+            leftMsg.pixel_format_type() != rightMsg.pixel_format_type()) {
+            yError() << "gz-sim-yarp-stereodepthcamera-system : unable to compose"
+                     << "side-by-side image because left/right RGB formats differ";
+            return;
+        }
+
+        const auto& leftData = leftMsg.data();
+        const auto& rightData = rightMsg.data();
+        const auto width = static_cast<std::size_t>(leftMsg.width());
+        const auto height = static_cast<std::size_t>(leftMsg.height());
+        if (width == 0 || height == 0 || leftData.empty() || rightData.empty()) {
+            return;
+        }
+        if (leftData.size() != rightData.size() ||
+            leftData.size() % (width * height) != 0) {
+            yError() << "gz-sim-yarp-stereodepthcamera-system : unable to compose"
+                     << "side-by-side image because RGB payload sizes are unexpected";
+            return;
+        }
+
+        const auto bytesPerPixel = leftData.size() / (width * height);
+        const auto sourceRowBytes = width * bytesPerPixel;
+
+        auto& stereoImage = m_stereoRgbPort.prepare();
+        stereoImage.setPixelCode(m_format2VocabPixel.at(leftMsg.pixel_format_type()));
+        stereoImage.resize(static_cast<int>(2 * width), static_cast<int>(height));
+
+        auto* destination = reinterpret_cast<unsigned char*>(stereoImage.getRawImage());
+        const auto destinationRowBytes = static_cast<std::size_t>(stereoImage.getRowSize());
+
+        for (std::size_t row = 0; row < height; ++row) {
+            const auto sourceOffset = row * sourceRowBytes;
+            auto* destinationRow = destination + (row * destinationRowBytes);
+            std::memcpy(destinationRow, leftData.data() + sourceOffset, sourceRowBytes);
+            std::memcpy(destinationRow + sourceRowBytes,
+                        rightData.data() + sourceOffset,
+                        sourceRowBytes);
+        }
+
+        yarp::os::Stamp stamp;
+        stamp.update(simTime);
+        m_stereoRgbPort.setEnvelope(stamp);
+        m_stereoRgbPort.write();
+
+        m_lastStereoLeftSequence = leftSequence;
+        m_lastStereoRightSequence = rightSequence;
+    }
+
     StereoDepthCameraEye m_leftEye;
     StereoDepthCameraEye m_rightEye;
     gz::transport::Node m_node;
     std::string m_parentLinkName;
+    std::string m_stereoRgbPortName;
+    yarp::os::BufferedPort<yarp::sig::FlexImage> m_stereoRgbPort;
     EntityComponentManager* m_ecm{nullptr};
     bool m_leftSubscribed{false};
     bool m_rightSubscribed{false};
+    bool m_stereoRgbPortOpen{false};
+    std::uint64_t m_lastStereoLeftSequence{0};
+    std::uint64_t m_lastStereoRightSequence{0};
 };
 
 } // namespace gzyarp
