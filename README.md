@@ -39,7 +39,7 @@ The plugins available in the repo are listed in the following.
 |:-------------:|:-----------------:|:---------------------:|:---------------:|
 | `gzyarp::ControlBoard` | `gz-sim-yarp-controlboard-system` | [Missing. If you need it please open an issue.](https://github.com/robotology/gz-sim-yarp-plugins/issues/new)  | [`tutorial/single_pendulum`](./tutorial/single_pendulum) |
 | `gzyarp::ConfigurationOverride` | `gz-sim-yarp-configurationoverride-system` |  [`plugins/configurationoverride/README.md`](./plugins/configurationoverride/README.md) | [`tutorial/single_pendulum`](./tutorial/single_pendulum) |
-| `gzyarp::ForceTorque` | `gz-sim-yarp-forcetorque-system` | [Missing. If you need it please open an issue.](https://github.com/robotology/gz-sim-yarp-plugins/issues/new)  | [`tutorial/forcetorque`](./tutorial/forcetorque) |
+| `gzyarp::ForceTorque` | `gz-sim-yarp-forcetorque-system` | [`plugins/forcetorque/README.md`](./plugins/forcetorque/README.md) | [`tutorial/forcetorque`](./tutorial/forcetorque) |
 | `gzyarp::Imu` | `gz-sim-yarp-imu-system` | [Missing. If you need it please open an issue.](https://github.com/robotology/gz-sim-yarp-plugins/issues/new)  | [`tutorial/forcetorque`](./tutorial/imu) |
 | `gzyarp::Camera` | `gz-sim-yarp-camera-system` | [Missing. If you need it please open an issue.](https://github.com/robotology/gz-sim-yarp-plugins/issues/new)  | [`tutorial/camera`](./tutorial/camera) |
 | `gzyarp::BaseState` | `gz-sim-yarp-basestate-system` | [Missing. If you need it please open an issue.](https://github.com/robotology/gz-sim-yarp-plugins/issues/new)  | [`tutorial/basestate`](./tutorial/basestate) |
