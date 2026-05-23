@@ -54,7 +54,8 @@ private:
     bool m_deviceRegistered;
     std::string m_robotScopedName;
     std::string m_deviceId;
-    gz::sim::Entity m_modelEntity;
+    gz::sim::Model m_model;
+    std::vector<gz::sim::Joint> m_gzJoints;
     yarp::dev::PolyDriver m_controlBoardDriver;
     yarp::dev::PolyDriver m_coupling_driver;
     ControlBoardData m_controlBoardData;
