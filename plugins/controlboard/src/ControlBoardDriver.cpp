@@ -409,6 +409,17 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getAxes(int* ax)
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
 
+#if (YARP_VERSION_MAJOR > 3) 
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getAxes(size_t& ax)
+{
+    // TODO integrate with IJointCoupled interface
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+    ax = m_controlBoardData->actuatedAxes.size();
+
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
+#endif
+
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getRefTorque(int j, double* t)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
@@ -1528,6 +1539,13 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getRefCurrent(int m, double*
 }
 
 // IPidControl
+#if (YARP_VERSION_MAJOR > 3) 
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getAvailablePids(int j, std::vector<yarp::dev::PidControlTypeEnum>& avail)
+{
+    avail = _availablePids[j];
+    return ReturnValue_ok;
+}
+#endif
 
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setPid(const PidControlTypeEnum& pidtype, int j, const Pid& pid)
 {
@@ -1721,7 +1739,7 @@ yarp::dev::ReturnValue setRefVelocity(int jnt, double vel)
 yarp::dev::ReturnValue setRefVelocity(const std::vector<double>& vels)
 {
     ReturnValue ret = ReturnValue_ok;
-    for (int i = 0; i < _njoints; i++) {
+    for (int i = 0; i < vels.size(); i++) {
         ret &= setRefVelocity(i, vels[i]);
     }
     return ret;
@@ -1733,7 +1751,7 @@ yarp::dev::ReturnValue setRefVelocity(const std::vector<int>& jnts, const std::v
         return ReturnValue::return_code::return_value_error_method_failed;
     }
     ReturnValue ret = ReturnValue_ok;
-    for (int i = 0; i < _njoints; i++) {
+    for (int i = 0; i < vels.size(); i++) {
         ret &= setRefVelocity(jnts[i], vels[i]);
     }
     return ret;
@@ -1748,8 +1766,7 @@ yarp::dev::ReturnValue getRefVelocity(const int jnt, double& vel)
 yarp::dev::ReturnValue getRefVelocity(std::vector<double>& vels)
 {
     ReturnValue ret = ReturnValue_ok;
-    vels.resize(_njoints);
-    for (int i = 0; i < _njoints; i++) {
+    for (int i = 0; i < vels.size(); i++) {
         ret &= getRefVelocity(i, vels[i]);
     }
     return ret;
@@ -1761,8 +1778,7 @@ yarp::dev::ReturnValue getRefVelocity(const std::vector<int>& jnts, std::vector<
         return ReturnValue::return_code::return_value_error_method_failed;
     }
     ReturnValue ret = ReturnValue_ok;
-    vels.resize(_njoints);
-    for (int i = 0; i < _njoints; i++) {
+    for (int i = 0; i < vels.size(); i++) {
         ret &= getRefVelocity(jnts[i], vels[i]);
     }
     return ret;

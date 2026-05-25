@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include <yarp/conf/version.h>
+
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAxisInfo.h>
 #include <yarp/dev/IControlLimits.h>
@@ -18,6 +20,9 @@
 #include <yarp/dev/IRemoteVariables.h>
 #include <yarp/dev/ITorqueControl.h>
 #include <yarp/dev/IVelocityControl.h>
+#if (YARP_VERSION_MAJOR == 4)
+#include <yarp/dev/IVelocityDirect.h>
+#endif
 #include <yarp/dev/PidEnums.h>
 #include <yarp/os/Searchable.h>
 #include <gzyarp/YarpDevReturnValueCompat.h>
@@ -76,22 +81,39 @@ public:
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getEncoderTimed(int j, double* encs, double* time) override;
 
     // IInteractionMode
-
+#if (YARP_VERSION_MAJOR > 3)
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getInteractionMode(int j, yarp::dev::InteractionModeEnum& _mode) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getInteractionModes(const std::vector<int>& joints, std::vector<yarp::dev::InteractionModeEnum>& modes) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getInteractionModes(std::vector<yarp::dev::InteractionModeEnum>& modes) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setInteractionMode(int j, yarp::dev::InteractionModeEnum _mode) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setInteractionModes(const std::vector<int>& joints, const std::vector<yarp::dev::InteractionModeEnum>& modes) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setInteractionModes(const std::vector<yarp::dev::InteractionModeEnum>& modes) override;
+#else
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getInteractionMode(int axis, yarp::dev::InteractionModeEnum* mode) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getInteractionModes(int n_joints, int* joints, yarp::dev::InteractionModeEnum* modes) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getInteractionModes(yarp::dev::InteractionModeEnum* modes) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setInteractionModes(int n_joints, int* joints, yarp::dev::InteractionModeEnum* modes) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setInteractionModes(yarp::dev::InteractionModeEnum* modes) override;
+#endif
 
     // IControlMode
-
+#if (YARP_VERSION_MAJOR > 3)
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getAvailableControlModes(int j, std::vector<yarp::dev::SelectableControlModeEnum>& avail) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getControlMode(int j, yarp::dev::ControlModeEnum& mode) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getControlModes(const std::vector<int>& joints, std::vector<yarp::dev::ControlModeEnum>& modes) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getControlModes(std::vector<yarp::dev::ControlModeEnum>& mode) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setControlMode(int j, yarp::dev::SelectableControlModeEnum mode) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setControlModes(const std::vector<int>& joints, const std::vector<yarp::dev::SelectableControlModeEnum>& modes) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setControlModes(const std::vector<yarp::dev::SelectableControlModeEnum>& mode) override;
+#else
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getControlMode(int j, int* mode) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getControlModes(int* modes) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getControlModes(const int n_joint, const int* joints, int* modes) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setControlMode(const int j, const int mode) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setControlModes(const int n_joint, const int* joints, int* modes) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setControlModes(int* modes) override;
+#endif
 
     // IControlLimits
 
@@ -128,12 +150,13 @@ public:
 
 #if (YARP_VERSION_MAJOR > 3) || (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR > 12) || (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR == 12 && YARP_VERSION_PATCH >= 100)
     // IVelocityDirect
-    yarp::dev::ReturnValue setRefVelocity(int jnt, double vel) override;
-    yarp::dev::ReturnValue setRefVelocity(const std::vector<double>& vels) override;
-    yarp::dev::ReturnValue setRefVelocity(const std::vector<int>& jnts, const std::vector<double>& vels) override;
-    yarp::dev::ReturnValue getRefVelocity(const int jnt, double& vel) override;
-    yarp::dev::ReturnValue getRefVelocity(std::vector<double>& vels) override;
-    yarp::dev::ReturnValue getRefVelocity(const std::vector<int>& jnts, std::vector<double>& vels) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getAxes(size_t& ax) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefVelocity(int jnt, double vel) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefVelocity(const std::vector<double>& vels) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefVelocity(const std::vector<int>& jnts, const std::vector<double>& vels) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefVelocity(const int jnt, double& vel) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefVelocity(std::vector<double>& vels) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefVelocity(const std::vector<int>& jnts, std::vector<double>& vels) override;
 #endif
 
     // IPositionDirect
@@ -151,13 +174,19 @@ public:
     YARP_DEV_RETURN_VALUE_TYPE_CH40 positionMove(const double* refs) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 relativeMove(int j, double delta) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 relativeMove(const double* deltas) override;
-    YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(int j, bool* flag) override;
-    YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(bool* flag) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 stop(int j) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 stop() override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 positionMove(const int n_joint, const int* joints, const double* refs) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 relativeMove(const int n_joint, const int* joints, const double* deltas) override;
+#if (YARP_VERSION_MAJOR > 3) 
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(const std::vector<int>& joints, bool& flag) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(bool& flag) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(int j, bool& flag) override;
+#else
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(int j, bool* flag) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(bool* flag) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 checkMotionDone(const int n_joint, const int* joints, bool* flag) override;
+#endif
     YARP_DEV_RETURN_VALUE_TYPE_CH40 stop(const int n_joint, const int* joints) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetPosition(const int joint, double* ref) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getTargetPositions(double* refs) override;
@@ -219,7 +248,9 @@ public:
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefCurrent(int m, double* curr) override;
 
     // IPidControl
-
+#if (YARP_VERSION_MAJOR > 3)
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getAvailablePids(int j, std::vector<yarp::dev::PidControlTypeEnum>& avail) override;
+#endif
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setPid(const PidControlTypeEnum& pidtype, int j, const Pid& pid) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setPids(const PidControlTypeEnum& pidtype, const Pid* pids) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setPidReference(const PidControlTypeEnum& pidtype, int j, double ref) override;
