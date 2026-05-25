@@ -107,7 +107,7 @@ void ControlBoard::Configure(const Entity& _entity,
     std::string yarpDeviceName = m_pluginParameters.find("yarpDeviceName").asString();
 
     m_robotScopedName = gz::sim::scopedName(_entity, _ecm, "/");
-    m_modelEntity = _entity;
+    m_model = Model(_entity);
 
     m_pluginParameters.put(yarp::dev::gzyarp::YarpControlBoardScopedName.c_str(),
                            m_robotScopedName.c_str());
@@ -240,17 +240,16 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
 
         m_controlBoardData.physicalJoints.resize(jointsFromConfigNum);
 
-        auto model = Model(m_modelEntity);
-        auto jointEntititesCount = model.JointCount(_ecm);
+        auto jointEntititesCount = m_model.JointCount(_ecm);
         yInfo() << "Found " + std::to_string(jointEntititesCount)
                        + " joints from the model description.";
 
         m_controlBoardData.physicalJoints.resize(jointsFromConfigNum);
         for (size_t i = 0; i < jointsFromConfigNum; i++)
         {
-            std::string jointFromConfigName = jointNames.at(i);
+            std::string jointFromConfigName = jointNames[i];
 
-            auto jointEntity = model.JointByName(_ecm, jointFromConfigName);
+            auto jointEntity = m_model.JointByName(_ecm, jointFromConfigName);
             if (!jointEntity)
             {
                 yError() << "Joint " << jointFromConfigName
@@ -266,6 +265,7 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
 
             // Initialize JointProperties object
             m_controlBoardData.physicalJoints[i].commonJointProperties.name = jointFromConfigName;
+            m_gzJoints.push_back(gzJoint);
 
             yInfo() << "Joint " << jointFromConfigName << " added to the control board data.";
         }
@@ -343,23 +343,14 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
 
-    auto model = Model(m_modelEntity);
-    Joint gzJoint;
-    for (int i =0; i<m_controlBoardData.physicalJoints.size(); i++)
+    for (int i = 0; i < m_controlBoardData.physicalJoints.size(); i++)
     {
         auto& joint = m_controlBoardData.physicalJoints[i];
-        try
-        {
-            gzJoint = Joint(model.JointByName(_ecm, joint.commonJointProperties.name));
-        } catch (const std::exception& e)
-        {
-            yError() << "Error while trying to access joint " << joint.commonJointProperties.name;
-            return false;
-        }
+        auto& gzJoint = m_gzJoints[i];
 
         if (gzJoint.Position(_ecm).has_value())
         {
-            joint.commonJointProperties.position = ControlBoardData::convertGazeboToUser(joint, gzJoint.Position(_ecm).value().at(0));
+            joint.commonJointProperties.position = ControlBoardData::convertGazeboToUser(joint, gzJoint.Position(_ecm).value()[0]);
             m_physicalJointsPositionBuffer[i] = joint.commonJointProperties.position;
         } else
         {
@@ -370,7 +361,7 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
         if (gzJoint.Velocity(_ecm).has_value())
         {
             auto prevVelocity = joint.commonJointProperties.velocity;
-            joint.commonJointProperties.velocity = ControlBoardData::convertGazeboToUser(joint, gzJoint.Velocity(_ecm).value().at(0));
+            joint.commonJointProperties.velocity = ControlBoardData::convertGazeboToUser(joint, gzJoint.Velocity(_ecm).value()[0]);
             m_physicalJointsVelocityBuffer[i] = joint.commonJointProperties.velocity;
             joint.commonJointProperties.acceleration = (joint.commonJointProperties.velocity - prevVelocity) / dt;
             m_physicalJointsAcceleratonBuffer[i] = joint.commonJointProperties.acceleration;
@@ -384,7 +375,7 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
         {
             joint.commonJointProperties.torque
                 = getJointTorqueFromTransmittedWrench(gzJoint,
-                                                      gzJoint.TransmittedWrench(_ecm).value().at(0),
+                                                      gzJoint.TransmittedWrench(_ecm).value()[0],
                                                       _ecm);
             m_physicalJointsTorqueBuffer[i] = joint.commonJointProperties.torque;
         } else
@@ -427,7 +418,7 @@ ControlBoard::getJointTorqueFromTransmittedWrench(const Joint& gzJoint,
                                                   const gz::sim::EntityComponentManager& ecm) const
 {
 
-    auto axis = gzJoint.Axis(ecm).value().at(0).Xyz();
+    auto axis = gzJoint.Axis(ecm).value()[0].Xyz();
     // TODO manage different types of joints
 
     // Revolute Joint
@@ -494,8 +485,6 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
     std::lock_guard<std::mutex> lock(m_controlBoardData.mutex);
 
     double forceReference{};
-    Joint gzJoint;
-
 
     if(m_controlBoardData.ijointcoupling) {
         // If a coupling is present, we need to convert the actuated axes references to physical joints references (both position and torque)
@@ -524,8 +513,10 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
         }
     }
 
-    for (auto& joint : m_controlBoardData.physicalJoints)
+    for (int i = 0; i < m_controlBoardData.physicalJoints.size(); i++)
     {
+        auto& joint = m_controlBoardData.physicalJoints[i];
+
         switch (joint.commonJointProperties.controlMode)
         {
         case VOCAB_CM_TORQUE:
@@ -560,18 +551,9 @@ bool ControlBoard::updateReferences(const UpdateInfo& _info, EntityComponentMana
 
         // TODO check if joint is within limits
 
-        try
-        {
-            gzJoint = Joint(Model(m_modelEntity).JointByName(_ecm, joint.commonJointProperties.name));
-        } catch (const std::exception& e)
-        {
-            yError() << "Error while trying to access joint " << joint.commonJointProperties.name;
-            return false;
-        }
-
         std::vector<double> forceVec{forceReference};
 
-        gzJoint.SetForce(_ecm, forceVec);
+        m_gzJoints[i].SetForce(_ecm, forceVec);
     }
 
     return true;
@@ -719,31 +701,31 @@ bool ControlBoard::setYarpPIDsParam(const std::vector<double>& pidParams,
         switch (pidParamNameMap[paramName])
         {
         case 0:
-            yarpPIDs[i].kp = pidParams.at(i);
+            yarpPIDs[i].kp = pidParams[i];
             break;
         case 1:
-            yarpPIDs[i].kd = pidParams.at(i);
+            yarpPIDs[i].kd = pidParams[i];
             break;
         case 2:
-            yarpPIDs[i].ki = pidParams.at(i);
+            yarpPIDs[i].ki = pidParams[i];
             break;
         case 3:
-            yarpPIDs[i].max_int = pidParams.at(i);
+            yarpPIDs[i].max_int = pidParams[i];
             break;
         case 4:
-            yarpPIDs[i].max_output = pidParams.at(i);
+            yarpPIDs[i].max_output = pidParams[i];
             break;
         case 5:
-            yarpPIDs[i].scale = pidParams.at(i);
+            yarpPIDs[i].scale = pidParams[i];
             break;
         case 6:
-            yarpPIDs[i].offset = pidParams.at(i);
+            yarpPIDs[i].offset = pidParams[i];
             break;
         case 7:
-            yarpPIDs[i].stiction_up_val = pidParams.at(i);
+            yarpPIDs[i].stiction_up_val = pidParams[i];
             break;
         case 8:
-            yarpPIDs[i].stiction_down_val = pidParams.at(i);
+            yarpPIDs[i].stiction_down_val = pidParams[i];
             break;
         default:
             yError() << "Invalid parameter name";
@@ -764,7 +746,7 @@ void ControlBoard::setJointPIDs(AngleUnitEnum cUnits,
 
         if (cUnits == AngleUnitEnum::DEG)
         {
-            auto& joint = m_controlBoardData.physicalJoints.at(i);
+            auto& joint = m_controlBoardData.physicalJoints[i];
             jointPID.SetPGain(ControlBoardData::convertUserGainToGazeboGain(joint, yarpPIDs[i].kp)
                                       / pow(2, yarpPIDs[i].scale));
             jointPID.SetIGain(ControlBoardData::convertUserGainToGazeboGain(joint, yarpPIDs[i].ki)
@@ -809,8 +791,8 @@ bool ControlBoard::initializeJointPositionLimits(const gz::sim::EntityComponentM
         // TODO: access gazebo joint position limits and use them to check if software limits
         // ([LIMITS] group) are consistent. In case they are not defined set them as sw limits.
         auto& joint = m_controlBoardData.physicalJoints[i];
-        joint.commonJointProperties.positionLimitMin = limitMinGroup.at(i);
-        joint.commonJointProperties.positionLimitMax = limitMaxGroup.at(i);
+        joint.commonJointProperties.positionLimitMin = limitMinGroup[i];
+        joint.commonJointProperties.positionLimitMax = limitMaxGroup[i];
     }
     // We have also to set the actuated axes limits
     if (m_controlBoardData.ijointcoupling)
@@ -831,8 +813,8 @@ bool ControlBoard::initializeJointPositionLimits(const gz::sim::EntityComponentM
         for (size_t i = 0; i< m_controlBoardData.actuatedAxes.size(); ++i)
         {
             auto& actuatedAxis = m_controlBoardData.actuatedAxes[i];
-            actuatedAxis.commonJointProperties.positionLimitMin = actuatedAxisPosLimitsMin.at(i);
-            actuatedAxis.commonJointProperties.positionLimitMax = actuatedAxisPosLimitsMax.at(i);
+            actuatedAxis.commonJointProperties.positionLimitMin = actuatedAxisPosLimitsMin[i];
+            actuatedAxis.commonJointProperties.positionLimitMax = actuatedAxisPosLimitsMax[i];
         }
 
     }
@@ -868,7 +850,7 @@ bool ControlBoard::initializeJointVelocityLimits(const gz::sim::EntityComponentM
     {
         auto& joint = m_controlBoardData.physicalJoints[i];
         joint.commonJointProperties.velocityLimitMin = 0.0;
-        joint.commonJointProperties.velocityLimitMax = limitMaxGroup.at(i);
+        joint.commonJointProperties.velocityLimitMax = limitMaxGroup[i];
     }
 
     for (size_t i = 0; i < m_controlBoardData.actuatedAxes.size(); ++i)
@@ -988,13 +970,13 @@ bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGen
     // TODO: manage different joint types HERE
     for (size_t i = 0; i < m_controlBoardData.actuatedAxes.size(); ++i)
     {
-        auto& joint = m_controlBoardData.actuatedAxes.at(i);
+        auto& joint = m_controlBoardData.actuatedAxes[i];
         if (useDefaultSpeedRef)
         {
             joint.trajectoryGenerationRefSpeed = 10.0; // [deg/s]
         } else
         {
-            joint.trajectoryGenerationRefSpeed = refSpeedGroup.at(i);
+            joint.trajectoryGenerationRefSpeed = refSpeedGroup[i];
         }
 
         if (useDefaultAccelerationRef)
@@ -1002,7 +984,7 @@ bool ControlBoard::initializeTrajectoryGeneratorReferences(Bottle& trajectoryGen
             joint.trajectoryGenerationRefAcceleration = 10.0; // [deg/s^2]
         } else
         {
-            joint.trajectoryGenerationRefAcceleration = refAccelerationGroup.at(i);
+            joint.trajectoryGenerationRefAcceleration = refAccelerationGroup[i];
         }
 
         // Clip trajectory generation reference velocities according to max joint limit
@@ -1059,7 +1041,7 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
 
         for (size_t i = 0; i < m_controlBoardData.physicalJoints.size(); i++)
         {
-            auto& joint = m_controlBoardData.physicalJoints.at(i);
+            auto& joint = m_controlBoardData.physicalJoints[i];
             auto gzPos = initialConfigurations[i];
             auto userPos = ControlBoardData::convertGazeboToUser(joint, gzPos);
             // Reset joint properties
@@ -1068,8 +1050,7 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
             m_physicalJointsPositionBuffer[i] = userPos;
             // Reset position of gazebo joint
             // TODO(xela-95): store joint entity in JointProperties
-            Joint(Model(m_modelEntity).JointByName(ecm, joint.commonJointProperties.name))
-                .ResetPosition(ecm, std::vector<double>{gzPos});
+            m_gzJoints[i].ResetPosition(ecm, std::vector<double>{gzPos});
         }
     }
     else {
@@ -1077,11 +1058,11 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
                       "current values";
         for (size_t i = 0; i < m_controlBoardData.physicalJoints.size(); i++)
         {
-            auto& joint = m_controlBoardData.physicalJoints.at(i);
-            auto gzJoint = Joint(Model(m_modelEntity).JointByName(ecm, joint.commonJointProperties.name));
+            auto& joint = m_controlBoardData.physicalJoints[i];
+            auto& gzJoint = m_gzJoints[i];
             if (gzJoint.Position(ecm).has_value() && gzJoint.Position(ecm).value().size() > 0)
             {
-                auto gzPos = gzJoint.Position(ecm).value().at(0);
+                auto gzPos = gzJoint.Position(ecm).value()[0];
                 auto userPos = ControlBoardData::convertGazeboToUser(joint, gzPos);
                 // Reset joint properties
                 joint.commonJointProperties.refPosition = userPos;
@@ -1120,7 +1101,7 @@ void ControlBoard::resetPositionsAndTrajectoryGenerators(gz::sim::EntityComponen
         }
     }
     for (size_t i=0; i<m_controlBoardData.actuatedAxes.size(); i++) {
-        auto& joint = m_controlBoardData.actuatedAxes.at(i);
+        auto& joint = m_controlBoardData.actuatedAxes[i];
         auto limitMin = joint.commonJointProperties.positionLimitMin;
         auto limitMax = joint.commonJointProperties.positionLimitMax;
         joint.trajectoryGenerator->setLimits(limitMin, limitMax);
