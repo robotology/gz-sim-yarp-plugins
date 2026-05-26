@@ -26,6 +26,7 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
+#include <yarp/os/Network.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/sig/Image.h>
@@ -490,6 +491,7 @@ private:
     gz::transport::Node m_node;
     std::string m_parentLinkName;
     std::string m_stereoRgbPortName;
+    yarp::os::Network m_yarpNetwork;
     yarp::os::BufferedPort<yarp::sig::FlexImage> m_stereoRgbPort;
     EntityComponentManager* m_ecm{nullptr};
     bool m_leftSubscribed{false};
