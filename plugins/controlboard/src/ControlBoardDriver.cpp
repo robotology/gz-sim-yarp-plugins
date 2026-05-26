@@ -45,7 +45,40 @@ bool ControlBoardDriver::close()
 }
 
 // IInteractionMode
+#if (YARP_VERSION_MAJOR > 3)
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getInteractionMode(int j, yarp::dev::InteractionModeEnum& mode)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+    mode = (yarp::dev::InteractionModeEnum)m_controlBoardData->actuatedAxes.at(j).commonJointProperties.interactionMode;
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
 
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getInteractionModes(const std::vector<int>& joints, std::vector<yarp::dev::InteractionModeEnum>& modes)
+{
+    for (int i = 0; i < joints.size(); i++)
+    {
+        if (!ControlBoardDriver::getInteractionMode(joints[i], modes[i]))
+        {
+            return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
+        }
+    }
+
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
+
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getInteractionModes(std::vector<yarp::dev::InteractionModeEnum>& modes)
+{
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
+    {
+        if (!ControlBoardDriver::getInteractionMode(i, modes[i]))
+        {
+            return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
+        }
+    }
+
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
+#else
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getInteractionMode(int axis, yarp::dev::InteractionModeEnum* mode)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
@@ -99,7 +132,41 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getInteractionModes(yarp::de
 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
+#endif
 
+#if (YARP_VERSION_MAJOR > 3)
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setInteractionMode(int j, yarp::dev::InteractionModeEnum mode) 
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+    return m_controlBoardData->setInteractionMode(j, mode) ? YARP_DEV_RETURN_VALUE_OK_CH40 : YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
+}
+
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setInteractionModes(const std::vector<int>& joints, const std::vector<yarp::dev::InteractionModeEnum>& modes)
+{
+    for (int i = 0; i < joints.size(); i++)
+    {
+        if (!ControlBoardDriver::setInteractionMode(joints[i], modes[i]))
+        {
+            return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
+        }
+    }
+
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
+
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setInteractionModes(const std::vector<yarp::dev::InteractionModeEnum>& modes)
+{
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
+    {
+        if (!ControlBoardDriver::setInteractionMode(i, modes[i]))
+        {
+            return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
+        }
+    }
+
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
+#else
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setInteractionMode(int axis, yarp::dev::InteractionModeEnum mode)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
@@ -150,9 +217,52 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setInteractionModes(yarp::de
 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
+#endif
 
 // IControlMode
+#if (YARP_VERSION_MAJOR > 3)
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getControlMode(int j, yarp::dev::ControlModeEnum& mode)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
+    if (j < 0 || j >= m_controlBoardData->actuatedAxes.size())
+    {
+        yError() << "Error while getting control mode: joint index " + std::to_string(j)
+                        + " out of range";
+        return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
+    }
+
+    mode = (yarp::dev::ControlModeEnum)(m_controlBoardData->actuatedAxes.at(j).commonJointProperties.controlMode);
+
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
+
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getControlModes(std::vector<yarp::dev::ControlModeEnum>& modes)
+{
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
+    {
+        if (!ControlBoardDriver::getControlMode(i, modes[i]))
+        {
+            return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
+        }
+    }
+
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
+
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getControlModes(const std::vector<int>& joints, std::vector<yarp::dev::ControlModeEnum>& modes)
+{
+    for (int i = 0; i < joints.size(); i++)
+    {
+        if (!ControlBoardDriver::getControlMode(joints[i], modes[i]))
+        {
+            return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
+        }
+    }
+
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
+#else
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getControlMode(int j, int* mode)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
@@ -217,7 +327,41 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getControlModes(const int n_
 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
+#endif
 
+#if (YARP_VERSION_MAJOR > 3)
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setControlMode(int j, yarp::dev::SelectableControlModeEnum mode)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+    return m_controlBoardData->setControlMode(j, (int)mode) ? YARP_DEV_RETURN_VALUE_OK_CH40 : YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
+}
+
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setControlModes(const std::vector<int>& joints, const std::vector<yarp::dev::SelectableControlModeEnum>& modes)
+{
+    for (int i = 0; i < joints.size(); i++)
+    {
+        if (!ControlBoardDriver::setControlMode(joints[i], modes[i]))
+        {
+            return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
+        }
+    }
+
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
+
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setControlModes(const std::vector<yarp::dev::SelectableControlModeEnum>& mode)
+{
+    for (int i = 0; i < m_controlBoardData->actuatedAxes.size(); i++)
+    {
+        if (!ControlBoardDriver::setControlMode(i, mode[i]))
+        {
+            return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
+        }
+    }
+
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
+#else
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setControlMode(const int j, const int mode)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
@@ -266,6 +410,7 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setControlModes(int* modes)
 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
+#endif
 
 // IAxisInfo
 
@@ -840,6 +985,22 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::relativeMove(const double* d
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
 
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::checkMotionDone(int j, bool& flag)
+{
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+
+    if (j < 0 || j >= m_controlBoardData->actuatedAxes.size())
+    {
+        yError() << "Error while checking motion done: joint index out of range";
+        return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
+    }
+
+    flag = m_controlBoardData->actuatedAxes.at(j).isMotionDone;
+
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
+#else
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::checkMotionDone(int j, bool* flag)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
@@ -854,7 +1015,25 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::checkMotionDone(int j, bool*
 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
+#endif
 
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::checkMotionDone(bool& flag)
+{
+    flag=true;
+    for (int i = 0; i < i < m_controlBoardData->actuatedAxes.size(); i++)
+    {
+        bool temp;
+        if (!ControlBoardDriver::checkMotionDone(i, temp))
+        {
+            return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
+        }
+        flag&=temp;
+    }
+
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
+#else
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::checkMotionDone(bool* flag)
 {
     if (!flag)
@@ -873,6 +1052,7 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::checkMotionDone(bool* flag)
 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
+#endif
 
 #ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajSpeed(int j, double sp)
@@ -1159,6 +1339,24 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::relativeMove(const int n_joi
 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
+
+#ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::checkMotionDone(const std::vector<int>& joints, bool& flag)
+{
+    flag=true;
+    for (int i = 0; i < joints.size(); i++)
+    {
+        bool temp;
+        if (!ControlBoardDriver::checkMotionDone(joints[i], temp))
+        {
+            return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
+        }
+        flag&=temp;
+    }
+
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
+#else
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::checkMotionDone(const int n_joint, const int* joints, bool* flag)
 {
     if (!joints)
@@ -1182,6 +1380,7 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::checkMotionDone(const int n_
 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
+#endif
 
 #ifdef YARP_DEV_RETURN_VALUE_IS_GE_40
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setTrajSpeeds(const int n_joint, const int* joints, const double* spds)
@@ -1542,7 +1741,13 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getRefCurrent(int m, double*
 #if (YARP_VERSION_MAJOR > 3) 
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getAvailablePids(int j, std::vector<yarp::dev::PidControlTypeEnum>& avail)
 {
-    avail = _availablePids[j];
+    avail = m_controlBoardData->physicalJoints[j].availablePids;
+    return ReturnValue_ok;
+}
+
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getAvailableControlModes(int j, std::vector<yarp::dev::SelectableControlModeEnum>& avail)
+{
+    avail = m_controlBoardData->physicalJoints[j].availableControlModes;
     return ReturnValue_ok;
 }
 #endif
@@ -1730,13 +1935,13 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::isPidEnabled(const PidContro
 
 #if (YARP_VERSION_MAJOR > 3)
 // IVelocityDirect
-yarp::dev::ReturnValue setRefVelocity(int jnt, double vel)
+yarp::dev::ReturnValue ControlBoardDriver::setRefVelocity(int jnt, double vel)
 {
-    m_controlBoardData.physicalJoints[jnt].commonJointProperties.refVelocity = vel;
+    m_controlBoardData->physicalJoints[jnt].commonJointProperties.refVelocity = vel;
     return ReturnValue_ok;
 }
 
-yarp::dev::ReturnValue setRefVelocity(const std::vector<double>& vels)
+yarp::dev::ReturnValue ControlBoardDriver::setRefVelocity(const std::vector<double>& vels)
 {
     ReturnValue ret = ReturnValue_ok;
     for (int i = 0; i < vels.size(); i++) {
@@ -1745,7 +1950,7 @@ yarp::dev::ReturnValue setRefVelocity(const std::vector<double>& vels)
     return ret;
 }
 
-yarp::dev::ReturnValue setRefVelocity(const std::vector<int>& jnts, const std::vector<double>& vels)
+yarp::dev::ReturnValue ControlBoardDriver::setRefVelocity(const std::vector<int>& jnts, const std::vector<double>& vels)
 {
     if (jnts.size() != vels.size()) {
         return ReturnValue::return_code::return_value_error_method_failed;
@@ -1757,13 +1962,13 @@ yarp::dev::ReturnValue setRefVelocity(const std::vector<int>& jnts, const std::v
     return ret;
 }
 
-yarp::dev::ReturnValue getRefVelocity(const int jnt, double& vel)
+yarp::dev::ReturnValue ControlBoardDriver::getRefVelocity(const int jnt, double& vel)
 {
-    vel = m_controlBoardData.physicalJoints[jnt].commonJointProperties.refVelocity;
+    vel = m_controlBoardData->physicalJoints[jnt].commonJointProperties.refVelocity;
     return ReturnValue_ok;
 }
 
-yarp::dev::ReturnValue getRefVelocity(std::vector<double>& vels)
+yarp::dev::ReturnValue ControlBoardDriver::getRefVelocity(std::vector<double>& vels)
 {
     ReturnValue ret = ReturnValue_ok;
     for (int i = 0; i < vels.size(); i++) {
@@ -1772,7 +1977,7 @@ yarp::dev::ReturnValue getRefVelocity(std::vector<double>& vels)
     return ret;
 }
 
-yarp::dev::ReturnValue getRefVelocity(const std::vector<int>& jnts, std::vector<double>& vels)
+yarp::dev::ReturnValue ControlBoardDriver::getRefVelocity(const std::vector<int>& jnts, std::vector<double>& vels)
 {
     if (jnts.size() != vels.size()) {
         return ReturnValue::return_code::return_value_error_method_failed;

@@ -12,7 +12,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include <yarp/conf/version.h>
 #include <yarp/conf/numeric.h>
+
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IInteractionMode.h>
 #include <yarp/dev/IJointCoupling.h>
@@ -59,10 +61,11 @@ struct CommonJointProperties {
 struct PhysicalJointProperties
 {
     CommonJointProperties commonJointProperties;
-    std::unordered_map<yarp::dev::PidControlTypeEnum, gz::math::PID, PidControlTypeEnumHashFunction>
-        pidControllers;
+    std::unordered_map<yarp::dev::PidControlTypeEnum, gz::math::PID, PidControlTypeEnumHashFunction> pidControllers;
     std::string positionControlLaw; // TODO: verify usefulness of this field
 #if (YARP_VERSION_MAJOR > 3)
+    std::vector<yarp::dev::PidControlTypeEnum> availablePids;
+    std::vector<yarp::dev::SelectableControlModeEnum> availableControlModes;
     yarp::dev::PidControlTypeEnum selected_vel_dir_pid = yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT_1;
     yarp::dev::PidControlTypeEnum selected_vel_pid = yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_1;
     yarp::dev::PidControlTypeEnum selected_pos_dir_pid = yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT_1;

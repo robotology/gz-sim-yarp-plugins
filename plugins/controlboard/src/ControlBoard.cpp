@@ -315,6 +315,42 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
         }
 
 #if (YARP_VERSION_MAJOR > 3)
+       for (int i = 0; i < m_controlBoardData.physicalJoints.size(); ++i)
+       {
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_1);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_2);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_3);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT_1);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT_2);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT_3);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_1);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_2);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_3);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT_1);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT_2);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT_3);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_MIXED_1);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_MIXED_2);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_MIXED_3);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT_1);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT_2);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT_3);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE_1);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE_2);
+           m_controlBoardData.physicalJoints[i].availablePids.push_back(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE_3);
+           
+           m_controlBoardData.physicalJoints[i].availableControlModes.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_IDLE);
+           m_controlBoardData.physicalJoints[i].availableControlModes.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_TORQUE);
+           m_controlBoardData.physicalJoints[i].availableControlModes.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
+           m_controlBoardData.physicalJoints[i].availableControlModes.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION_DIRECT);
+           m_controlBoardData.physicalJoints[i].availableControlModes.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_VELOCITY);
+           m_controlBoardData.physicalJoints[i].availableControlModes.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_VELOCITY_DIRECT);
+           m_controlBoardData.physicalJoints[i].availableControlModes.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_CURRENT);
+           m_controlBoardData.physicalJoints[i].availableControlModes.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_PWM);
+           m_controlBoardData.physicalJoints[i].availableControlModes.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_MIXED);
+           m_controlBoardData.physicalJoints[i].availableControlModes.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_FORCE_IDLE);
+        }
+    
         if (!initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_1) ||
             !initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_2) ||
             !initializePIDs(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_3))
