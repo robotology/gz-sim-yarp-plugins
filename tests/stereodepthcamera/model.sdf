@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+
+<sdf version="1.6">
+  <world name="stereo_sensors">
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.8 0.8 0.8 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="stereo_camera_model">
+      <static>true</static>
+      <pose>0 0 0.4 0 0 0</pose>
+      <plugin name="gzyarp::StereoDepthCamera" filename="gz-sim-yarp-stereodepthcamera-system">
+        <yarpConfigurationString>(parentLinkName camera_link) (leftSensorName left_sensor) (rightSensorName right_sensor) (leftYarpDeviceName stereodepthcamera_left_plugin_device) (rightYarpDeviceName stereodepthcamera_right_plugin_device) (stereoRgbPortName /stereodepthcamera/rgbImage:o)</yarpConfigurationString>
+      </plugin>
+      <link name="camera_link">
+        <sensor name="left_sensor" type="rgbd_camera">
+          <pose>0 0.05 0 0 0 0</pose>
+          <camera>
+            <distortion><k1>0</k1><k2>0</k2><k3>0</k3><p1>0</p1><p2>0</p2><center>160 120</center></distortion>
+            <lens><type>pinhole</type><scale_to_hfov>true</scale_to_hfov><intrinsics><fx>277.128</fx><fy>277.128</fy><cx>160</cx><cy>120</cy><s>0</s></intrinsics></lens>
+            <horizontal_fov>1.5708</horizontal_fov>
+            <image><width>320</width><height>240</height></image>
+            <clip><near>0.1</near><far>100</far></clip>
+          </camera>
+          <always_on>1</always_on>
+          <update_rate>30</update_rate>
+        </sensor>
+        <sensor name="right_sensor" type="rgbd_camera">
+          <pose>0 -0.05 0 0 0 0</pose>
+          <camera>
+            <distortion><k1>0</k1><k2>0</k2><k3>0</k3><p1>0</p1><p2>0</p2><center>160 120</center></distortion>
+            <lens><type>pinhole</type><scale_to_hfov>true</scale_to_hfov><intrinsics><fx>277.128</fx><fy>277.128</fy><cx>160</cx><cy>120</cy><s>0</s></intrinsics></lens>
+            <horizontal_fov>1.5708</horizontal_fov>
+            <image><width>320</width><height>240</height></image>
+            <clip><near>0.1</near><far>100</far></clip>
+          </camera>
+          <always_on>1</always_on>
+          <update_rate>30</update_rate>
+        </sensor>
+      </link>
+      <plugin name="gzyarp::RobotInterface" filename="gz-sim-yarp-robotinterface-system">
+        <yarpRobotInterfaceConfigurationFile>model://stereodepthcamera_nws.xml</yarpRobotInterfaceConfigurationFile>
+      </plugin>
+    </model>
+
+    <model name="sphere">
+      <pose>4 0 0.5 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry><sphere><radius>0.5</radius></sphere></geometry>
+          <material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>

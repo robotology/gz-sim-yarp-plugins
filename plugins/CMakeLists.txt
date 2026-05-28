@@ -1,6 +1,7 @@
 add_subdirectory(robotinterface)
 add_subdirectory(camera)
 add_subdirectory(depthcamera)
+add_subdirectory(stereodepthcamera)
 add_subdirectory(laser)
 add_subdirectory(forcetorque)
 add_subdirectory(imu)
@@ -9,4 +10,3 @@ add_subdirectory(clock)
 add_subdirectory(controlboard)
 add_subdirectory(configurationoverride)
 add_subdirectory(worldinterface)
-
