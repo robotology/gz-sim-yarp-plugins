@@ -36,6 +36,8 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Network.h>
 
+#include <yarp/conf/version.h>
+
 namespace gzyarp
 {
 namespace test
@@ -87,7 +89,11 @@ TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
         .OnPostUpdate(
             [&](const gz::sim::UpdateInfo& _info, const gz::sim::EntityComponentManager& _ecm) {
                 iEncoders1->getEncoder(0, &jointPosition1);
+#if YARP_VERSION_MAJOR > 3
+                iPositionControl1->checkMotionDone(0, motionDone1);
+#else
                 iPositionControl1->checkMotionDone(0, &motionDone1);
+#endif
                 if (motionDone1 && iterationsToCompleteMotion1 == 0)
                 {
                     iterationsToCompleteMotion1 = fixture1.Server()->IterationCount().value();
@@ -124,7 +130,11 @@ TEST(ControlBoardOnMultipleGazeboInstances, StartConcurrentGazeboInstances)
         .OnPostUpdate(
             [&](const gz::sim::UpdateInfo& _info, const gz::sim::EntityComponentManager& _ecm) {
                 iEncoders2->getEncoder(0, &jointPosition2);
+#if YARP_VERSION_MAJOR > 3
+                iPositionControl2->checkMotionDone(0, motionDone2);
+#else
                 iPositionControl2->checkMotionDone(0, &motionDone2);
+#endif            
                 if (motionDone2 && iterationsToCompleteMotion2 == 0)
                 {
                     iterationsToCompleteMotion2 = fixture2.Server()->IterationCount().value();

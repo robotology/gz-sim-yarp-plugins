@@ -37,6 +37,8 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Network.h>
 
+#include <yarp/conf/version.h>
+
 namespace gzyarp
 {
 namespace test
@@ -220,8 +222,11 @@ TEST_F(ControlBoardPositionFixture, CheckPositionTrackingWithTrajectoryGeneratio
                 // std::cerr << "========== Iteration: " << iterations << std::endl;
 
                 iEncoders->getEncoder(0, &jointPosition);
+#if YARP_VERSION_MAJOR > 3
+                iPositionControl->checkMotionDone(0, motionDone);
+#else
                 iPositionControl->checkMotionDone(0, &motionDone);
-
+#endif
                 // std::cerr << "ref position: " << refTrajectory[iterations] << std::endl;
                 // std::cerr << "joint position: " << jointPosition << std::endl;
 
@@ -346,7 +351,11 @@ TEST_F(ControlBoardPositionFixture, CheckModeChangeWithTrajectoryGenerationUsing
         .OnPostUpdate(
             [&](const gz::sim::UpdateInfo& _info, const gz::sim::EntityComponentManager& _ecm) {
                 iEncoders->getEncoder(0, &jointPosition);
+#if YARP_VERSION_MAJOR > 3
+                iPositionControl->checkMotionDone(0, motionDone);
+#else
                 iPositionControl->checkMotionDone(0, &motionDone);
+#endif              
                 iterations++;
             })
         .
