@@ -18,6 +18,7 @@
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IInteractionMode.h>
 #include <yarp/dev/IJointCoupling.h>
+#include <yarp/dev/IAxisInfo.h>
 #include <yarp/dev/PidEnums.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/os/Vocab.h>
@@ -61,7 +62,9 @@ struct CommonJointProperties {
 struct PhysicalJointProperties
 {
     CommonJointProperties commonJointProperties;
-    std::unordered_map<yarp::dev::PidControlTypeEnum, gz::math::PID, PidControlTypeEnumHashFunction> pidControllers;
+    yarp::dev::JointTypeEnum jointType{yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE};
+    std::unordered_map<yarp::dev::PidControlTypeEnum, gz::math::PID, PidControlTypeEnumHashFunction>
+        pidControllers;
     std::string positionControlLaw; // TODO: verify usefulness of this field
 #if (YARP_VERSION_MAJOR > 3)
     std::vector<yarp::dev::PidControlTypeEnum> availablePids;

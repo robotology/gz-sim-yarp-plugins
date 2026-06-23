@@ -33,6 +33,8 @@
 #include <gz/sim/Types.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/components/JointForceCmd.hh>
+#include <gz/sim/components/JointType.hh>
+#include <sdf/Joint.hh>
 #include <sdf/Element.hh>
 
 #include <yarp/dev/Drivers.h>
@@ -262,6 +264,19 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
             gzJoint.EnablePositionCheck(_ecm, true);
             gzJoint.EnableVelocityCheck(_ecm, true);
             gzJoint.EnableTransmittedWrenchCheck(_ecm, true);
+
+            auto jointTypeComponent = _ecm.Component<gz::sim::components::JointType>(jointEntity);
+
+            if (jointTypeComponent != nullptr && jointTypeComponent->Data() == sdf::JointType::PRISMATIC)
+            {
+                m_controlBoardData.physicalJoints[i].jointType =
+                    yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_PRISMATIC;
+            }
+            else
+            {
+                m_controlBoardData.physicalJoints[i].jointType =
+                    yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
+            }
 
             // Initialize JointProperties object
             m_controlBoardData.physicalJoints[i].commonJointProperties.name = jointFromConfigName;
