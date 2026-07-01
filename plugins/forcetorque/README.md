@@ -9,11 +9,7 @@ The `gzyarp::ForceTorque` plugin exposes the measurements of a `ForceTorque` sen
 
 ### Usage
 
-Add the `gzyarp::ForceTorque` plugin to the model SDF where the force–torque sensor is defined. You must specify a YARP configuration (either as a string or via file, see the main repository `README.md` section “How to specify Yarp configurations”), and at minimum provide:
-
-- `sensorName`: the name of the `ForceTorque` sensor attached to the joint.
-- `jointName`: the name of the joint on which the sensor is mounted.
-- `yarpDeviceName`: the instance name of the YARP device that will be created and registered in the `DeviceRegistry`.
+Add the `gzyarp::ForceTorque` plugin to the model SDF where the force–torque sensor is defined. You must specify a YARP configuration (either as a string or via file, see the main repository `README.md` section “How to specify Yarp configurations”)
 
 A concrete usage can be seen in the [`tutorial/forcetorque/model_one_sensor`](../../tutorial/forcetorque/model_one_sensor) folder. The relevant part of the `model.sdf` is:
 
