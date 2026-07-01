@@ -5,7 +5,7 @@
 |:---------------:|:-----------------------------:|
 | `gzyarp::ForceTorque` | `gz-sim-yarp-forcetorque-system` |
 
-The `gzyarp::ForceTorque` plugin exposes the measurements of a `ForceTorque` sensor attached to a joint in a `gz-sim` model as a YARP devices that exposes the `yarp::dev::ISixAxisForceTorqueSensors`. This allows you to access simulated 6-axis force/torque data (three forces and three torques) through standard YARP interfaces and tools.
+The `gzyarp::ForceTorque` plugin exposes the measurements of a `ForceTorque` sensor attached to a joint in a `gz-sim` model as a YARP device that exposes the `yarp::dev::ISixAxisForceTorqueSensors`. This allows you to access simulated 6-axis force/torque data (three forces and three torques) through standard YARP interfaces and tools.
 
 ### Usage
 
