@@ -425,9 +425,15 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getAxisName(int axis, std::s
 
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getJointType(int axis, yarp::dev::JointTypeEnum& type)
 {
-    // TODO integrate with IJointCoupled interface
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
 
-    type = yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
+    if (axis < 0 || axis >= m_controlBoardData->physicalJoints.size())
+    {
+        yError() << "Error while getting joint type: axis index out of range";
+        return false;
+    }
+
+    type = m_controlBoardData->physicalJoints.at(axis).jointType;
 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }

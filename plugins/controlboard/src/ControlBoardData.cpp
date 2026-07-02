@@ -152,25 +152,41 @@ bool ControlBoardData::setControlMode(int j, int mode)
 
 double ControlBoardData::convertGazeboGainToUserGain(PhysicalJointProperties& joint, double value)
 {
-    // TODO discriminate between joint types
+    if (joint.jointType == yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_PRISMATIC)
+    {
+        return value;
+    }
+
     return gzyarp::convertRadianGainToDegreeGains(value);
 }
 
 double ControlBoardData::convertGazeboToUser(PhysicalJointProperties& joint, double value)
 {
-    // TODO discriminate between joint types
+    if (joint.jointType == yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_PRISMATIC)
+    {
+        return value;
+    }
+
     return gzyarp::convertRadiansToDegrees(value);
 }
 
 double ControlBoardData::convertUserToGazebo(PhysicalJointProperties& joint, double value)
 {
-    // TODO discriminate between joint types
+    if (joint.jointType == yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_PRISMATIC)
+    {
+        return value;
+    }
+
     return gzyarp::convertDegreesToRadians(value);
 }
 
 double ControlBoardData::convertUserGainToGazeboGain(PhysicalJointProperties& joint, double value)
 {
-    // TODO discriminate between joint types
+    if (joint.jointType == yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_PRISMATIC)
+    {
+        return value;
+    }
+
     return gzyarp::convertDegreeGainToRadianGains(value);
 }
 
