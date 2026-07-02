@@ -272,10 +272,16 @@ bool ControlBoard::setJointProperties(EntityComponentManager& _ecm)
                 m_controlBoardData.physicalJoints[i].jointType =
                     yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_PRISMATIC;
             }
-            else
+            else if (jointTypeComponent != nullptr && jointTypeComponent->Data() == sdf::JointType::REVOLUTE)
             {
                 m_controlBoardData.physicalJoints[i].jointType =
                     yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
+            } 
+            else 
+            {
+                yError() << "Joint " << jointFromConfigName
+                         << " has unsupported joint type. Only PRISMATIC and REVOLUTE are supported.";
+                return false;
             }
 
             // Initialize JointProperties object
