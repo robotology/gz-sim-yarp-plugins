@@ -135,7 +135,7 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getInteractionModes(yarp::de
 #endif
 
 #if (YARP_VERSION_MAJOR > 3)
-YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setInteractionMode(int j, yarp::dev::InteractionModeEnum mode) 
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::setInteractionMode(int j, yarp::dev::InteractionModeEnum mode)
 {
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
     return m_controlBoardData->setInteractionMode(j, mode) ? YARP_DEV_RETURN_VALUE_OK_CH40 : YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
@@ -430,7 +430,7 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getJointType(int axis, yarp:
     if (axis < 0 || axis >= m_controlBoardData->physicalJoints.size())
     {
         yError() << "Error while getting joint type: axis index out of range";
-        return false;
+        return YARP_DEV_RETURN_VALUE_ERROR_METHOD_FAILED_CH40;
     }
 
     type = m_controlBoardData->physicalJoints.at(axis).jointType;
@@ -560,7 +560,7 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getAxes(int* ax)
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }
 
-#if (YARP_VERSION_MAJOR > 3) 
+#if (YARP_VERSION_MAJOR > 3)
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getAxes(size_t& ax)
 {
     // TODO integrate with IJointCoupled interface
@@ -1744,7 +1744,7 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getRefCurrent(int m, double*
 }
 
 // IPidControl
-#if (YARP_VERSION_MAJOR > 3) 
+#if (YARP_VERSION_MAJOR > 3)
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getAvailablePids(int j, std::vector<yarp::dev::PidControlTypeEnum>& avail)
 {
     avail = m_controlBoardData->physicalJoints[j].availablePids;
