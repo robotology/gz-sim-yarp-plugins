@@ -93,8 +93,13 @@ protected:
                 ASSERT_TRUE(iControlMode->setControlMode(0, VOCAB_CM_POSITION));
 
                 // Print number of joint configured
+#if (YARP_VERSION_MAJOR > 3)
+                size_t nJointsConfigured{};
+                ASSERT_TRUE(iPositionControl->getAxes(nJointsConfigured));
+#else
                 int nJointsConfigured{};
                 ASSERT_TRUE(iPositionControl->getAxes(&nJointsConfigured));
+#endif
                 std::cerr << "Number of joints configured: " << nJointsConfigured << std::endl;
 
                 configured = true;
@@ -179,8 +184,13 @@ protected:
                 ASSERT_TRUE(iControlMode->setControlMode(1, VOCAB_CM_POSITION));
 
                 // Print number of joint configured
+#if (YARP_VERSION_MAJOR > 3)
+                size_t nJointsConfigured{};
+                ASSERT_TRUE(iPositionControl->getAxes(nJointsConfigured));
+#else
                 int nJointsConfigured{};
                 ASSERT_TRUE(iPositionControl->getAxes(&nJointsConfigured));
+#endif
                 std::cerr << "Number of joints configured: " << nJointsConfigured << std::endl;
 
                 configured = true;
