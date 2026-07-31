@@ -550,22 +550,22 @@ YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getRemoteVariablesList(yarp:
 
 // ITorqueControl
 
-YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getAxes(int* ax)
-{
-    // TODO integrate with IJointCoupled interface
-
-    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
-    *ax = m_controlBoardData->actuatedAxes.size();
-
-    return YARP_DEV_RETURN_VALUE_OK_CH40;
-}
-
 #if (YARP_VERSION_MAJOR > 3)
 YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getAxes(size_t& ax)
 {
     // TODO integrate with IJointCoupled interface
+
     std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
     ax = m_controlBoardData->actuatedAxes.size();
+
+    return YARP_DEV_RETURN_VALUE_OK_CH40;
+}
+#else
+YARP_DEV_RETURN_VALUE_TYPE_CH40 ControlBoardDriver::getAxes(int* ax)
+{
+    // TODO integrate with IJointCoupled interface
+    std::lock_guard<std::mutex> lock(m_controlBoardData->mutex);
+    *ax = m_controlBoardData->actuatedAxes.size();
 
     return YARP_DEV_RETURN_VALUE_OK_CH40;
 }

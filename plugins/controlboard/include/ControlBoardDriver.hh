@@ -135,7 +135,11 @@ public:
 
     // ITorqueControl
 
+#if (YARP_VERSION_MAJOR > 3)
+    YARP_DEV_RETURN_VALUE_TYPE_CH40 getAxes(size_t& ax) override;
+#else
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getAxes(int* ax) override;
+#endif
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefTorques(double* t) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 getRefTorque(int j, double* t) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefTorques(const double* t) override;
@@ -150,7 +154,6 @@ public:
 
 #if (YARP_VERSION_MAJOR > 3) || (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR > 12) || (YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR == 12 && YARP_VERSION_PATCH >= 100)
     // IVelocityDirect
-    YARP_DEV_RETURN_VALUE_TYPE_CH40 getAxes(size_t& ax) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefVelocity(int jnt, double vel) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefVelocity(const std::vector<double>& vels) override;
     YARP_DEV_RETURN_VALUE_TYPE_CH40 setRefVelocity(const std::vector<int>& jnts, const std::vector<double>& vels) override;
