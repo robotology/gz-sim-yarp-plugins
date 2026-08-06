@@ -93,8 +93,13 @@ protected:
                 ASSERT_TRUE(iControlMode->setControlMode(0, VOCAB_CM_POSITION));
 
                 // Print number of joint configured
+#if (YARP_VERSION_MAJOR > 3)
+                size_t nJointsConfigured{};
+                ASSERT_TRUE(iPositionControl->getAxes(nJointsConfigured));
+#else
                 int nJointsConfigured{};
                 ASSERT_TRUE(iPositionControl->getAxes(&nJointsConfigured));
+#endif
                 std::cerr << "Number of joints configured: " << nJointsConfigured << std::endl;
 
                 configured = true;
@@ -179,8 +184,13 @@ protected:
                 ASSERT_TRUE(iControlMode->setControlMode(1, VOCAB_CM_POSITION));
 
                 // Print number of joint configured
+#if (YARP_VERSION_MAJOR > 3)
+                size_t nJointsConfigured{};
+                ASSERT_TRUE(iPositionControl->getAxes(nJointsConfigured));
+#else
                 int nJointsConfigured{};
                 ASSERT_TRUE(iPositionControl->getAxes(&nJointsConfigured));
+#endif
                 std::cerr << "Number of joints configured: " << nJointsConfigured << std::endl;
 
                 configured = true;
@@ -279,10 +289,15 @@ TEST_F(ControlBoardPositionCoupledPendulumFixture, CheckPositionTrackingWithTraj
                 // std::cerr << "========== Iteration: " << iterations << std::endl;
 
                 iEncoders->getEncoders(jointPosition.data());
+#if YARP_VERSION_MAJOR > 3
+                iPositionControl->checkMotionDone(0, motionDone0);
+                iPositionControl->checkMotionDone(1, motionDone1);
+                iPositionControl->checkMotionDone(2, motionDone2);
+#else
                 iPositionControl->checkMotionDone(0, &motionDone0);
                 iPositionControl->checkMotionDone(1, &motionDone1);
                 iPositionControl->checkMotionDone(2, &motionDone2);
-
+#endif
                 // std::cerr << "ref position: " << refTrajectory[iterations] << std::endl;
                 // std::cerr << "joint position: " << jointPosition << std::endl;
 
@@ -355,7 +370,7 @@ TEST_F(ControlBoardPositionFixture, CheckModeChangeWithTrajectoryGenerationUsing
                 iPositionControl->checkMotionDone(0, motionDone);
 #else
                 iPositionControl->checkMotionDone(0, &motionDone);
-#endif              
+#endif
                 iterations++;
             })
         .
