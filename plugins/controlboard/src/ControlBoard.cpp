@@ -443,34 +443,41 @@ bool ControlBoard::readJointsMeasurements(const gz::sim::EntityComponentManager&
         auto& joint = m_controlBoardData.physicalJoints[i];
         auto& gzJoint = m_gzJoints[i];
 
-        if (gzJoint.Position(_ecm).has_value())
+        // Enabling a measurement creates its component with an empty vector.
+        // Physics must populate it before the first element can be read.
+        const auto position = gzJoint.Position(_ecm);
+        if (position.has_value() && !position->empty())
         {
-            joint.commonJointProperties.position = ControlBoardData::convertGazeboToUser(joint, gzJoint.Position(_ecm).value()[0]);
+            joint.commonJointProperties.position = ControlBoardData::convertGazeboToUser(joint, position->front());
             m_physicalJointsPositionBuffer[i] = joint.commonJointProperties.position;
         } else
         {
-            yError() << "Error while reading position for joint " << joint.commonJointProperties.name;
+            yError() << "Position measurement is unavailable for joint " << joint.commonJointProperties.name
+                     << ". Check that gz::sim::systems::Physics is loaded in the world.";
             return false;
         }
 
-        if (gzJoint.Velocity(_ecm).has_value())
+        const auto velocity = gzJoint.Velocity(_ecm);
+        if (velocity.has_value() && !velocity->empty())
         {
             auto prevVelocity = joint.commonJointProperties.velocity;
-            joint.commonJointProperties.velocity = ControlBoardData::convertGazeboToUser(joint, gzJoint.Velocity(_ecm).value()[0]);
+            joint.commonJointProperties.velocity = ControlBoardData::convertGazeboToUser(joint, velocity->front());
             m_physicalJointsVelocityBuffer[i] = joint.commonJointProperties.velocity;
             joint.commonJointProperties.acceleration = (joint.commonJointProperties.velocity - prevVelocity) / dt;
             m_physicalJointsAcceleratonBuffer[i] = joint.commonJointProperties.acceleration;
         } else
         {
-            yError() << "Error while reading velocity for joint " << joint.commonJointProperties.name;
+            yError() << "Velocity measurement is unavailable for joint " << joint.commonJointProperties.name
+                     << ". Check that gz::sim::systems::Physics is loaded in the world.";
             return false;
         }
 
-        if (gzJoint.TransmittedWrench(_ecm).has_value())
+        const auto wrench = gzJoint.TransmittedWrench(_ecm);
+        if (wrench.has_value() && !wrench->empty())
         {
             joint.commonJointProperties.torque
                 = getJointTorqueFromTransmittedWrench(gzJoint,
-                                                      gzJoint.TransmittedWrench(_ecm).value()[0],
+                                                      wrench->front(),
                                                       _ecm);
             m_physicalJointsTorqueBuffer[i] = joint.commonJointProperties.torque;
         } else

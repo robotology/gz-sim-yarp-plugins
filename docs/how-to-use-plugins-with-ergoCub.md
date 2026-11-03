@@ -55,6 +55,11 @@ Follow the [source installation guide](https://github.com/robotology/robotology-
 
 In Modern Gazebo the preferred way to initialize the simulator is by providing a **World**: an SDF file that contains everything we need to simulate our scenario.
 
+The world must load `gz::sim::systems::Physics` to provide joint measurements to the controlboard.
+On Gazebo Harmonic (gz-sim 8), loading any world system explicitly disables the automatic loading of the default systems, including Physics.
+Gazebo Ionic (gz-sim 9) and later also load the default systems alongside those specified in the world, unless configured otherwise.
+For compatibility with Harmonic, always include the Physics plugin explicitly, as in the example below; a `<physics>` element alone only configures the simulation parameters and does not load the system.
+
 In a directory of your choice, create a file called `ergocub-world.sdf` and fill it by copy-pasting the following content:
 
 ```xml
